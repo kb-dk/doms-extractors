@@ -1,0 +1,22 @@
+<web-app xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+    <display-name>Broadcast Extraction Service</display-name>
+
+    <servlet>
+        <servlet-name>Broadcast Extraction Service</servlet-name>
+
+        <servlet-class>
+            com.sun.jersey.spi.container.servlet.ServletContainer
+        </servlet-class>
+
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>dk.statsbiblioteket.doms.radiotv.extractor</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Broadcast Extraction Service</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+</web-app>
