@@ -10,6 +10,15 @@ import javax.ws.rs.core.MediaType;
 @Path("/bes")
 public class BroadcastExtractionService {
 
+    @GET @Path("/getobjectstatus")
+    @Produces(MediaType.APPLICATION_XML)
+    public ObjectStatus getObjectStatus(@QueryParam("programpid") String programPid) {
+        ObjectStatus status = new ObjectStatus();
+        status.setStatus("The Status");
+        status.setUrl("The URL");
+        return status;
+    }
+
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public String sayHello() {

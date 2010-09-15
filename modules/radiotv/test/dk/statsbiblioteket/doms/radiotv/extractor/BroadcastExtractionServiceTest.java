@@ -6,6 +6,8 @@ import java.util.Map;
 import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.config.ClientConfig;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
 
 import junit.framework.TestCase;
@@ -27,11 +29,12 @@ public class BroadcastExtractionServiceTest extends TestCase {
 
 	public void testDummyInterfaceProgramClipStatus() throws Exception {
 		Client c = Client.create();
-        WebResource r = c.resource(baseUri);
-        String param = "DR";
-        String responseMsg = r.path("/bes/statusofprogramclip?channel=DR").get(String.class);
+        WebResource r = c.resource(baseUri).path("/bes/statusofprogramclip").queryParam("channel", "DR");
+        String responseMsg = r.get(String.class);
         System.out.println("ResponseMsg: " + responseMsg);
-		assertEquals("Request status for program clip. Channel: " + param, responseMsg);
+		assertNotNull(responseMsg);
+        assertNotSame("", responseMsg);
+        assertTrue(responseMsg.contains("DR"));
 	}
 
 	public void testDummyInterfaceCreateProgramClip() throws Exception {
@@ -47,6 +50,16 @@ public class BroadcastExtractionServiceTest extends TestCase {
         String responseMsg = r.path("/bes/getprogramclip").get(String.class);
 		assertEquals("Dette skal v�re en str�m af video...", responseMsg);
 	}
+
+    public void testGetObjectStatus() throws Exception {
+        ClientConfig cc =new DefaultClientConfig();
+        cc.getClasses().add(JsonBodyWriter.class);
+        Client c = Client.create(cc);
+        WebResource r = c.resource(baseUri).path("/bes/getobjectstatus").queryParam("programpid", "12345");
+        ObjectStatus status = r.get(ObjectStatus.class);
+        assertTrue(status.getUrl().contains("URL"));
+    }
+
 
 	@Override
 	protected void tearDown() throws Exception {
