@@ -12,6 +12,17 @@
             <param-name>com.sun.jersey.config.property.packages</param-name>
             <param-value>dk.statsbiblioteket.doms.radiotv.extractor</param-value>
         </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.tempdir</param-name>
+            <param-value>tempdir</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.finaldir</param-name>
+            <param-value>clips</param-value>
+        </init-param>
+
         <load-on-startup>1</load-on-startup>
     </servlet>
 
