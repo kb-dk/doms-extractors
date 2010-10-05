@@ -28,7 +28,7 @@ import javax.servlet.ServletConfig;
 import java.io.File;
 import java.io.IOException;
 
-public class FirstClipper extends ProcessorChainElement {
+public class DemuxerProcessor extends ProcessorChainElement {
 
     /**
      * Takes the list of clips in the clips field of the request and

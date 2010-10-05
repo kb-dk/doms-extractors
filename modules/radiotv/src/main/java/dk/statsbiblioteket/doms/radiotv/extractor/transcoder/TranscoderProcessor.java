@@ -33,7 +33,7 @@ import java.io.IOException;
  * This element transcodes the single file (given by request.getPid()+"_first.ts") to a streamable mp4 and
  * copies it to the final directory.
  */
-public class SecondClipper extends ProcessorChainElement {
+public class TranscoderProcessor extends ProcessorChainElement {
 
     /**
      * Transcodes the file to a streamable mp4.

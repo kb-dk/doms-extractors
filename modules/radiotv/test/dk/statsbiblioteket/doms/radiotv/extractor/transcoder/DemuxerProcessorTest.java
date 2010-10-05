@@ -32,14 +32,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
 
-public class SecondClipperTest extends TestCase {
+public class DemuxerProcessorTest extends TestCase {
 
     private File tempdir = new File("./tempdir");
-    private File finaldir = new File("./finaldir");
 
     public void setUp() throws IOException {
         if (tempdir.exists()) Files.delete(tempdir);
-        if (finaldir.exists()) Files.delete(finaldir);
         //TODO: check if source file exists and download by ftp if it doesn't
     }
 
@@ -47,7 +45,7 @@ public class SecondClipperTest extends TestCase {
         //if (tempdir.exists()) Files.delete(tempdir);
     }
 
-    public void testProcess() throws IOException {
+    public void testProcess() {
 
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
@@ -59,6 +57,42 @@ public class SecondClipperTest extends TestCase {
             public String getInitParameter(String s) {
                  if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
                      return "./tempdir";
+                 } else return null;
+            }
+            public Enumeration<String> getInitParameterNames() {
+                return null;
+            }
+        };
+
+        String muxfile = "./muxdata/mux2.ts";
+        TranscodeRequest.FileClip clip1 = new TranscodeRequest.FileClip(muxfile);
+        clip1.setStartOffsetBytes(500000000L);
+        clip1.setProgramId(2005);
+        TranscodeRequest.FileClip clip2 = new TranscodeRequest.FileClip(muxfile);
+        clip2.setProgramId(2005);
+        TranscodeRequest.FileClip clip3 = new TranscodeRequest.FileClip(muxfile);
+        clip3.setClipLength(500000000L);
+        clip3.setProgramId(2000);
+        TranscodeRequest request = new TranscodeRequest("foobar");
+        request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
+        (new DemuxerProcessor()).process(request, config);
+        File outputFile = new File(tempdir, "foobar_first.ts");
+        assertTrue(outputFile.exists());
+        assertTrue(outputFile.length() > 1000000L);
+    }
+
+    public void testProcessChain() {
+
+        ServletConfig config = new ServletConfig(){
+            public String getServletName() {
+                return null;
+            }
+            public ServletContext getServletContext() {
+                return null;
+            }
+            public String getInitParameter(String s) {
+               if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
+                     return "./tempdir";
                  } else if (s.equals(Constants.FINAL_DIR_INIT_PARAM)) {
                      return "./finaldir";
                  } else return null;
@@ -68,13 +102,24 @@ public class SecondClipperTest extends TestCase {
             }
         };
 
-        String inputFile = "./muxdata/foobar_first.ts";
-        tempdir.mkdirs();
-        Files.copy(new File(inputFile), new File(tempdir, "foobar_first.ts"), true);
+        String muxfile = "./muxdata/mux2.ts";
+        TranscodeRequest.FileClip clip1 = new TranscodeRequest.FileClip(muxfile);
+        clip1.setStartOffsetBytes(500000000L);
+        clip1.setProgramId(2005);
+        TranscodeRequest.FileClip clip2 = new TranscodeRequest.FileClip(muxfile);
+        clip2.setProgramId(2005);
+        TranscodeRequest.FileClip clip3 = new TranscodeRequest.FileClip(muxfile);
+        clip3.setClipLength(500000000L);
+        clip3.setProgramId(2000);
         TranscodeRequest request = new TranscodeRequest("foobar");
-        (new SecondClipper()).process(request, config);
-        File outputFile = new File(finaldir, "foobar.mp4");
+        request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
+        ProcessorChainElement first = new DemuxerProcessor();
+        ProcessorChainElement second = new TranscoderProcessor();
+        second.setParentElement(first);
+        second.process(request, config);
+        File outputFile = new File("./finaldir", "foobar.mp4");
         assertTrue(outputFile.exists());
         assertTrue(outputFile.length() > 1000000L);
     }
+
 }
