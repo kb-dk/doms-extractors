@@ -21,13 +21,33 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import com.sun.org.apache.xpath.internal.NodeSet;
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import javax.servlet.ServletConfig;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class parses a shard element in the TranscodeRequest into a
  * set fo file clips.
  */
 public class ShardParserProcessor extends ProcessorChainElement {
+
+    private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
     /**
      * Precondition: request.getShard() returns an xml fragment with the form
@@ -61,6 +81,80 @@ public class ShardParserProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) {
-             throw new RuntimeException("not yet implemented");
+        try {
+            doParse(request, config);
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (SAXException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
      }
+
+    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
+       String finderUrl = config.getInitParameter(Constants.FILE_LOCATOR_URL);
+        List<TranscodeRequest.FileClip> clips = new ArrayList<TranscodeRequest.FileClip>();
+        DocumentBuilder builder = null;
+        Document shardMetadataDocument = null;
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        NodeList files = null;
+        builder = dbf.newDocumentBuilder();
+        ByteArrayInputStream is = new ByteArrayInputStream(request.getShard().getBytes());
+        shardMetadataDocument = builder.parse(is);
+        files = (NodeList) xpathFactory.newXPath().evaluate("//file", shardMetadataDocument, XPathConstants.NODESET);
+        for (int i=0; i<files.getLength(); i++) {
+            Node fileNode = files.item(i);
+            String url = (String) xpathFactory.newXPath().evaluate("file_url", fileNode, XPathConstants.STRING);
+            String channelIdString = (String) xpathFactory.newXPath().evaluate("channel_id", fileNode, XPathConstants.STRING);
+            String startOffset = (String) xpathFactory.newXPath().evaluate("program_start_offset", fileNode, XPathConstants.STRING);
+            String length = (String) xpathFactory.newXPath().evaluate("program_clip_length", fileNode, XPathConstants.STRING);
+            String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
+            String filePath = getFilePath(fileName, finderUrl);
+            TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
+            Long bitRate = getBitrate(fileName);
+            if (startOffset != null && !"".equals(startOffset)) {
+                Long startSeconds = Long.parseLong(startOffset);
+                clip.setStartOffsetBytes(startSeconds*bitRate);
+            }
+            if (length != null && !"".equals(length)) {
+                Long lengthSeconds = Long.parseLong(length);
+                clip.setClipLength(lengthSeconds*bitRate);
+            }
+            if (channelIdString != null && !"".equals(channelIdString)) {
+                clip.setProgramId(Integer.parseInt(channelIdString));
+            }
+            clips.add(clip);
+        }
+        request.setClips(clips);
+    }
+
+    private String getFilePath(String fileName, String finderUrl) throws IOException {
+        String url = finderUrl+fileName;
+        URL url1 = new URL(url);
+        InputStream is = url1.openStream();
+        String result = (new BufferedReader(new InputStreamReader(is))).readLine();
+        is.close();
+        return result.trim();
+    }
+
+    /**
+     * Get the bitrate in bytes per second from the filename.
+     * @param filename
+     * @return
+     */
+    private Long getBitrate(String filename) {
+          if (filename.startsWith("mux")) {
+              return 2488237L;
+          } else if (filename.contains("_mpeg1_")) {
+              return 169242L;
+          }  else if (filename.contains("_mpeg2_")) {
+              return 872254L;
+          }  else if (filename.contains("_wav_")) {
+              return 88200L;
+          } else return null;
+    }
+
 }

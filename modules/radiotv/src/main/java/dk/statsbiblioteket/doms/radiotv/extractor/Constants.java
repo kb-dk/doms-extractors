@@ -27,6 +27,7 @@ public class Constants {
 
     public static final String TEMP_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.tempdir";
     public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
+    public static final String FILE_LOCATOR_URL = "dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl";
 
 
 }

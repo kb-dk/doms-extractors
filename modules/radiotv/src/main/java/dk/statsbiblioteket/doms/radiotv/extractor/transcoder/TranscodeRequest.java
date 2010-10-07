@@ -36,6 +36,16 @@ public class TranscodeRequest {
      */
     private String pid;
 
+    private String shard;
+
+    public String getShard() {
+        return shard;
+    }
+
+    public void setShard(String shard) {
+        this.shard = shard;
+    }
+
     public String getPid() {
         return pid;
     }
