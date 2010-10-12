@@ -47,7 +47,7 @@ public abstract class ProcessorChainElement {
      * @param request
      * @param config
      */
-    public void process(TranscodeRequest request, ServletConfig config) {
+    public void process(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         if (parentElement != null) parentElement.process(request, config);
         processThis(request, config);
     }
@@ -56,6 +56,6 @@ public abstract class ProcessorChainElement {
      * Carry out this processing element.
      * @param request
      */
-    protected abstract void processThis(TranscodeRequest request, ServletConfig config);
+    protected abstract void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException;
 
 }

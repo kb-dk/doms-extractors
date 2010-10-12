@@ -49,7 +49,7 @@ public class ShardParserProcessorTest extends TestCase {
             "     <format_uri>info:pronom/x-fmt/386</format_uri>\n" +
             "     </file></shard_metadata>";
 
-    public void testProcessThis() {
+    public void testProcessThis() throws ProcessorException {
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
                 return null;
@@ -60,6 +60,8 @@ public class ShardParserProcessorTest extends TestCase {
             public String getInitParameter(String s) {
                  if (s.equals(Constants.FILE_LOCATOR_URL)) {
                      return "http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?";
+                 } else if (s.equals(Constants.FILE_LOCATOR_CLASS)) {
+                     return "dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder";
                  } else return null;
             }
             public Enumeration<String> getInitParameterNames() {
@@ -73,6 +75,7 @@ public class ShardParserProcessorTest extends TestCase {
         assertEquals(request.getClips().size(), 2);
         TranscodeRequest.FileClip clip1 = request.getClips().get(0);
         assertEquals(clip1.getProgramId().intValue(), 102);
+        assertNotNull(clip1.getFilepath());
         assertNull(clip1.getClipLength());
     }
 

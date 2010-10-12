@@ -45,7 +45,7 @@ public class DemuxerProcessorTest extends TestCase {
         //if (tempdir.exists()) Files.delete(tempdir);
     }
 
-    public void testProcess() {
+    public void testProcess() throws ProcessorException {
 
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
@@ -72,7 +72,7 @@ public class DemuxerProcessorTest extends TestCase {
         clip2.setProgramId(2005);
         TranscodeRequest.FileClip clip3 = new TranscodeRequest.FileClip(muxfile);
         clip3.setClipLength(500000000L);
-        clip3.setProgramId(2000);
+        clip3.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
         (new DemuxerProcessor()).process(request, config);
@@ -81,7 +81,7 @@ public class DemuxerProcessorTest extends TestCase {
         assertTrue(outputFile.length() > 1000000L);
     }
 
-    public void testProcessChain() {
+    public void testProcessChain() throws ProcessorException {
 
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
@@ -104,13 +104,13 @@ public class DemuxerProcessorTest extends TestCase {
 
         String muxfile = "./muxdata/mux2.ts";
         TranscodeRequest.FileClip clip1 = new TranscodeRequest.FileClip(muxfile);
-        clip1.setStartOffsetBytes(500000000L);
+        clip1.setStartOffsetBytes(2459574L*188L);
         clip1.setProgramId(2005);
         TranscodeRequest.FileClip clip2 = new TranscodeRequest.FileClip(muxfile);
         clip2.setProgramId(2005);
         TranscodeRequest.FileClip clip3 = new TranscodeRequest.FileClip(muxfile);
         clip3.setClipLength(500000000L);
-        clip3.setProgramId(2000);
+        clip3.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
         ProcessorChainElement first = new DemuxerProcessor();

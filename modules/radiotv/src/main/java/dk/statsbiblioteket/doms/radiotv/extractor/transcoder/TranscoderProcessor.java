@@ -43,7 +43,7 @@ public class TranscoderProcessor extends ProcessorChainElement {
      * @param config
      */
     @Override
-    protected void processThis(TranscodeRequest request, ServletConfig config) {
+    protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
         String tempDirName = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
         String finalDirName = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
@@ -60,14 +60,14 @@ public class TranscoderProcessor extends ProcessorChainElement {
         try {
             new ExternalJobRunner(command);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);
         }
         try {
             Files.move(finalTempFile, finalFinalFile);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);
         }
     }
 }

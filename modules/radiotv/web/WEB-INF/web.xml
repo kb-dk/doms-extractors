@@ -24,6 +24,11 @@
         </init-param>
 
         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass</param-name>
+            <param-value>dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder</param-value>
+        </init-param>
+
+        <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl</param-name>
             <param-value>http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?</param-value>
         </init-param>

@@ -36,10 +36,9 @@ public class DemuxerProcessor extends ProcessorChainElement {
      * blocks during the demuxing process.
      * Side-effect: the temporary directory is created if it doesn't already exist.
      * @param request Pre-condition is that the field "clips" in the
-     * request is initialised.
      */
     @Override
-    protected void processThis(TranscodeRequest request, ServletConfig config) {
+    protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
         String outputDir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
         String fileName = request.getPid() + "_first.ts";
@@ -55,11 +54,10 @@ public class DemuxerProcessor extends ProcessorChainElement {
             try {
                 ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
             } catch (IOException e) {
-                // TODO add some error handling
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throw new ProcessorException(e);
             } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
+                throw new ProcessorException(e);
+             }
         }
     }
 

@@ -19,16 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
-public class Constants {
-    private Constants(){}
-
-
-    public static final String TEMP_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.tempdir";
-    public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
-    public static final String FILE_LOCATOR_CLASS = "dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclassdk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" ;
-    public static final String FILE_LOCATOR_URL = "dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl";
-
-
+/**
+ * Class representing a checked error in a ProcessorChainElement
+ */
+public class ProcessorException extends Exception {
+    public ProcessorException(Exception e) {
+        super(e);
+    }
 }

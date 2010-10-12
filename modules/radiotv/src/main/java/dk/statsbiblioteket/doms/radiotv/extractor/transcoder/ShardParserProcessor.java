@@ -21,7 +21,6 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
-import com.sun.org.apache.xpath.internal.NodeSet;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -36,7 +35,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
-import java.net.MalformedURLException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,22 +79,34 @@ public class ShardParserProcessor extends ProcessorChainElement {
      * @param config
      */
     @Override
-    protected void processThis(TranscodeRequest request, ServletConfig config) {
+    protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         try {
             doParse(request, config);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);
         } catch (SAXException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new ProcessorException(e);            
+        } catch (ClassNotFoundException e) {
+            throw new ProcessorException(e);
+        } catch (NoSuchMethodException e) {
+            throw new ProcessorException(e);
+        } catch (InstantiationException e) {
+            throw new ProcessorException(e);
+        } catch (IllegalAccessException e) {
+            throw new ProcessorException(e);
+        } catch (InvocationTargetException e) {
+            throw new ProcessorException(e);
         }
-     }
+    }
 
-    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
-       String finderUrl = config.getInitParameter(Constants.FILE_LOCATOR_URL);
+    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+        String locatorClassName = config.getInitParameter(Constants.FILE_LOCATOR_CLASS);
+        Class locatorClass = Class.forName(locatorClassName);
+        MediafileFinder finder = (MediafileFinder) locatorClass.getConstructor().newInstance();
         List<TranscodeRequest.FileClip> clips = new ArrayList<TranscodeRequest.FileClip>();
         DocumentBuilder builder = null;
         Document shardMetadataDocument = null;
@@ -112,7 +123,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
             String startOffset = (String) xpathFactory.newXPath().evaluate("program_start_offset", fileNode, XPathConstants.STRING);
             String length = (String) xpathFactory.newXPath().evaluate("program_clip_length", fileNode, XPathConstants.STRING);
             String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
-            String filePath = getFilePath(fileName, finderUrl);
+            String filePath = finder.getFilePath(fileName, config);
             TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
             Long bitRate = getBitrate(fileName);
             if (startOffset != null && !"".equals(startOffset)) {
@@ -131,14 +142,6 @@ public class ShardParserProcessor extends ProcessorChainElement {
         request.setClips(clips);
     }
 
-    private String getFilePath(String fileName, String finderUrl) throws IOException {
-        String url = finderUrl+fileName;
-        URL url1 = new URL(url);
-        InputStream is = url1.openStream();
-        String result = (new BufferedReader(new InputStreamReader(is))).readLine();
-        is.close();
-        return result.trim();
-    }
 
     /**
      * Get the bitrate in bytes per second from the filename.

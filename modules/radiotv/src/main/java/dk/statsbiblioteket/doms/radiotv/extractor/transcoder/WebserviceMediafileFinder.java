@@ -19,16 +19,26 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
-public class Constants {
-    private Constants(){}
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 
+import javax.servlet.ServletConfig;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 
-    public static final String TEMP_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.tempdir";
-    public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
-    public static final String FILE_LOCATOR_CLASS = "dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclassdk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" ;
-    public static final String FILE_LOCATOR_URL = "dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl";
-
-
+public class WebserviceMediafileFinder implements MediafileFinder {
+    @Override
+    public String getFilePath(String filename, ServletConfig config) throws IOException {
+        String finderUrl = config.getInitParameter(Constants.FILE_LOCATOR_URL);
+        String url = finderUrl+filename;
+        URL url1 = new URL(url);
+        InputStream is = url1.openStream();
+        String result = (new BufferedReader(new InputStreamReader(is))).readLine();
+        is.close();
+        return result.trim();
+    }
 }

@@ -1,4 +1,7 @@
-/* File:        $Id$
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+
+import javax.servlet.ServletConfig;
+import java.io.IOException;/* File:        $Id$
  * Revision:    $Revision$
  * Author:      $Author$
  * Date:        $Date$
@@ -19,16 +22,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor;
 
-public class Constants {
-    private Constants(){}
-
-
-    public static final String TEMP_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.tempdir";
-    public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
-    public static final String FILE_LOCATOR_CLASS = "dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclassdk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" ;
-    public static final String FILE_LOCATOR_URL = "dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl";
-
-
+public interface MediafileFinder {
+    String getFilePath(String filename, ServletConfig config) throws IOException;
 }

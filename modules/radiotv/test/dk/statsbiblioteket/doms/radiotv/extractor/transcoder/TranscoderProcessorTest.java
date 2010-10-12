@@ -46,7 +46,7 @@ public class TranscoderProcessorTest extends TestCase {
         //if (tempdir.exists()) Files.delete(tempdir);
     }
 
-    public void testProcess() throws IOException {
+    public void testProcess() throws IOException, ProcessorException {
 
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
