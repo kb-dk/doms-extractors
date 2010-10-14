@@ -29,6 +29,7 @@ public class Constants {
     public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
     public static final String FILE_LOCATOR_CLASS = "dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclassdk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" ;
     public static final String FILE_LOCATOR_URL = "dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl";
+    public static final String DEMUXER_ALGORITHM = "dk.statsbiblioteket.doms.radiotv.extractor.demuxerAlgorithm";
 
 
 }

@@ -45,7 +45,7 @@ public class DemuxerProcessorTest extends TestCase {
         //if (tempdir.exists()) Files.delete(tempdir);
     }
 
-    public void testProcess() throws ProcessorException {
+    public void testProcessSeamless() throws ProcessorException {
 
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
@@ -57,7 +57,49 @@ public class DemuxerProcessorTest extends TestCase {
             public String getInitParameter(String s) {
                  if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
                      return "./tempdir";
-                 } else return null;
+                 } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
+                     return "seamless";
+                 }
+                 else return null;
+            }
+            public Enumeration<String> getInitParameterNames() {
+                return null;
+            }
+        };
+
+        String muxfile = "./muxdata/mux2.ts";
+        TranscodeRequest.FileClip clip1 = new TranscodeRequest.FileClip(muxfile);
+        clip1.setStartOffsetBytes(500000000L);
+        clip1.setProgramId(2005);
+        TranscodeRequest.FileClip clip2 = new TranscodeRequest.FileClip(muxfile);
+        clip2.setProgramId(2005);
+        TranscodeRequest.FileClip clip3 = new TranscodeRequest.FileClip(muxfile);
+        clip3.setClipLength(500000000L);
+        clip3.setProgramId(2005);
+        TranscodeRequest request = new TranscodeRequest("foobar");
+        request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
+        (new DemuxerProcessor()).process(request, config);
+        File outputFile = new File(tempdir, "foobar_first.ts");
+        assertTrue(outputFile.exists());
+        assertTrue(outputFile.length() > 1000000L);
+    }
+
+    public void testProcessNaive() throws ProcessorException {
+
+        ServletConfig config = new ServletConfig(){
+            public String getServletName() {
+                return null;
+            }
+            public ServletContext getServletContext() {
+                return null;
+            }
+            public String getInitParameter(String s) {
+                 if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
+                     return "./tempdir";
+                 } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
+                     return "naive";
+                 }
+                 else return null;
             }
             public Enumeration<String> getInitParameterNames() {
                 return null;

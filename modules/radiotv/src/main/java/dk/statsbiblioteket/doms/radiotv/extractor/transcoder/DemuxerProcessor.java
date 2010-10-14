@@ -46,7 +46,52 @@ public class DemuxerProcessor extends ProcessorChainElement {
         outputDirFile.mkdirs();
         File outputFile = new File(outputDir, fileName);
         // TODO work out what to do if this file already exists
+        if (config.getInitParameter(Constants.DEMUXER_ALGORITHM).equals("seamless")) {
+            seamlessClip(request, outputFile);
+        } else {
+            naiveClip(request, outputFile);
+        }
+    }
 
+    /**
+     * Seamless clipping works by concatenating all the files first and then cutting the concatenated
+     * stream before demuxing. It is assumed that the startOffset is zero in every file except the
+     * first and that the length is equal to the file length minus startOffset for the first clip and
+     * then zero for every clip but the last. These constraints are not checked.
+     * @param request
+     * @param outputFile
+     */
+    private void seamlessClip(TranscodeRequest request, File outputFile) {
+        Long offsetBytes = 0L;
+        Long totalLengthBytes = 0L;
+        String fileList = "";
+        final int clipSize = request.getClips().size();
+        for (int iclip = 0; iclip < clipSize; iclip++ ) {
+            TranscodeRequest.FileClip clip = request.getClips().get(iclip);
+            final long fileLength = new File(clip.getFilepath()).length();
+            Long clipLength = clip.getClipLength();
+            fileList += " " + clip.getFilepath() + " ";
+            if (iclip == 0) {
+                offsetBytes = clip.getStartOffsetBytes();
+                if (clipLength != null && clipSize == 1) {
+                    totalLengthBytes = clipLength;   //Program contained within file
+                } else {
+                    totalLengthBytes = fileLength - offsetBytes;
+                }
+            } else if (iclip == request.getClips().size()-1 && clipSize != 1) {   //last clip in multiclip program
+                if (clipLength != null) {
+                    totalLengthBytes+=clip.getClipLength();
+                } else {
+                    totalLengthBytes += fileLength;
+                }
+            } else {
+                totalLengthBytes += fileLength;
+            }
+        }
+        throw new RuntimeException("Not implemented");
+    }
+
+    private void naiveClip(TranscodeRequest request, File outputFile) throws ProcessorException {
         boolean firstClip = true;
         for (TranscodeRequest.FileClip clip: request.getClips()) {
             String command = getClipperCommand(clip, firstClip, outputFile.getAbsolutePath());

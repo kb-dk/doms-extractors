@@ -153,7 +153,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
      * @param filename
      * @return
      */
-    private Long getBitrate(String filename) {
+    public static Long getBitrate(String filename) {
           if (filename.startsWith("mux")) {
               return 2488237L;
           } else if (filename.contains("_mpeg1_")) {

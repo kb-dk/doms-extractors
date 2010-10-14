@@ -33,6 +33,11 @@
             <param-value>http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?</param-value>
         </init-param>
 
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.demuxerAlgorithm</param-name>
+            <param-value>seamless</param-value><!--Allowable values are "seamless" and "naive" -->
+        </init-param>
+
         <load-on-startup>1</load-on-startup>
     </servlet>
 
