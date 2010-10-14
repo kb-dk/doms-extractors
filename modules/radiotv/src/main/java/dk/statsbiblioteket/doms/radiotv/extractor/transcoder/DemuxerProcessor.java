@@ -73,18 +73,19 @@ public class DemuxerProcessor extends ProcessorChainElement {
             fileList += " " + clip.getFilepath() + " ";
             if (iclip == 0) {
                 offsetBytes = clip.getStartOffsetBytes();
+                if (offsetBytes == null) offsetBytes = 0L;
                 if (clipLength != null && clipSize == 1) {
                     totalLengthBytes = clipLength;   //Program contained within file
-                } else {
+                } else {         //Otherwise always go to end of file
                     totalLengthBytes = fileLength - offsetBytes;
                 }
-            } else if (iclip == request.getClips().size()-1 && clipSize != 1) {   //last clip in multiclip program
+            } else if (iclip == clipSize - 1 && clipSize != 1) {   //last clip in multiclip program
                 if (clipLength != null) {
-                    totalLengthBytes+=clip.getClipLength();
+                    totalLengthBytes += clip.getClipLength();
                 } else {
                     totalLengthBytes += fileLength;
                 }
-            } else {
+            } else {   //A file in the middle of a program so take the whole file
                 totalLengthBytes += fileLength;
             }
         }
