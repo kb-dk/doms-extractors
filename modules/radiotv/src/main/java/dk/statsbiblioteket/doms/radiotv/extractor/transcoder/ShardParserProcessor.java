@@ -126,14 +126,19 @@ public class ShardParserProcessor extends ProcessorChainElement {
             String filePath = finder.getFilePath(fileName, config);
             TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
             Long bitRate = getBitrate(fileName);
+            Long startSeconds = null;
+            Long lengthSeconds = null;
             if (startOffset != null && !"".equals(startOffset)) {
-                Long startSeconds = Long.parseLong(startOffset);
+                startSeconds = Long.parseLong(startOffset);
                 clip.setStartOffsetBytes(startSeconds*bitRate);
+
             }
             if (length != null && !"".equals(length)) {
-                Long lengthSeconds = Long.parseLong(length);
+                lengthSeconds = Long.parseLong(length);
                 clip.setClipLength(lengthSeconds*bitRate);
             }
+            if (startSeconds == 0) clip.setStartOffsetBytes(null);
+            if (startSeconds + lengthSeconds == 3600 && fileName.startsWith("mux")) clip.setClipLength(null);
             if (channelIdString != null && !"".equals(channelIdString)) {
                 clip.setProgramId(Integer.parseInt(channelIdString));
             }

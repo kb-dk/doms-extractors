@@ -74,6 +74,7 @@ public class ExtractorApplication {
             File file1 = new File(file);
             String fileContent = Files.loadString(file1);
             String basename = file1.getName().replaceAll("[.]xml","");
+            File finalFile = new File(config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM), basename+".mp4");
             ProcessorChainElement transcoder = new TranscoderProcessor();
             ProcessorChainElement demuxer = new DemuxerProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
@@ -81,8 +82,10 @@ public class ExtractorApplication {
             demuxer.setParentElement(parser);
             TranscodeRequest request = new TranscodeRequest(basename);
             request.setShard(fileContent);
-            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-            thread.run();
+            if (!finalFile.exists()) {
+                ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+                thread.run();
+            }
         }
     }
 }

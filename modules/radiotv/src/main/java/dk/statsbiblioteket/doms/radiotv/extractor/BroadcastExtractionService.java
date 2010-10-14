@@ -12,16 +12,22 @@ import javax.ws.rs.core.MediaType;
 @Path("/bes")
 public class BroadcastExtractionService {
 
+    public final boolean dummyService=true;
+
     @Context ServletConfig config;
 
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
     public ObjectStatus getObjectStatus(@QueryParam("programpid") String programPid) {
-        readContextParameters();
-        ObjectStatus status = new ObjectStatus();
-        status.setStatus(ObjectStatusEnum.STARTING);
-        status.setCompletionPercentage(0.0);
-        return status;
+        if (dummyService) {
+            return getDummyObjectStatus(programPid);
+        } else {
+            readContextParameters();
+            ObjectStatus status = new ObjectStatus();
+            status.setStatus(ObjectStatusEnum.STARTING);
+            status.setCompletionPercentage(0.0);
+            return status;
+        }
     }
 
     /**
@@ -41,4 +47,24 @@ public class BroadcastExtractionService {
         String finaldir = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
         Transcoder.finaldir = finaldir;
     }
+
+
+    static int dummyState = 0;
+    private ObjectStatus getDummyObjectStatus(String pid) {
+        ObjectStatus status = new ObjectStatus();
+        if (dummyState%3 == 0) {
+            status.setStatus(ObjectStatusEnum.STARTING);
+        } else if (dummyState%3 == 1) {
+            status.setStatus(ObjectStatusEnum.STARTED);
+            status.setCompletionPercentage(50.0);
+        } else if (dummyState%3 == 2) {
+            status.setStatus(ObjectStatusEnum.DONE);
+            status.setServiceUrl("rtmp://130.225.24.62/vod");
+            status.setStreamId("mp4:drhd_2009-11-11_17-55-00.mp4");
+        }
+        dummyState++;
+        return status;
+    }
+
+
 }

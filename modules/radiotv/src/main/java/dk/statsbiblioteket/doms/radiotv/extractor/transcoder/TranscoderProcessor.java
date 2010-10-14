@@ -65,6 +65,11 @@ public class TranscoderProcessor extends ProcessorChainElement {
             throw new ProcessorException(e);
         }
         try {
+            Files.delete(inputFile);
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        }
+        try {
             Files.move(finalTempFile, finalFinalFile);
         } catch (IOException e) {
             throw new ProcessorException(e);

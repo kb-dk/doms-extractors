@@ -30,8 +30,26 @@ public class ObjectStatus {
 
     protected ObjectStatusEnum status;
     protected Double completionPercentage;
+    protected String serviceUrl;
+    protected String streamId;
 
-    public ObjectStatus() {      
+    public String getServiceUrl() {
+        return serviceUrl;
+    }
+
+    public void setServiceUrl(String serviceUrl) {
+        this.serviceUrl = serviceUrl;
+    }
+
+    public String getStreamId() {
+        return streamId;
+    }
+
+    public void setStreamId(String streamId) {
+        this.streamId = streamId;
+    }
+
+    public ObjectStatus() {
     }
 
     public ObjectStatusEnum getStatus() {
