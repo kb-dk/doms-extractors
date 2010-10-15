@@ -53,6 +53,8 @@ public class ExtractorApplication {
                 return "./output";
             } else if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
                 return "./tempdir";
+            } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
+                return "seamless";
             } else return null;
         }
 

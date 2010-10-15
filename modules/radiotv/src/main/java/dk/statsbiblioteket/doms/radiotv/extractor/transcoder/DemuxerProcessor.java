@@ -61,17 +61,19 @@ public class DemuxerProcessor extends ProcessorChainElement {
      * @param request
      * @param outputFile
      */
-    private void seamlessClip(TranscodeRequest request, File outputFile) {
+    private void seamlessClip(TranscodeRequest request, File outputFile) throws ProcessorException {
         Long offsetBytes = 0L;
         Long totalLengthBytes = 0L;
         String fileList = "";
         final int clipSize = request.getClips().size();
+        int programNumber = 0;
         for (int iclip = 0; iclip < clipSize; iclip++ ) {
             TranscodeRequest.FileClip clip = request.getClips().get(iclip);
             final long fileLength = new File(clip.getFilepath()).length();
             Long clipLength = clip.getClipLength();
             fileList += " " + clip.getFilepath() + " ";
             if (iclip == 0) {
+                programNumber = clip.getProgramId();
                 offsetBytes = clip.getStartOffsetBytes();
                 if (offsetBytes == null) offsetBytes = 0L;
                 if (clipLength != null && clipSize == 1) {
@@ -89,7 +91,18 @@ public class DemuxerProcessor extends ProcessorChainElement {
                 totalLengthBytes += fileLength;
             }
         }
-        throw new RuntimeException("Not implemented");
+        Long blocksize = 1880L;
+        String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+                + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
+                + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo " +
+                "--sout '#std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}'";
+        try {
+            ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        } catch (InterruptedException e) {
+            throw new ProcessorException(e);
+        }
     }
 
     private void naiveClip(TranscodeRequest request, File outputFile) throws ProcessorException {
