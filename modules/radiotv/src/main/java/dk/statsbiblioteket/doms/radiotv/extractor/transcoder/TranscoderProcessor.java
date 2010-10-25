@@ -35,6 +35,10 @@ import java.io.IOException;
  */
 public class TranscoderProcessor extends ProcessorChainElement {
 
+    public static String getFinalFilename(TranscodeRequest request) {
+        return request.getPid() + ".mp4";
+    }
+
     /**
      * Transcodes the file to a streamable mp4.
      * Pre-requisite: the request-pid refers to a file which is ready for transcoding
@@ -50,12 +54,14 @@ public class TranscoderProcessor extends ProcessorChainElement {
         File tempDir = new File(tempDirName);
         File finalDir = new File(finalDirName);
         if (!finalDir.exists()) finalDir.mkdirs();
-        File inputFile = new File(tempDir, request.getPid() + "_first.ts");
-        File finalTempFile = new File(tempDir, request.getPid()+".mp4");
+        File inputFile = new File(tempDir, DemuxerProcessor.getDemuxFilename(request));
+        File finalTempFile = new File(tempDir, getFinalFilename(request));
         File finalFinalFile = new File(finalDir, finalTempFile.getName());
         String command = "HandBrakeCLI -i " + inputFile.getAbsolutePath() +
-                " -r 24 -e x264 -E faac --crop 0:0:0:0 --height 240 --vb 400 " +
-                "-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 -o " +
+                " " + config.getInitParameter(Constants.HANDBRAKE_PARAMETERS) + " " +
+                " --vb " + config.getInitParameter(Constants.VIDEO_BITRATE) + " " +
+                " --ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + " " +                
+                " " + config.getInitParameter(Constants.X264_PARAMETERS) + " -o " +               
                 finalTempFile.getAbsolutePath();
         try {
             new ExternalJobRunner(command);

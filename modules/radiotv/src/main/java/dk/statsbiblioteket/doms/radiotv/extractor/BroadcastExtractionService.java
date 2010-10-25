@@ -9,6 +9,17 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * On receiving a request for a given shard url:
+ * i) Parse the uuid out of the url.
+ * ia) Look for the finished result
+ * ii) Look for an in-progress transcoding by looking up the uuid in the in-memory map
+ * iii) If it exists, calculate the progress and return a status for it
+ * iv) If it does not exist, look for any files in the temp or failed dirs. If these are found, return a
+ * failed status.
+ * v) Otherwise, register the transcoding in the map, create the processor chain, and start it.
+ *
+ */
 @Path("/bes")
 public class BroadcastExtractionService {
 

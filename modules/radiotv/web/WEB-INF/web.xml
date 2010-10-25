@@ -38,6 +38,46 @@
             <param-value>seamless</param-value><!--Allowable values are "seamless" and "naive" -->
         </init-param>
 
+        <!-- Do not change the values for -r, -e and -E unless you are really sure
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.handbrakeParameters</param-name>
+            <param-value>-r 24 -e x264 -E faac --crop 0:0:0:0 --height 240 </param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate</param-name>
+            <param-value>200</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate</param-name>
+            <param-value>96</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl</param-name>
+            <param-value>rtmp://130.225.24.62/vod</param-value>
+        </init-param>
+
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsUsername</param-name>
+            <param-value>fedoraAdmin</param-value>
+        </init-param>
+
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsPassword</param-name>
+            <param-value>fedoraAdminPass</param-value>
+        </init-param>
+
+        <!-- The values -x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000
+        are optimised for speed over quality
+        -->
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters</param-name>
+            <param-value>-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 </param-value>
+        </init-param>
+
         <load-on-startup>1</load-on-startup>
     </servlet>
 

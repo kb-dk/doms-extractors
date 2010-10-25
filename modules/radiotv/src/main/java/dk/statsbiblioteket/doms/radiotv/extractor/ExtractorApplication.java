@@ -55,7 +55,18 @@ public class ExtractorApplication {
                 return "./tempdir";
             } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
                 return "seamless";
-            } else return null;
+            } else if (s.equals(Constants.HANDBRAKE_PARAMETERS)) {
+                return "  -r 24 -e x264 -E faac --crop 0:0:0:0 --height 240 ";
+            } else if (s.equals(Constants.X264_PARAMETERS)) {
+                return " -x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000  ";
+            } else if (s.equals(Constants.VIDEO_BITRATE)) {
+                return "200";
+            } else if (s.equals(Constants.AUDIO_BITRATE)) {
+                return "96";
+            }
+
+
+            else throw new RuntimeException("Unknown parameter '" + s + "'");
         }
 
         @Override
@@ -79,9 +90,11 @@ public class ExtractorApplication {
             File finalFile = new File(config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM), basename+".mp4");
             ProcessorChainElement transcoder = new TranscoderProcessor();
             ProcessorChainElement demuxer = new DemuxerProcessor();
+            ProcessorChainElement estimator = new EstimatorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             transcoder.setParentElement(demuxer);
-            demuxer.setParentElement(parser);
+            demuxer.setParentElement(estimator);
+            estimator.setParentElement(parser);
             TranscodeRequest request = new TranscodeRequest(basename);
             request.setShard(fileContent);
             if (!finalFile.exists()) {

@@ -27,9 +27,20 @@ public class Constants {
 
     public static final String TEMP_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.tempdir";
     public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
+    public static final String ERROR_DIR = "dk.statsbiblioteket.doms.radiotv.extractor.errordir";
     public static final String FILE_LOCATOR_CLASS = "dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclassdk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" ;
     public static final String FILE_LOCATOR_URL = "dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl";
     public static final String DEMUXER_ALGORITHM = "dk.statsbiblioteket.doms.radiotv.extractor.demuxerAlgorithm";
+    public static final String HANDBRAKE_PARAMETERS = "dk.statsbiblioteket.doms.radiotv.extractor.handbrakeParameters";
+    public static final String X264_PARAMETERS = "dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters";
+    public static final String VIDEO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate";
+    public static final String AUDIO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate";
+    public static final String WOWZA_URL = "dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl";
+    public static final String DOMS_USER = "dk.statsbiblioteket.doms.radiotv.extractor.domsUsername";
+    public static final String DOMS_PASSWORD = "dk.statsbiblioteket.doms.radiotv.extractor.domsPassword";
+
+
+
 
 
 }

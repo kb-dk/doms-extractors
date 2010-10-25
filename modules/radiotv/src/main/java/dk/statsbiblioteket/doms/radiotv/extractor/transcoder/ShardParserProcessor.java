@@ -104,6 +104,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
     }
 
     private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+        Long totalLengthSeconds = 0L;
         String locatorClassName = config.getInitParameter(Constants.FILE_LOCATOR_CLASS);
         Class locatorClass = Class.forName(locatorClassName);
         MediafileFinder finder = (MediafileFinder) locatorClass.getConstructor().newInstance();
@@ -135,7 +136,16 @@ public class ShardParserProcessor extends ProcessorChainElement {
             }
             if (length != null && !"".equals(length)) {
                 lengthSeconds = Long.parseLong(length);
+                totalLengthSeconds += lengthSeconds;
                 clip.setClipLength(lengthSeconds*bitRate);
+            }
+            if (length == null || "".equals(length)) {
+                if (startSeconds == null) {
+                    totalLengthSeconds += 3600L;
+                } else {
+                    totalLengthSeconds += 3600L - startSeconds;
+                }
+
             }
             if (startSeconds == 0) clip.setStartOffsetBytes(null);
             if (startSeconds + lengthSeconds == 3600 && fileName.startsWith("mux")) clip.setClipLength(null);
@@ -145,6 +155,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
             clips.add(clip);
         }
         request.setClips(clips);
+        request.setTotalLengthSeconds(totalLengthSeconds);
     }
 
 

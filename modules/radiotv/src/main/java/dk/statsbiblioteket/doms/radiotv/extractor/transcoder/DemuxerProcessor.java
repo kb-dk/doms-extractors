@@ -30,6 +30,11 @@ import java.io.IOException;
 
 public class DemuxerProcessor extends ProcessorChainElement {
 
+    public static String getDemuxFilename(TranscodeRequest request) {
+        return request.getPid()+"_first.ts";
+    }
+
+
     /**
      * Takes the list of clips in the clips field of the request and
      * creates a single transport-stream file from them. This method
@@ -41,7 +46,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
         String outputDir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
-        String fileName = request.getPid() + "_first.ts";
+        String fileName = getDemuxFilename(request);
         File outputDirFile = new File(outputDir);
         outputDirFile.mkdirs();
         File outputFile = new File(outputDir, fileName);

@@ -21,6 +21,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -31,12 +32,52 @@ import java.util.List;
 public class TranscodeRequest {
 
     /**
-     * The pid of the program object in DOMS to which this request refers. Must be
+     * The pid (uuid) of the program object in DOMS to which this request refers. Must be
      * non-null.
      */
     private String pid;
 
+    private URL shardUrl;
+
     private String shard;
+
+    private Long totalLengthSeconds;
+
+    private Long demuxedFileLengthBytes;
+
+    private Long finalFileLengthBytes;
+
+    public URL getShardUrl() {
+        return shardUrl;
+    }
+
+    public void setShardUrl(URL shardUrl) {
+        this.shardUrl = shardUrl;
+    }
+
+    public Long getDemuxedFileLengthBytes() {
+        return demuxedFileLengthBytes;
+    }
+
+    public void setDemuxedFileLengthBytes(Long demuxedFileLengthBytes) {
+        this.demuxedFileLengthBytes = demuxedFileLengthBytes;
+    }
+
+    public Long getFinalFileLengthBytes() {
+        return finalFileLengthBytes;
+    }
+
+    public void setFinalFileLengthBytes(Long finalFileLengthBytes) {
+        this.finalFileLengthBytes = finalFileLengthBytes;
+    }
+
+    public Long getTotalLengthSeconds() {
+        return totalLengthSeconds;
+    }
+
+    public void setTotalLengthSeconds(Long totalLengthSeconds) {
+        this.totalLengthSeconds = totalLengthSeconds;
+    }
 
     public String getShard() {
         return shard;
