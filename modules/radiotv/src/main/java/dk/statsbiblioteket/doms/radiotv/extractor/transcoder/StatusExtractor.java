@@ -24,12 +24,15 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatus;
 import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatusEnum;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 public class StatusExtractor {
+
+    private static Logger log = Logger.getLogger(StatusExtractor.class);
 
     private static double demuxWeight = 0.1;
 
@@ -41,18 +44,21 @@ public class StatusExtractor {
      */
     public static ObjectStatus getStatus(String shardUrl, ServletConfig config) throws UnsupportedEncodingException, ProcessorException {
         String uuid = Util.getUuid(shardUrl);
-        if (uuid == null) throw new ProcessorException("Invalid url - no uuid found: '" + shardUrl + "'");
+        if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
+        // Replace with calls to Util methods
         String finalFileName = Util.getFinalFilename(request);
         String finalDir = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
         boolean isDone = (new File(finalDir, finalFileName)).exists();
         if (isDone) {
+            log.debug("Found already fully ready result for '" + uuid + "'");
             ObjectStatus status = new ObjectStatus();
             status.setStatus(ObjectStatusEnum.DONE);
             status.setStreamId("mp4:"+finalFileName);
             status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
             return status;
         } else if (ClipStatus.getInstance().isKnown(uuid)) {
+            log.debug("Already started transcoding '" + uuid + "'");
             request = ClipStatus.getInstance().get(uuid);
             double completionPercentage = 0.0;
             File tempFinalFile = new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM), finalFileName);

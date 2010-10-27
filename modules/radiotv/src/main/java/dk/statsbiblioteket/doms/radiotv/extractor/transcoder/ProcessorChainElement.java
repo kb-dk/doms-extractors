@@ -21,6 +21,8 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.apache.log4j.Logger;
+
 import javax.servlet.ServletConfig;
 
 /**
@@ -29,6 +31,7 @@ import javax.servlet.ServletConfig;
  */
 public abstract class ProcessorChainElement {
 
+    private static Logger log = Logger.getLogger(ProcessorChainElement.class);
 
     private ProcessorChainElement parentElement;
 
@@ -49,6 +52,7 @@ public abstract class ProcessorChainElement {
      */
     public void process(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         if (parentElement != null) parentElement.process(request, config);
+        log.info("Processing '" + request.getPid() + "' with " + this.getClass());
         processThis(request, config);
     }
 

@@ -24,6 +24,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 
 import javax.servlet.ServletConfig;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -98,4 +99,25 @@ public class Util {
     public static String getFinalFilename(TranscodeRequest request) {
         return request.getPid() + ".mp4";
     }
+
+    public static File getTempDir(ServletConfig config) {
+        return new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM));
+    }
+
+    public static File getFinalDir(ServletConfig config) {
+        return new File(config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM));
+    }
+
+    public static File getDemuxFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getTempDir(config), getDemuxFilename(request));
+    }
+
+    public static File getIntialFinalFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getTempDir(config), getFinalFilename(request));
+    }
+
+    public static File getFinalFinalFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getFinalDir(config), getFinalFilename(request));
+    }
+
 }

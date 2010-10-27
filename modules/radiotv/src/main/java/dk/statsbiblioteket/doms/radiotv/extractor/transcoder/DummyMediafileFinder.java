@@ -25,6 +25,7 @@ import javax.servlet.ServletConfig;
 import java.io.IOException;
 
 public class DummyMediafileFinder implements MediafileFinder {
+
     @Override
     public String getFilePath(String filename, ServletConfig config) throws IOException {
         return filename;

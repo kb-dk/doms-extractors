@@ -22,10 +22,13 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 
 public class EstimatorProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(EstimatorProcessor.class);
 
     /**
      * Takes the list of clips in the clips field of the request and
@@ -50,8 +53,7 @@ public class EstimatorProcessor extends ProcessorChainElement {
         }
         Long demuxedFileSize = request.getTotalLengthSeconds()*demuxedBitrate*1000L/8L;
         request.setDemuxedFileLengthBytes(demuxedFileSize);
-        System.out.println("Estimated Filesizes for " + request.getPid());
-        System.out.println(demuxedFileSize + "   " + finalFileSizeBytes);
+        log.debug("Estimated filesizes for '" + request.getPid() + "' :" + demuxedFileSize + "   " + finalFileSizeBytes);
     }
 
 

@@ -23,6 +23,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
@@ -30,6 +31,7 @@ import java.io.IOException;
 
 public class DemuxerProcessor extends ProcessorChainElement {
 
+    private static Logger log = Logger.getLogger(DemuxerProcessor.class);
 
     /**
      * Takes the list of clips in the clips field of the request and
@@ -41,15 +43,19 @@ public class DemuxerProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
+        //TODO create utility methods to get temp & final file objects
         String outputDir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
         String fileName = Util.getDemuxFilename(request);
         File outputDirFile = new File(outputDir);
         outputDirFile.mkdirs();
         File outputFile = new File(outputDir, fileName);
-        // TODO work out what to do if this file already exists
+        if (outputFile.exists()) {
+            throw new ProcessorException("Output file '" + outputFile.getAbsolutePath() + "' already exists. This shouldn't happen");
+        }
         if (config.getInitParameter(Constants.DEMUXER_ALGORITHM).equals("seamless")) {
             seamlessClip(request, outputFile);
         } else {
+            log.warn("Using naive clipping. This is deprecated.");
             naiveClip(request, outputFile);
         }
     }
@@ -70,7 +76,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
         int programNumber = 0;
         for (int iclip = 0; iclip < clipSize; iclip++ ) {
             TranscodeRequest.FileClip clip = request.getClips().get(iclip);
-            final long fileLength = new File(clip.getFilepath()).length();
+            final long fileLength = new File(clip.getFilepath()).length();  //This line has the side-effect of automounting the media file
             Long clipLength = clip.getClipLength();
             fileList += " " + clip.getFilepath() + " ";
             if (iclip == 0) {
@@ -97,8 +103,14 @@ public class DemuxerProcessor extends ProcessorChainElement {
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo " +
                 "--sout '#std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}'";
+        log.info("Executing '" + clipperCommand + "'");
         try {
             ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
+            log.info("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");
+            if (runner.getExitValue() != 0) {
+                log.debug("Standard out:\n" + runner.getOutput());
+                log.debug("Standard err:\n" + runner.getError());
+            }
         } catch (IOException e) {
             throw new ProcessorException(e);
         } catch (InterruptedException e) {

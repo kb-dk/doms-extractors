@@ -21,9 +21,13 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.apache.log4j.Logger;
+
 import javax.servlet.ServletConfig;
 
 public class ProcessorChainThread extends Thread {
+
+    private static Logger log = Logger.getLogger(ProcessorChainThread.class);
 
     private ProcessorChainElement tailElement;
     private TranscodeRequest request;
@@ -31,6 +35,7 @@ public class ProcessorChainThread extends Thread {
 
     public ProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
         super("TranscodeProcessor");
+        log.info("Created processor chain for '" + request.getPid() + "'");
         this.tailElement = tailElement;
         this.request = request;
         this.config = config;
@@ -44,12 +49,14 @@ public class ProcessorChainThread extends Thread {
     @Override
     public void run() {
         super.run();
+        log.info("Starting processor chain for '" + request.getPid() + "'");
         try {
             tailElement.process(request, config);
         } catch (ProcessorException e) {
-            //TODO add any necessary logging
+            log.error("Processing failed for '" + request.getPid() + "'", e);
             throw new RuntimeException(e);
         } finally {
+            log.info("Cleaning up after processing '" + request.getPid() + "'");
             ClipStatus.getInstance().remove(request.getPid());
             //TODO cleanup any temporary files. Create error files.
         }

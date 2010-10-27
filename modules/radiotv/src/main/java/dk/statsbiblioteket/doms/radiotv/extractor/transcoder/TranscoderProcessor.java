@@ -24,6 +24,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 import dk.statsbiblioteket.util.Files;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
@@ -35,6 +36,8 @@ import java.io.IOException;
  */
 public class TranscoderProcessor extends ProcessorChainElement {
 
+    private static Logger log = Logger.getLogger(TranscoderProcessor.class);
+
     /**
      * Transcodes the file to a streamable mp4.
      * Pre-requisite: the request-pid refers to a file which is ready for transcoding
@@ -45,6 +48,7 @@ public class TranscoderProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
+        //TODO move to Util class
         String tempDirName = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
         String finalDirName = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
         File tempDir = new File(tempDirName);
@@ -59,8 +63,14 @@ public class TranscoderProcessor extends ProcessorChainElement {
                 " --ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + " " +                
                 " " + config.getInitParameter(Constants.X264_PARAMETERS) + " -o " +               
                 finalTempFile.getAbsolutePath();
+        log.info("Executing '" + command + "'");
         try {
-            new ExternalJobRunner(command);
+            ExternalJobRunner runner = new ExternalJobRunner(command);
+            log.info("Command '" + command + " returned with exit code '" + runner.getExitValue() + "'");
+            if (runner.getExitValue() != 0) {
+                log.debug("Standard out:\n" + runner.getOutput());
+                log.debug("Standard err:\n" + runner.getError());
+            }
         } catch (IOException e) {
             throw new ProcessorException(e);
         } catch (InterruptedException e) {
@@ -71,9 +81,10 @@ public class TranscoderProcessor extends ProcessorChainElement {
         } catch (IOException e) {
             throw new ProcessorException(e);
         }
-        try {
+       try {
+            log.info("Deploying final output to '" + finalFinalFile.getAbsolutePath() + "'");
             Files.move(finalTempFile, finalFinalFile);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ProcessorException(e);
         }
     }

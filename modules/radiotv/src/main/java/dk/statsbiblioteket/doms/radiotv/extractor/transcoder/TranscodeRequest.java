@@ -141,6 +141,16 @@ public class TranscodeRequest {
         public Long getClipLength() {
             return clipLength;
         }
+
+        @Override
+        public String toString() {
+            return "FileClip{" +
+                    "filepath='" + filepath + '\'' +
+                    ", programId=" + programId +
+                    ", startOffsetBytes=" + startOffsetBytes +
+                    ", clipLength=" + clipLength +
+                    '}';
+        }
     }
     
 }

@@ -22,6 +22,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import org.apache.log4j.Logger;
 import sun.misc.BASE64Encoder;
 
 import javax.servlet.ServletConfig;
@@ -30,6 +31,8 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class ShardFetcherProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(ShardFetcherProcessor.class);
 
     /**
      * Fetches the shard xml.
@@ -44,6 +47,7 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         URL url = Util.getDomsUrl(request.getPid(), config);
+        log.info("Getting shard from '" + url + "'");
         try {
             URLConnection conn = url.openConnection();
             String userPassword = config.getInitParameter(Constants.DOMS_USER)+":"+config.getInitParameter(Constants.DOMS_PASSWORD);
@@ -59,7 +63,7 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
                     writer.write(buffer, 0, n);
                 }
                 request.setShard(writer.toString());
-                System.out.println(request.getShard());
+                log.debug("Downloaded shard\n" + request.getShard());
             } finally {
                 is.close();
             }

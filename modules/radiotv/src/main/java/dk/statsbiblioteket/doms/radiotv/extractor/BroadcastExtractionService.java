@@ -1,6 +1,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.ws.rs.DefaultValue;
@@ -26,6 +27,8 @@ import java.io.UnsupportedEncodingException;
 @Path("/bes")
 public class BroadcastExtractionService {
 
+    private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
+
     public final boolean dummyService=false;
 
     @Context ServletConfig config;
@@ -33,7 +36,9 @@ public class BroadcastExtractionService {
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
     public ObjectStatus getObjectStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
+        log.debug("Request for program '" + programPid + "'");
         if (dummyService) {
+            log.warn("Returning dummy status for program '" + programPid + "'");
             return getDummyObjectStatus(programPid);
         } else {
             return getRealObjectStatus(programPid);

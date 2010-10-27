@@ -22,6 +22,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -44,6 +45,8 @@ import java.util.List;
  * set fo file clips.
  */
 public class ShardParserProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(ShardParserProcessor.class);
 
     private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
@@ -152,10 +155,11 @@ public class ShardParserProcessor extends ProcessorChainElement {
                 clip.setProgramId(Integer.parseInt(channelIdString));
             }
             clips.add(clip);
+            log.debug("Added a clip '" + clip + "'");
         }
         request.setClips(clips);
         request.setTotalLengthSeconds(totalLengthSeconds);
-        System.out.println("Total length set to '" + request.getTotalLengthSeconds() + "'");
+        log.debug("Total length set to '" + request.getTotalLengthSeconds() + "'");
     }
 
 
