@@ -8,79 +8,123 @@
             com.sun.jersey.spi.container.servlet.ServletContainer
         </servlet-class>
 
-        <init-param>
-            <param-name>com.sun.jersey.config.property.packages</param-name>
-            <param-value>dk.statsbiblioteket.doms.radiotv.extractor</param-value>
-        </init-param>
+        <!--
+        Broadcast Extraction Service configuration parameters. First we list those
+        which are likely to require tweaking in production.
+        -->
 
+        <!--
+        Directory for temporary files. Will be created if it does not exist. In later
+        versions it will be cleaned-up on reload.
+        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.tempdir</param-name>
             <param-value>/home/larm/temp</param-value>
         </init-param>
 
+        <!--
+        Directory where the streamable files are to be deployed
+        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.finaldir</param-name>
             <param-value>/usr/local/WowzaMediaServer/content</param-value>
         </init-param>
 
+        <!--
+        URL where streamable files are streamed from
+        -->
         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass</param-name>
-            <param-value>dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder</param-value>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl</param-name>
+            <param-value>rtmp://130.225.24.62/vod</param-value>
         </init-param>
 
+
+        <!--
+        Location and basic authentication for DOMS
+        -->
         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl</param-name>
-            <param-value>http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?</param-value>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsLocation</param-name>
+            <param-value>http://alhena:7880/fedora</param-value>
+        </init-param>
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsUsername</param-name>
+            <param-value>fedoraAdmin</param-value>
+        </init-param>
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsPassword</param-name>
+            <param-value>fedoraAdminPass</param-value>
         </init-param>
 
-        <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.demuxerAlgorithm</param-name>
-            <param-value>seamless</param-value><!--Allowable values are "seamless" and "naive" -->
-        </init-param>
-
-        <!-- Do not change the values for -r, -e and -E unless you are really sure
+         <!--
+         Basic Handbrake parameters. Changing the framerate and/or audio and video codecs will
+         probably break everything
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.handbrakeParameters</param-name>
             <param-value>-r 24 -e x264 -E faac --crop 0:0:0:0 --height 240 </param-value>
         </init-param>
 
+        <!--
+          x264 parameters.
+          The values -x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000
+          are optimised for speed over quality
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters</param-name>
+            <param-value>-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 </param-value>
+        </init-param>
+
+        <!--
+        Video bitrate (kbps)
+        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate</param-name>
             <param-value>200</param-value>
         </init-param>
 
+        <!--
+        Audio bitrate (kbps)
+        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate</param-name>
             <param-value>96</param-value>
         </init-param>
 
-        <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl</param-name>
-            <param-value>rtmp://130.225.24.62/vod</param-value>
-        </init-param>
 
-         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsUsername</param-name>
-            <param-value>fedoraAdmin</param-value>
-        </init-param>
-
-         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsPassword</param-name>
-            <param-value>fedoraAdminPass</param-value>
-        </init-param>
-
-        <!-- The values -x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000
-        are optimised for speed over quality
+        <!--
+        Lines below here are unlikley to require tweaking.
         -->
-         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters</param-name>
-            <param-value>-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 </param-value>
+
+        <!--
+        Class to use to find path to mediafiles from their name
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass</param-name>
+            <param-value>dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder</param-value>
         </init-param>
 
+        <!--
+        Address of webservice from which full-paths to mediafiles can be found.
+        -->
         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsLocation</param-name>
-            <param-value>http://alhena:7880/fedora</param-value>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl</param-name>
+            <param-value>http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?</param-value>
+        </init-param>
+
+        <!--
+        Algorithm to use for demuxing. Allowable values are "seamless" and "naive"
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.demuxerAlgorithm</param-name>
+            <param-value>seamless</param-value>
+        </init-param>
+
+        <!--
+        Jersey configuration. Tells Jersey in which package to look for webservice classes.
+          -->
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>dk.statsbiblioteket.doms.radiotv.extractor</param-value>
         </init-param>
 
         <load-on-startup>1</load-on-startup>
