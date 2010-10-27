@@ -15,12 +15,12 @@
 
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.tempdir</param-name>
-            <param-value>tempdir</param-value>
+            <param-value>/home/larm/temp</param-value>
         </init-param>
 
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.finaldir</param-name>
-            <param-value>clips</param-value>
+            <param-value>/usr/local/WowzaMediaServer/content</param-value>
         </init-param>
 
         <init-param>
@@ -76,6 +76,11 @@
          <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters</param-name>
             <param-value>-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 </param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsLocation</param-name>
+            <param-value>http://alhena:7880/fedora</param-value>
         </init-param>
 
         <load-on-startup>1</load-on-startup>

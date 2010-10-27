@@ -33,7 +33,9 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
 
     /**
      * Fetches the shard xml.
-     * Pre-condition: request has a valid shard-url
+     * The original shard-url: http://www.statsbiblioteket.dk/doms/shard/uuid:ef8ea1b2-aaa8-412a-a247-af682bb57d25
+     * needs to be resolved to <DOMS_SERVER>/fedora/objects/uuid%3Aef8ea1b2-aaa8-412a-a247-af682bb57d25/datastreams/SHARD_METADATA/content
+     * Pre-condition: request has a valid shard-url, config has username/password to fedora and address of doms server
      * Post-condition: request has valid xml as shard
      * @param request
      * @param config
@@ -41,23 +43,23 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        URL url = request.getShardUrl();
+        URL url = Util.getDomsUrl(request.getPid(), config);
         try {
             URLConnection conn = url.openConnection();
             String userPassword = config.getInitParameter(Constants.DOMS_USER)+":"+config.getInitParameter(Constants.DOMS_PASSWORD);
             String encoding = (new BASE64Encoder()).encode(userPassword.getBytes());
             conn.setRequestProperty("Authorization", "Basic " + encoding);
-            String contentEncoding = conn.getContentEncoding();
             InputStream is = conn.getInputStream();
             try {
                 Writer writer = new StringWriter();
                 char[] buffer = new char[1024];
-                Reader reader = new BufferedReader(new InputStreamReader(is, contentEncoding));
+                Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                 int n;
                 while ((n = reader.read(buffer)) != -1) {
                     writer.write(buffer, 0, n);
                 }
                 request.setShard(writer.toString());
+                System.out.println(request.getShard());
             } finally {
                 is.close();
             }

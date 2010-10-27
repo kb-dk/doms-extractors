@@ -36,7 +36,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,7 +125,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
             String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
             String filePath = finder.getFilePath(fileName, config);
             TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
-            Long bitRate = getBitrate(fileName);
+            Long bitRate = Util.getBitrate(fileName);
             Long startSeconds = null;
             Long lengthSeconds = null;
             if (startOffset != null && !"".equals(startOffset)) {
@@ -156,24 +155,8 @@ public class ShardParserProcessor extends ProcessorChainElement {
         }
         request.setClips(clips);
         request.setTotalLengthSeconds(totalLengthSeconds);
+        System.out.println("Total length set to '" + request.getTotalLengthSeconds() + "'");
     }
 
-
-    /**
-     * Get the bitrate in bytes per second from the filename.
-     * @param filename
-     * @return
-     */
-    public static Long getBitrate(String filename) {
-          if (filename.startsWith("mux")) {
-              return 2488237L;
-          } else if (filename.contains("_mpeg1_")) {
-              return 169242L;
-          }  else if (filename.contains("_mpeg2_")) {
-              return 872254L;
-          }  else if (filename.contains("_wav_")) {
-              return 88200L;
-          } else return null;
-    }
 
 }

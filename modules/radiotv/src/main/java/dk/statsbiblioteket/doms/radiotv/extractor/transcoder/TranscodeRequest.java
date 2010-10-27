@@ -37,7 +37,7 @@ public class TranscodeRequest {
      */
     private String pid;
 
-    private URL shardUrl;
+
 
     private String shard;
 
@@ -46,14 +46,6 @@ public class TranscodeRequest {
     private Long demuxedFileLengthBytes;
 
     private Long finalFileLengthBytes;
-
-    public URL getShardUrl() {
-        return shardUrl;
-    }
-
-    public void setShardUrl(URL shardUrl) {
-        this.shardUrl = shardUrl;
-    }
 
     public Long getDemuxedFileLengthBytes() {
         return demuxedFileLengthBytes;

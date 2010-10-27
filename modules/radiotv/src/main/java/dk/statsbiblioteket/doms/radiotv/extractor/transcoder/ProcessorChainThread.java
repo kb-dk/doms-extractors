@@ -50,6 +50,7 @@ public class ProcessorChainThread extends Thread {
             //TODO add any necessary logging
             throw new RuntimeException(e);
         } finally {
+            ClipStatus.getInstance().remove(request.getPid());
             //TODO cleanup any temporary files. Create error files.
         }
     }

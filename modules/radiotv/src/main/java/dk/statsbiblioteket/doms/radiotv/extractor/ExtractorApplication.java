@@ -45,6 +45,7 @@ public class ExtractorApplication {
 
         @Override
         public String getInitParameter(String s) {
+
             if (s.equals(Constants.FILE_LOCATOR_CLASS)) {
                 return "dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder";
             }  else if (s.equals(Constants.FILE_LOCATOR_URL)) {
@@ -63,6 +64,12 @@ public class ExtractorApplication {
                 return "200";
             } else if (s.equals(Constants.AUDIO_BITRATE)) {
                 return "96";
+            } else if (s.equals(Constants.DOMS_USER)) {
+                return "fedoraAdmin";
+            } else if (s.equals(Constants.DOMS_PASSWORD)) {
+                return "fedoraAdminPass";
+            } else if (s.equals(Constants.DOMS_LOCATION)) {
+                return "http://alhena:7880/fedora";
             }
 
 
@@ -78,29 +85,24 @@ public class ExtractorApplication {
 
     /**
      * Command line argument to test extraction of programs
-     * @param args a list of xml files containing either shard metadata or
-     * preingest xml files. Clip information is extracted from a list of <file>
-     * elements.
+     * @param args a list of uuid'er of programs to fetch
+
      */
     public static void main(String[] args) throws IOException {
-        for (String file: args) {
-            File file1 = new File(file);
-            String fileContent = Files.loadString(file1);
-            String basename = file1.getName().replaceAll("[.]xml","");
-            File finalFile = new File(config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM), basename+".mp4");
+        for (String uuid: args) {
             ProcessorChainElement transcoder = new TranscoderProcessor();
             ProcessorChainElement demuxer = new DemuxerProcessor();
             ProcessorChainElement estimator = new EstimatorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
             transcoder.setParentElement(demuxer);
             demuxer.setParentElement(estimator);
             estimator.setParentElement(parser);
-            TranscodeRequest request = new TranscodeRequest(basename);
-            request.setShard(fileContent);
-            if (!finalFile.exists()) {
-                ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-                thread.run();
-            }
+            parser.setParentElement(fetcher);
+            TranscodeRequest request = new TranscodeRequest(uuid);
+            request.setPid(uuid);
+            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+            thread.run();
         }
     }
 }

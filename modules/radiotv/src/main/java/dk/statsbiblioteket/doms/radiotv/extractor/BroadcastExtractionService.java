@@ -1,5 +1,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+
 import javax.servlet.ServletConfig;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -8,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.UnsupportedEncodingException;
 
 /**
  * On receiving a request for a given shard url:
@@ -23,22 +26,43 @@ import javax.ws.rs.core.MediaType;
 @Path("/bes")
 public class BroadcastExtractionService {
 
-    public final boolean dummyService=true;
+    public final boolean dummyService=false;
 
     @Context ServletConfig config;
 
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
-    public ObjectStatus getObjectStatus(@QueryParam("programpid") String programPid) {
+    public ObjectStatus getObjectStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
         if (dummyService) {
             return getDummyObjectStatus(programPid);
         } else {
-            readContextParameters();
-            ObjectStatus status = new ObjectStatus();
-            status.setStatus(ObjectStatusEnum.STARTING);
-            status.setCompletionPercentage(0.0);
-            return status;
+            return getRealObjectStatus(programPid);
         }
+    }
+
+    private ObjectStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
+        ObjectStatus status = StatusExtractor.getStatus(programPid, config);
+        if (status != null) {
+            return status;
+        } else {
+            String uuid = Util.getUuid(programPid);
+            TranscodeRequest request = new TranscodeRequest(uuid);
+            ClipStatus.getInstance().register(request);
+            ProcessorChainElement transcoder = new TranscoderProcessor();
+            ProcessorChainElement demuxer = new DemuxerProcessor();
+            ProcessorChainElement estimator = new EstimatorProcessor();
+            ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            transcoder.setParentElement(demuxer);
+            demuxer.setParentElement(estimator);
+            estimator.setParentElement(parser);
+            parser.setParentElement(fetcher);
+            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+            thread.start();
+        }
+        status = new ObjectStatus();
+        status.setStatus(ObjectStatusEnum.STARTING);
+        return status;
     }
 
     /**

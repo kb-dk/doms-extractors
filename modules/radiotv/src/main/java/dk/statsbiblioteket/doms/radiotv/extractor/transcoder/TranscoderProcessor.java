@@ -35,10 +35,6 @@ import java.io.IOException;
  */
 public class TranscoderProcessor extends ProcessorChainElement {
 
-    public static String getFinalFilename(TranscodeRequest request) {
-        return request.getPid() + ".mp4";
-    }
-
     /**
      * Transcodes the file to a streamable mp4.
      * Pre-requisite: the request-pid refers to a file which is ready for transcoding
@@ -54,8 +50,8 @@ public class TranscoderProcessor extends ProcessorChainElement {
         File tempDir = new File(tempDirName);
         File finalDir = new File(finalDirName);
         if (!finalDir.exists()) finalDir.mkdirs();
-        File inputFile = new File(tempDir, DemuxerProcessor.getDemuxFilename(request));
-        File finalTempFile = new File(tempDir, getFinalFilename(request));
+        File inputFile = new File(tempDir, Util.getDemuxFilename(request));
+        File finalTempFile = new File(tempDir, Util.getFinalFilename(request));
         File finalFinalFile = new File(finalDir, finalTempFile.getName());
         String command = "HandBrakeCLI -i " + inputFile.getAbsolutePath() +
                 " " + config.getInitParameter(Constants.HANDBRAKE_PARAMETERS) + " " +

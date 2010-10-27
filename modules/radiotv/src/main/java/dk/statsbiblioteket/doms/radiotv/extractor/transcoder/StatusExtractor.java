@@ -28,14 +28,8 @@ import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatusEnum;
 import javax.servlet.ServletConfig;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class StatusExtractor {
-
-    public static final String UUID_STRING = ".*uuid:(.*)/datastreams.*";
-    public static final Pattern UUID_PATTERN = Pattern.compile(UUID_STRING);
 
     private static double demuxWeight = 0.1;
 
@@ -46,10 +40,10 @@ public class StatusExtractor {
      * @return
      */
     public static ObjectStatus getStatus(String shardUrl, ServletConfig config) throws UnsupportedEncodingException, ProcessorException {
-        String uuid = getUuid(shardUrl);
+        String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new ProcessorException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
-        String finalFileName = TranscoderProcessor.getFinalFilename(request);
+        String finalFileName = Util.getFinalFilename(request);
         String finalDir = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
         boolean isDone = (new File(finalDir, finalFileName)).exists();
         if (isDone) {
@@ -62,7 +56,7 @@ public class StatusExtractor {
             request = ClipStatus.getInstance().get(uuid);
             double completionPercentage = 0.0;
             File tempFinalFile = new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM), finalFileName);
-            File demuxFile = new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM), DemuxerProcessor.getDemuxFilename(request));
+            File demuxFile = new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM), Util.getDemuxFilename(request));
             if (tempFinalFile.exists()) {
                 completionPercentage = 100*(demuxWeight + (1.0-demuxWeight)*tempFinalFile.length()/request.getFinalFileLengthBytes());
             } else if (demuxFile.exists()) {
@@ -75,14 +69,6 @@ public class StatusExtractor {
             return status;
         } else return null;
         //TODO look for error conditions - specifically files in the error directory
-    }
-
-    public static String getUuid(String shardUrl) throws UnsupportedEncodingException {
-        String urlS = URLDecoder.decode(shardUrl, "UTF-8");
-        Matcher m = UUID_PATTERN.matcher(urlS);
-        if (m.matches()) {
-             return m.group(1);
-        } else return null;
     }
 
 }
