@@ -43,6 +43,7 @@ public class ProcessorChainThreadPool {
     private static GenericObjectPool thePool;
     private static int maxActiveProcesses = 2;     //TODO set from setting
 
+    
     /**
      * Singleton.
      */
