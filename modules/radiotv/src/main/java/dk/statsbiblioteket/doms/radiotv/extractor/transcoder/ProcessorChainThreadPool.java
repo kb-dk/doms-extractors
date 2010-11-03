@@ -51,7 +51,7 @@ public class ProcessorChainThreadPool {
      */
     private ProcessorChainThreadPool() {
         theQueue = new LinkedBlockingQueue<ProcessorChainThread>();
-        GenericObjectPool thePool = new GenericObjectPool(new BasePoolableObjectFactory() {
+        thePool = new GenericObjectPool(new BasePoolableObjectFactory() {
             @Override
             public Object makeObject() throws Exception {
                 return new Object();    }
