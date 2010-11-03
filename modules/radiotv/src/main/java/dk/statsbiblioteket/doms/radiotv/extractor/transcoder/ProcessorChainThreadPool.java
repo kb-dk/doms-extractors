@@ -29,6 +29,7 @@ import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.log4j.Logger;
 
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.Queue;
 
 public class ProcessorChainThreadPool {
@@ -39,7 +40,7 @@ public class ProcessorChainThreadPool {
      * Singleton instance
      */
     private static ProcessorChainThreadPool instance;
-    private static Queue<ProcessorChainThread> theQueue;
+    private static LinkedBlockingQueue<ProcessorChainThread> theQueue;
     private static GenericObjectPool thePool;
     private static int maxActiveProcesses = 2;     //TODO set from setting
 
@@ -75,13 +76,18 @@ public class ProcessorChainThreadPool {
              @Override
              public void run() {
                  while(true) {
-                     ProcessorChainThread theThread = theQueue.remove();
                      try {
-                         Object lockObject = thePool.borrowObject();
-                         theThread.setBorrowedObjectAndPool(lockObject, thePool);
-                         theThread.start();
-                     } catch (Exception e) {
-                         log.error("Unexpected error starting transcoding process", e);
+                         ProcessorChainThread theThread = theQueue.take();
+                         try {
+                             Object lockObject = thePool.borrowObject();
+                             theThread.setBorrowedObjectAndPool(lockObject, thePool);
+                             theThread.start();
+                         } catch (Exception e) {
+                             log.error("Unexpected error starting transcoding process", e);
+                         }
+                     }
+                     catch (InterruptedException e) {
+                        log.error("Unexpected error, trying to recover", e);
                      }
                  }
              }
