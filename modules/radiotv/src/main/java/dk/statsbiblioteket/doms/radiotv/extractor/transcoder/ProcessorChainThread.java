@@ -22,6 +22,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import org.apache.log4j.Logger;
+import org.apache.commons.pool.ObjectPool;
 
 import javax.servlet.ServletConfig;
 
@@ -32,6 +33,10 @@ public class ProcessorChainThread extends Thread {
     private ProcessorChainElement tailElement;
     private TranscodeRequest request;
     private ServletConfig config;
+    private Object lockObject;
+    private ObjectPool pool;
+
+
 
     public ProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
         super("TranscodeProcessor");
@@ -39,6 +44,16 @@ public class ProcessorChainThread extends Thread {
         this.tailElement = tailElement;
         this.request = request;
         this.config = config;
+    }
+
+    /**
+     * Set a lock object and the pool to which it is to be returned when execution finishes
+     * @param object
+     * @param pool
+     */
+    public void setBorrowedObjectAndPool(Object object, ObjectPool pool) {
+        lockObject = object;
+        this.pool = pool;
     }
 
     /**
@@ -56,6 +71,14 @@ public class ProcessorChainThread extends Thread {
             log.error("Processing failed for '" + request.getPid() + "'", e);
             throw new RuntimeException(e);
         } finally {
+            if (lockObject != null && pool != null) {
+                try {
+                    pool.returnObject(lockObject);
+                } catch (Exception e) {
+                    log.error("Error returning object to pool.", e);
+                    throw new RuntimeException("Error returning object to pool.", e);
+                }
+            }
             log.info("Cleaning up after processing '" + request.getPid() + "'");
             ClipStatus.getInstance().remove(request.getPid());
             //TODO cleanup any temporary files. Create error files.

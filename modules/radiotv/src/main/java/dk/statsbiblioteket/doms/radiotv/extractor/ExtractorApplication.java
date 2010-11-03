@@ -102,7 +102,8 @@ public class ExtractorApplication {
             TranscodeRequest request = new TranscodeRequest(uuid);
             request.setPid(uuid);
             ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-            thread.run();
+            //thread.run();
+            ProcessorChainThreadPool.addProcessorChainThread(thread);
         }
     }
 }
