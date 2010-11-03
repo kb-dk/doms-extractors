@@ -27,7 +27,7 @@
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.finaldir</param-name>
-            <param-value>/usr/local/WowzaMediaServer/content</param-value>
+            <param-value>/home/larm/streamingContent</param-value>
         </init-param>
 
         <!--
@@ -35,7 +35,7 @@
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl</param-name>
-            <param-value>rtmp://130.225.24.62/vod</param-value>
+            <param-value>rtmp://130.225.24.62/doms</param-value>
         </init-param>
 
 
@@ -44,7 +44,7 @@
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsLocation</param-name>
-            <param-value>http://alhena:7880/fedora</param-value>
+            <param-value>http://alhena:7980/fedora</param-value>
         </init-param>
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsUsername</param-name>
@@ -61,7 +61,7 @@
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.handbrakeParameters</param-name>
-            <param-value>-r 24 -e x264 -E faac --crop 0:0:0:0 --height 240 </param-value>
+            <param-value>-r 24 -e x264 -E faac --crop 0:0:0:0 --width 320 -d --loose-anamorphic </param-value>
         </init-param>
 
         <!--
