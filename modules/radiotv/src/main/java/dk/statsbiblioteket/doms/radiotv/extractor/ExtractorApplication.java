@@ -30,7 +30,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 
+import org.apache.log4j.Logger;
+
 public class ExtractorApplication {
+
+    private static Logger log = Logger.getLogger(ExtractorApplication.class);
 
     private static ServletConfig config = new ServletConfig() {
         @Override
@@ -89,7 +93,9 @@ public class ExtractorApplication {
 
      */
     public static void main(String[] args) throws IOException {
+       log.info("Starting extraction");
         for (String uuid: args) {
+            log.info("Starting process for '" + uuid + "'");
             ProcessorChainElement transcoder = new TranscoderProcessor();
             ProcessorChainElement demuxer = new DemuxerProcessor();
             ProcessorChainElement estimator = new EstimatorProcessor();
