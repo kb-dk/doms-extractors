@@ -74,6 +74,10 @@ public class ExtractorApplication {
                 return "fedoraAdminPass";
             } else if (s.equals(Constants.DOMS_LOCATION)) {
                 return "http://alhena:7880/fedora";
+            } else if (s.equals(Constants.MAX_ACTIVE_PROCESSING)) {
+                return "4";
+            } else if (s.equals(Constants.RELEASE_AFTER_DEMUX)) {
+                return "true";
             }
 
 

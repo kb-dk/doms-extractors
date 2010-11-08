@@ -39,6 +39,8 @@ public class Constants {
     public static final String DOMS_USER = "dk.statsbiblioteket.doms.radiotv.extractor.domsUsername";
     public static final String DOMS_PASSWORD = "dk.statsbiblioteket.doms.radiotv.extractor.domsPassword";
     public static final String DOMS_LOCATION = "dk.statsbiblioteket.doms.radiotv.extractor.domsLocation";
+    public static final String MAX_ACTIVE_PROCESSING = "dk.statsbiblioteket.doms.radiotv.extractor.maxActive";
+    public static final String RELEASE_AFTER_DEMUX = "dk.statsbiblioteket.doms.radiotv.extractor.releaseAfterDemux";
 
 
 
