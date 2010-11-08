@@ -26,18 +26,20 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
+import java.io.File;
 
 public class AspectRatioDetectorProcessorTest extends TestCase {
 
     public void testProcessThis() throws ProcessorException {
         String muxfile = "./muxdata/mux2.ts";
+        assertTrue("Test file should exist: " + (new File(muxfile)).getAbsolutePath(), (new File(muxfile)).exists());
         TranscodeRequest.FileClip clip1 = new TranscodeRequest.FileClip(muxfile);
         clip1.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(clip1));
         (new AspectRatioDetectorProcessor()).process(request, null);
-        assertTrue(request.getDisplayAspectRatio()>0.1);
-        assertTrue(request.getDisplayAspectRatio()<0.12);
+        assertTrue(request.getDisplayAspectRatio()>1.7);
+        assertTrue(request.getDisplayAspectRatio()<1.8);
     }
 
 }

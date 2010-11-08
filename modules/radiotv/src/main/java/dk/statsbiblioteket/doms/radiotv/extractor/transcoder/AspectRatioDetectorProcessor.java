@@ -23,11 +23,24 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.apache.log4j.Logger;
+
 import javax.servlet.ServletConfig;
+import java.io.File;
+import java.io.IOException;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
+import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 
 public class AspectRatioDetectorProcessor extends ProcessorChainElement {
 
+    private static Logger log = Logger.getLogger(AspectRatioDetectorProcessor.class);
+
     private static final long clipSize = 100000000L;
+
+    private String darPatternS = ".*DAR\\s([0-9]*):([0-9]*).*";
+    private Pattern darPattern = Pattern.compile(darPatternS, Pattern.DOTALL);
 
     /**
      * Detects and sets the display aspect ratio for the program. If there is a single
@@ -37,7 +50,8 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
      * Post-condition: request.getDisplayAspectRatio returns a non-null result.
      *
      * The command line to extract the aspect ratio is like
-     * dd if=mux2.ts bs=1000 count=100000|  vlc - --intf dummy --novideo --noaudio --program 2005 --sout='#std{access=file,mux=ts,dst=-}' | ffmpeg -i - -y  -f mpeg2video /dev/null
+     * dd if=mux2.ts bs=1000 count=100000|  vlc - --intf dummy --novideo --noaudio --program 2005
+     * --sout='#std{access=file,mux=ts,dst=-}' | ffmpeg -i - -y  -f mpeg2video /dev/null
      *
      * @param request
      * @param config
@@ -45,7 +59,48 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        throw new RuntimeException("Not yet implemented");
+        Long blocksize = 1000L;
+        Long blockcount = clipSize/blocksize;
+        String filename = null;
+        int program;
+        Long offset = null;
+
+        if (request.getClips().size() == 1) {
+            TranscodeRequest.FileClip clip = request.getClips().get(0);
+            program = clip.getProgramId();
+            filename = clip.getFilepath();
+            offset = (new File(filename)).length()/2L;
+        } else {
+            TranscodeRequest.FileClip clip = request.getClips().get(1);
+            offset=0L;
+            program = clip.getProgramId();
+            filename = clip.getFilepath();
+        }
+
+        String command = "dd if=" + filename + " "
+                + "bs=" + blocksize + " "
+                + "count=" + blockcount + " "
+                + "skip=" + offset/blocksize + " "
+                + "|vlc - --program=" + program + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                + "--sout '#std{access=file,mux=ts,dst=-}' "
+                + "|ffmpeg -i - -f mpeg2video /dev/null";
+        log.info("Executing '" + command + "'");
+        try {
+            ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
+            log.debug("Command '" + command + "' returned with output '" + runner.getError());
+            log.info("Command '" + command + "' returned with exit code '" + runner.getExitValue() + "'");  
+            Matcher m = darPattern.matcher(runner.getError());
+            if (m.matches()) {
+                String top = m.group(1);
+                String bottom = m.group(2);
+                log.debug("Matched DAR '" + top + ":" + bottom);
+                request.setDisplayAspectRatio(Double.parseDouble(top)/Double.parseDouble(bottom));
+            }
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        } catch (InterruptedException e) {
+            throw new ProcessorException(e);
+        }
 
     }
 }
