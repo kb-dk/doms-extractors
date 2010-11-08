@@ -94,7 +94,9 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
                 String top = m.group(1);
                 String bottom = m.group(2);
                 log.debug("Matched DAR '" + top + ":" + bottom);
-                request.setDisplayAspectRatio(Double.parseDouble(top)/Double.parseDouble(bottom));
+                final double displayAspectRatio = Double.parseDouble(top) / Double.parseDouble(bottom);
+                log.info("Detected aspect ratio '" + displayAspectRatio + "' for '" + request.getPid() + "'");
+                request.setDisplayAspectRatio(displayAspectRatio);
             }
         } catch (IOException e) {
             throw new ProcessorException(e);
