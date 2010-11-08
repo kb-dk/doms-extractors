@@ -37,7 +37,15 @@ public class TranscodeRequest {
      */
     private String pid;
 
+    public Double getDisplayAspectRatio() {
+        return displayAspectRatio;
+    }
 
+    public void setDisplayAspectRatio(Double displayAspectRatio) {
+        this.displayAspectRatio = displayAspectRatio;
+    }
+
+    private Double displayAspectRatio;
 
     private String shard;
 
