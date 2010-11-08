@@ -105,9 +105,11 @@ public class ExtractorApplication {
             ProcessorChainElement estimator = new EstimatorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
             transcoder.setParentElement(demuxer);
             demuxer.setParentElement(estimator);
-            estimator.setParentElement(parser);
+            estimator.setParentElement(aspecter);
+            aspecter.setParentElement(parser);
             parser.setParentElement(fetcher);
             TranscodeRequest request = new TranscodeRequest(uuid);
             request.setPid(uuid);
