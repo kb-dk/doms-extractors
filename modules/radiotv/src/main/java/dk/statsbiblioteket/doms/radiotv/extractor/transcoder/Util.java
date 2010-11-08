@@ -22,6 +22,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
@@ -33,6 +34,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Util {
+
+    private static Logger log = Logger.getLogger(Util.class);
 
     /**
      * Pattern for extracting a uuid of a doms object from url-decoded
@@ -118,6 +121,21 @@ public class Util {
 
     public static File getFinalFinalFile(TranscodeRequest request, ServletConfig config) {
         return new File(getFinalDir(config), getFinalFilename(request));
+    }
+
+    public static void unlockRequest(TranscodeRequest request) {
+        synchronized (request) {
+            if (request.getThePool() != null && request.getLockObject() != null) {
+                try {
+                    log.info("Unlocking request '" + request.getPid() + "' from '" + request.getLockObject() + "'");
+                    request.getThePool().returnObject(request.getLockObject());
+                    request.setLockObject(null);
+                    request.setThePool(null);
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        }
     }
 
 }

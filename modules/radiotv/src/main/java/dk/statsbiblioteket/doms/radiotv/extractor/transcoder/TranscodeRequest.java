@@ -21,6 +21,8 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 import java.net.URL;
 import java.util.List;
 
@@ -32,23 +34,43 @@ import java.util.List;
 public class TranscodeRequest {
 
     /**
+     * By placing references to the lock objects in the TranscodeRequest we can allow the processor
+     * chain to control when it frees the queue for new jobs.
+     */
+    private Object lockObject;
+    private GenericObjectPool thePool;
+
+    /**
      * The pid (uuid) of the program object in DOMS to which this request refers. Must be
      * non-null.
      */
     private String pid;
 
+    public Object getLockObject() {
+        return lockObject;
+    }
     public Double getDisplayAspectRatio() {
         return displayAspectRatio;
     }
 
+    public void setLockObject(Object lockObject) {
+        this.lockObject = lockObject;
+    }
     public void setDisplayAspectRatio(Double displayAspectRatio) {
         this.displayAspectRatio = displayAspectRatio;
+    }
+
+    public GenericObjectPool getThePool() {
+        return thePool;
+    }
+
+    public void setThePool(GenericObjectPool thePool) {
+        this.thePool = thePool;
     }
 
     private Double displayAspectRatio;
 
     private String shard;
-
     private Long totalLengthSeconds;
 
     private Long demuxedFileLengthBytes;

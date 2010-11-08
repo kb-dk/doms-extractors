@@ -58,6 +58,9 @@ public class DemuxerProcessor extends ProcessorChainElement {
             log.warn("Using naive clipping. This is deprecated.");
             naiveClip(request, outputFile);
         }
+        if ("true".equals(config.getInitParameter(Constants.RELEASE_AFTER_DEMUX))) {
+            Util.unlockRequest(request);
+        }
     }
 
     /**

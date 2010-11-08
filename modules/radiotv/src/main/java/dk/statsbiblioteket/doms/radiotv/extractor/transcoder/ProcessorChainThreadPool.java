@@ -23,18 +23,20 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.log4j.Logger;
 
+import javax.servlet.ServletConfig;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.Queue;
 
 public class ProcessorChainThreadPool {
 
-    private static Logger log = Logger.getLogger(ProcessorChainThreadPool.class);
+    private static final Logger log = Logger.getLogger(ProcessorChainThreadPool.class);
 
     /**
      * Singleton instance
@@ -42,15 +44,17 @@ public class ProcessorChainThreadPool {
     private static ProcessorChainThreadPool instance;
     private static LinkedBlockingQueue<ProcessorChainThread> theQueue;
     private static GenericObjectPool thePool;
-    private static int maxActiveProcesses = 2;     //TODO set from setting
+    private static int maxActiveProcesses;
 
     
     
     /**
      * Singleton.
      */
-    private ProcessorChainThreadPool() {
+    private ProcessorChainThreadPool(ServletConfig config) {
         theQueue = new LinkedBlockingQueue<ProcessorChainThread>();
+        maxActiveProcesses = Integer.parseInt(config.getInitParameter(Constants.MAX_ACTIVE_PROCESSING));
+        log.info("Creating thread pool with max active processes = " + maxActiveProcesses);
         thePool = new GenericObjectPool(new BasePoolableObjectFactory() {
             @Override
             public Object makeObject() throws Exception {
@@ -58,16 +62,16 @@ public class ProcessorChainThreadPool {
         }, maxActiveProcesses);
     }
 
-    public static synchronized ProcessorChainThreadPool getInstance() {
+    public static synchronized ProcessorChainThreadPool getInstance(ServletConfig config) {
         if (instance == null) {
-            instance = new ProcessorChainThreadPool();
+            instance = new ProcessorChainThreadPool(config);
             startHarvestingThread();
         }
         return instance;
     }
 
     public static synchronized void addProcessorChainThread(ProcessorChainThread thread) {
-         getInstance();
+         getInstance(thread.getConfig());
          theQueue.add(thread);        
     }
 
@@ -80,7 +84,9 @@ public class ProcessorChainThreadPool {
                          ProcessorChainThread theThread = theQueue.take();
                          try {
                              Object lockObject = thePool.borrowObject();
-                             theThread.setBorrowedObjectAndPool(lockObject, thePool);
+                             theThread.getRequest().setLockObject(lockObject);
+                             theThread.getRequest().setThePool(thePool);
+                             log.info("Locking request '" + theThread.getRequest().getPid() + "' with '" + lockObject +"");
                              theThread.start();
                          } catch (Exception e) {
                              log.error("Unexpected error starting transcoding process", e);

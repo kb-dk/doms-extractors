@@ -33,8 +33,6 @@ public class ProcessorChainThread extends Thread {
     private ProcessorChainElement tailElement;
     private TranscodeRequest request;
     private ServletConfig config;
-    private Object lockObject;
-    private ObjectPool pool;
 
 
 
@@ -46,14 +44,20 @@ public class ProcessorChainThread extends Thread {
         this.config = config;
     }
 
-    /**
-     * Set a lock object and the pool to which it is to be returned when execution finishes
-     * @param object
-     * @param pool
-     */
-    public void setBorrowedObjectAndPool(Object object, ObjectPool pool) {
-        lockObject = object;
-        this.pool = pool;
+    public ServletConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(ServletConfig config) {
+        this.config = config;
+    }
+
+    public TranscodeRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(TranscodeRequest request) {
+        this.request = request;
     }
 
     /**
@@ -71,14 +75,7 @@ public class ProcessorChainThread extends Thread {
             log.error("Processing failed for '" + request.getPid() + "'", e);
             throw new RuntimeException(e);
         } finally {
-            if (lockObject != null && pool != null) {
-                try {
-                    pool.returnObject(lockObject);
-                } catch (Exception e) {
-                    log.error("Error returning object to pool.", e);
-                    throw new RuntimeException("Error returning object to pool.", e);
-                }
-            }
+            Util.unlockRequest(request);
             log.info("Cleaning up after processing '" + request.getPid() + "'");
             ClipStatus.getInstance().remove(request.getPid());
             //TODO cleanup any temporary files. Create error files.
