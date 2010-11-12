@@ -31,6 +31,8 @@ import java.io.IOException;
 
 public class DemuxerProcessor extends ProcessorChainElement {
 
+    private static final int previewHeight = 240;
+
     private static Logger log = Logger.getLogger(DemuxerProcessor.class);
 
     /**
@@ -53,7 +55,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
             throw new ProcessorException("Output file '" + outputFile.getAbsolutePath() + "' already exists. This shouldn't happen");
         }
         if (config.getInitParameter(Constants.DEMUXER_ALGORITHM).equals("seamless")) {
-            seamlessClip(request, outputFile);
+            seamlessClip(request, outputFile, config);
         } else {
             log.warn("Using naive clipping. This is deprecated.");
             naiveClip(request, outputFile);
@@ -71,7 +73,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
      * @param request
      * @param outputFile
      */
-    private void seamlessClip(TranscodeRequest request, File outputFile) throws ProcessorException {
+    private void seamlessClip(TranscodeRequest request, File outputFile, ServletConfig config) throws ProcessorException {
         Long offsetBytes = 0L;
         Long totalLengthBytes = 0L;
         String fileList = "";
@@ -102,10 +104,27 @@ public class DemuxerProcessor extends ProcessorChainElement {
             }
         }
         Long blocksize = 1880L;
-        String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+ /*       String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo " +
-                "--sout '#std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}'";
+                "--sout '#std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}'";*/
+
+        Double aspectRatio = request.getDisplayAspectRatio();
+        String ffmpegResolution = null;
+        if (aspectRatio != null) {
+            long width = Math.round(aspectRatio*previewHeight);
+            if (width%2 == 1) width += 1;
+            ffmpegResolution = " -s " + width + "x" + previewHeight;
+        } else {
+            ffmpegResolution = " -s 320x240";
+        }
+         String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+                + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
+                + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                + "--sout '#duplicate{dst=std{access=file, mux=ts, dst=-},dst=std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}}' |"
+                 + "ffmpeg -i - -b 200 " + ffmpegResolution + " -ar 44100 " + Util.getPreviewFile(request, config);
+
+        
         log.info("Executing '" + clipperCommand + "'");
         try {
             ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});

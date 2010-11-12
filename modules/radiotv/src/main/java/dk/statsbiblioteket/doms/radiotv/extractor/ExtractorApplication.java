@@ -61,7 +61,7 @@ public class ExtractorApplication {
             } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
                 return "seamless";
             } else if (s.equals(Constants.HANDBRAKE_PARAMETERS)) {
-                return "  -r 24 -e x264 -E faac --crop 0:0:0:0 --height 240 ";
+                return "  -r 24 -e x264 -E faac --crop 0:0:0:0 -d ";
             } else if (s.equals(Constants.X264_PARAMETERS)) {
                 return " -x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000  ";
             } else if (s.equals(Constants.VIDEO_BITRATE)) {

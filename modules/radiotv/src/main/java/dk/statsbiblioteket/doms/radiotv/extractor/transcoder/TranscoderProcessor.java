@@ -39,6 +39,19 @@ public class TranscoderProcessor extends ProcessorChainElement {
     private static Logger log = Logger.getLogger(TranscoderProcessor.class);
 
     /**
+     * Height in pixels for all
+     */
+    private static int height = 240;
+
+    /**
+     * Fallback value if automatic aspect-ratio determination fails
+     */
+    private static int fallbackWidth = 320;
+
+    //TODO move the above fields to init parameters
+
+
+    /**
      * Transcodes the file to a streamable mp4.
      * Pre-requisite: the request-pid refers to a file which is ready for transcoding
      * Side-effect: the final output directory is created if necessary.
@@ -48,19 +61,29 @@ public class TranscoderProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
-        //TODO move to Util class
-        String tempDirName = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
-        String finalDirName = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
-        File tempDir = new File(tempDirName);
-        File finalDir = new File(finalDirName);
+        File finalDir = Util.getFinalDir(config);
         if (!finalDir.exists()) finalDir.mkdirs();
-        File inputFile = new File(tempDir, Util.getDemuxFilename(request));
-        File finalTempFile = new File(tempDir, Util.getFinalFilename(request));
-        File finalFinalFile = new File(finalDir, finalTempFile.getName());
+        File inputFile = Util.getDemuxFile(request, config);
+        File finalTempFile = Util.getIntialFinalFile(request, config);
+        File finalFinalFile = Util.getFinalFinalFile(request, config);
+        Double aspectRatio = request.getDisplayAspectRatio();
+        String aspectHandbrake = null;
+        if (aspectRatio != null) {
+            //todo check if we need to explicitly set the pixel aspect ratio to 1
+            long width = Math.round(aspectRatio * height);
+            if (width%2 == 1) {
+                width += 1;
+            }
+            aspectHandbrake = " -l " + height + " -w " + width + " ";
+        } else {
+            aspectHandbrake = " --loose-anamorphic -w " + fallbackWidth + " ";
+            log.warn("Using default values for aspect ratio: '" + aspectHandbrake + "'");
+        }
         String command = "HandBrakeCLI -i " + inputFile.getAbsolutePath() +
                 " " + config.getInitParameter(Constants.HANDBRAKE_PARAMETERS) + " " +
                 " --vb " + config.getInitParameter(Constants.VIDEO_BITRATE) + " " +
-                " --ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + " " +                
+                " --ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + " " +
+                aspectHandbrake +
                 " " + config.getInitParameter(Constants.X264_PARAMETERS) + " -o " +               
                 finalTempFile.getAbsolutePath();
         log.info("Executing '" + command + "'");

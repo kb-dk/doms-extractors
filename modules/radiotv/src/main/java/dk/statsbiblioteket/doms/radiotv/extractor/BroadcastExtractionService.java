@@ -56,11 +56,13 @@ public class BroadcastExtractionService {
             ProcessorChainElement transcoder = new TranscoderProcessor();
             ProcessorChainElement demuxer = new DemuxerProcessor();
             ProcessorChainElement estimator = new EstimatorProcessor();
+            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             ProcessorChainElement fetcher = new ShardFetcherProcessor();
             transcoder.setParentElement(demuxer);
             demuxer.setParentElement(estimator);
-            estimator.setParentElement(parser);
+            estimator.setParentElement(aspecter);
+            aspecter.setParentElement(parser);
             parser.setParentElement(fetcher);
             ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
             thread.start();

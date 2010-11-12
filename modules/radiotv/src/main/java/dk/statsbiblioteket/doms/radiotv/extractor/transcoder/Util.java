@@ -123,6 +123,10 @@ public class Util {
         return new File(getFinalDir(config), getFinalFilename(request));
     }
 
+    public static File getPreviewFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getFinalDir(config), request.getPid() + ".flv");
+    }
+
     public static void unlockRequest(TranscodeRequest request) {
         synchronized (request) {
             if (request.getThePool() != null && request.getLockObject() != null) {

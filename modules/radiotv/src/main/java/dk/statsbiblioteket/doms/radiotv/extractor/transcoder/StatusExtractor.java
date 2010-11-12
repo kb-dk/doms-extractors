@@ -72,6 +72,11 @@ public class StatusExtractor {
             completionPercentage = Math.min(completionPercentage, 99.5);
             status.setCompletionPercentage(completionPercentage);
             status.setStatus(ObjectStatusEnum.STARTED);
+            File previewFile = Util.getPreviewFile(request, config);
+            if (previewFile.exists() && previewFile.length() > 0) {
+                status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+                status.setPreviewStreamId("flv:" + previewFile.getName());
+            }
             return status;
         } else return null;
         //TODO look for error conditions - specifically files in the error directory

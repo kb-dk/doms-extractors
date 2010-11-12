@@ -32,6 +32,7 @@ public class ObjectStatus {
     protected Double completionPercentage;
     protected String serviceUrl;
     protected String streamId;
+    protected String previewStreamId;
 
     public String getServiceUrl() {
         return serviceUrl;
@@ -39,6 +40,14 @@ public class ObjectStatus {
 
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
+    }
+
+    public String getPreviewStreamId() {
+        return previewStreamId;
+    }
+
+    public void setPreviewStreamId(String previewStreamId) {
+        this.previewStreamId = previewStreamId;
     }
 
     public String getStreamId() {
