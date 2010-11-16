@@ -60,7 +60,13 @@ public class TranscoderProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        switch (request.getClipType()) {
+            case MUX:
+            transcodeMux(request, config);
+        }
+    }
 
+    private void transcodeMux(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         File finalDir = Util.getFinalDir(config);
         if (!finalDir.exists()) finalDir.mkdirs();
         File inputFile = Util.getDemuxFile(request, config);
@@ -84,7 +90,7 @@ public class TranscoderProcessor extends ProcessorChainElement {
                 " --vb " + config.getInitParameter(Constants.VIDEO_BITRATE) + " " +
                 " --ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + " " +
                 aspectHandbrake +
-                " " + config.getInitParameter(Constants.X264_PARAMETERS) + " -o " +               
+                " " + config.getInitParameter(Constants.X264_PARAMETERS) + " -o " +
                 finalTempFile.getAbsolutePath();
         log.info("Executing '" + command + "'");
         try {
@@ -104,11 +110,11 @@ public class TranscoderProcessor extends ProcessorChainElement {
         } catch (IOException e) {
             throw new ProcessorException(e);
         }
-       try {
-            log.info("Deploying final output to '" + finalFinalFile.getAbsolutePath() + "'");
-            Files.move(finalTempFile, finalFinalFile);
-        } catch (Exception e) {
-            throw new ProcessorException(e);
-        }
+        try {
+             log.info("Deploying final output to '" + finalFinalFile.getAbsolutePath() + "'");
+             Files.move(finalTempFile, finalFinalFile);
+         } catch (Exception e) {
+             throw new ProcessorException(e);
+         }
     }
 }

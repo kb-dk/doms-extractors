@@ -37,9 +37,23 @@ public class AspectRatioDetectorProcessorTest extends TestCase {
         clip1.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(clip1));
+        request.setClipType(ClipTypeEnum.MUX);
         (new AspectRatioDetectorProcessor()).process(request, null);
         assertTrue(request.getDisplayAspectRatio()>1.7);
         assertTrue(request.getDisplayAspectRatio()<1.8);
+    }
+
+
+     public void testProcessThisMpeg() throws ProcessorException {
+        String mpegfile = "./muxdata/testdata_mpeg1_testdata.mpeg";
+        assertTrue("Test file should exist: " + (new File(mpegfile)).getAbsolutePath(), (new File(mpegfile)).exists());
+        TranscodeRequest.FileClip clip1 = new TranscodeRequest.FileClip(mpegfile);
+        TranscodeRequest request = new TranscodeRequest("foobar");
+         request.setClipType(ClipTypeEnum.MPEG1);
+        request.setClips(Arrays.asList(clip1));
+        (new AspectRatioDetectorProcessor()).process(request, null);
+        assertTrue(request.getDisplayAspectRatio()>1.8);
+        assertTrue(request.getDisplayAspectRatio()<1.82);
     }
 
 }

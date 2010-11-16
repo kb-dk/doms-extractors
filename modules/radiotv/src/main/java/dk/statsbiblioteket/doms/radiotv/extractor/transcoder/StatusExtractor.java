@@ -46,28 +46,18 @@ public class StatusExtractor {
         String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
-        // Replace with calls to Util methods
-        String finalFileName = Util.getFinalFilename(request);
-        String finalDir = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
-        boolean isDone = (new File(finalDir, finalFileName)).exists();
+        boolean isDone = Util.getIsDone(config, request);
         if (isDone) {
             log.debug("Found already fully ready result for '" + uuid + "'");
             ObjectStatus status = new ObjectStatus();
             status.setStatus(ObjectStatusEnum.DONE);
-            status.setStreamId("mp4:"+finalFileName);
+            status.setStreamId(Util.getStreamId(request, config));
             status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
             return status;
         } else if (ClipStatus.getInstance().isKnown(uuid)) {
             log.debug("Already started transcoding '" + uuid + "'");
             request = ClipStatus.getInstance().get(uuid);
-            double completionPercentage = 0.0;
-            File tempFinalFile = new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM), finalFileName);
-            File demuxFile = new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM), Util.getDemuxFilename(request));
-            if (tempFinalFile.exists()) {
-                completionPercentage = 100*(demuxWeight + (1.0-demuxWeight)*tempFinalFile.length()/request.getFinalFileLengthBytes());
-            } else if (demuxFile.exists()) {
-                completionPercentage = 100*(demuxWeight*demuxFile.length()/request.getDemuxedFileLengthBytes());
-            }
+            double completionPercentage = getCompletionPercentage(config, request);
             ObjectStatus status = new ObjectStatus();
             completionPercentage = Math.min(completionPercentage, 99.5);
             status.setCompletionPercentage(completionPercentage);
@@ -77,9 +67,45 @@ public class StatusExtractor {
                 status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
                 status.setPreviewStreamId("flv:" + previewFile.getName());
             }
+            if (completionPercentage == 0.0) {
+                status.setPositionInQueue(getQueuePosition(request, config));
+            }
             return status;
         } else return null;
         //TODO look for error conditions - specifically files in the error directory
+    }
+
+    private static int getQueuePosition(TranscodeRequest request, ServletConfig config) {
+        return ProcessorChainThreadPool.getInstance(config).getPosition(request);
+    }
+
+    private static double getCompletionPercentage(ServletConfig config, TranscodeRequest request) throws ProcessorException {
+        double completionPercentage = 0.0;
+        File tempFinalFile = Util.getIntialFinalFile(request, config);
+        File demuxFile = Util.getDemuxFile(request, config);
+        File flashFile = Util.getPreviewFile(request, config);
+        switch (request.getClipType()) {
+            case MUX:
+                if (tempFinalFile.exists()) {
+                    completionPercentage = 100*(demuxWeight + (1.0-demuxWeight)*tempFinalFile.length()/request.getFinalFileLengthBytes());
+                } else if (demuxFile.exists()) {
+                    completionPercentage = 100*demuxWeight*Math.min(1.0,demuxFile.length()/(request.getDemuxedFileLengthBytes()));
+                }
+                break;
+            case MPEG1:
+                if (flashFile.exists()) {
+                completionPercentage = 100*flashFile.length()/request.getFinalFileLengthBytes();
+                };
+                break;
+            case MPEG2:
+                if (flashFile.exists()) {
+                completionPercentage = 100*flashFile.length()/request.getFinalFileLengthBytes();
+                };
+                break;
+            case WAV:
+                throw new ProcessorException("not implemented");
+        }
+        return completionPercentage;
     }
 
 }

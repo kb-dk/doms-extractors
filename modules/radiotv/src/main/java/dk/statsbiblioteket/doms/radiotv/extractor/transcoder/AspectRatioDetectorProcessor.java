@@ -62,7 +62,7 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
         Long blocksize = 1000L;
         Long blockcount = clipSize/blocksize;
         String filename = null;
-        int program;
+        Integer program;
         Long offset = null;
 
         if (request.getClips().size() == 1) {
@@ -76,19 +76,42 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
             program = clip.getProgramId();
             filename = clip.getFilepath();
         }
+        String command = null;
+        switch(request.getClipType()) {
+            case MUX:
+                command = "dd if=" + filename + " "
+                        + "bs=" + blocksize + " "
+                        + "count=" + blockcount + " "
+                        + "skip=" + offset/blocksize + " "
+                        + "|vlc - " +  " --program=" + program + " "
+                        + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                        + "--sout '#std{access=file,mux=ts,dst=-}' "
+                        + "|ffmpeg -i - -f mpeg2video /dev/null";
+                break;
+            case MPEG1:
+                command = "dd if=" + filename + " "
+                        + "bs=" + blocksize + " "
+                        + "count=" + blockcount + " "
+                        + "skip=" + offset/blocksize + " "
+                        + "| ffmpeg -i - -f mpeg2video /dev/null";
+                break;
+            case MPEG2:
+                command = "dd if=" + filename + " "
+                        + "bs=" + blocksize + " "
+                        + "count=" + blockcount + " "
+                        + "skip=" + offset/blocksize + " "
+                        + "| ffmpeg -i - -f mpeg2video /dev/null";
+                break;
+            case WAV:
+                throw new ProcessorException("radio transcoding not yet supported");
+                //break;
+        }
 
-        String command = "dd if=" + filename + " "
-                + "bs=" + blocksize + " "
-                + "count=" + blockcount + " "
-                + "skip=" + offset/blocksize + " "
-                + "|vlc - --program=" + program + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                + "--sout '#std{access=file,mux=ts,dst=-}' "
-                + "|ffmpeg -i - -f mpeg2video /dev/null";
         log.info("Executing '" + command + "'");
         try {
             ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
             log.debug("Command '" + command + "' returned with output '" + runner.getError());
-            log.info("Command '" + command + "' returned with exit code '" + runner.getExitValue() + "'");  
+            log.info("Command '" + command + "' returned with exit code '" + runner.getExitValue() + "'");
             Matcher m = darPattern.matcher(runner.getError());
             if (m.matches()) {
                 String top = m.group(1);

@@ -46,6 +46,16 @@ public class TranscodeRequest {
      */
     private String pid;
 
+    private ClipTypeEnum clipType;
+
+    public ClipTypeEnum getClipType() {
+        return clipType;
+    }
+
+    public void setClipType(ClipTypeEnum clipType) {
+        this.clipType = clipType;
+    }
+
     public Object getLockObject() {
         return lockObject;
     }

@@ -52,23 +52,6 @@ public class Util {
     }
 
     /**
-     * Get the bitrate in bytes per second from the filename.
-     * @param filename
-     * @return
-     */
-    public static Long getBitrate(String filename) {
-          if (filename.startsWith("mux")) {
-              return 2488237L;
-          } else if (filename.contains("_mpeg1_")) {
-              return 169242L;
-          }  else if (filename.contains("_mpeg2_")) {
-              return 872254L;
-          }  else if (filename.contains("_wav_")) {
-              return 88200L;
-          } else return null;
-    }
-
-    /**
      * Gets the uuid from a shard url
      * @param shardUrl
      * @return
@@ -142,4 +125,34 @@ public class Util {
         }
     }
 
+    static String getStreamId(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+         switch (request.getClipType()) {
+                 case MUX:
+                     return "mp4:" + getFinalFilename(request);
+                 case MPEG1:
+                     return "flv:" + getPreviewFile(request, config).getName();
+                 case MPEG2:
+                     return "flv:" + getPreviewFile(request, config).getName();
+                 case WAV:
+                     throw new ProcessorException("not implemented");
+            }
+        return null;
+    }
+
+    static boolean getIsDone(ServletConfig config, TranscodeRequest request) throws ProcessorException {
+        File flashFile = getPreviewFile(request, config);
+        ClipTypeEnum clipType = ClipTypeEnum.getType(request);
+        String uuid = request.getPid();
+        switch (clipType) {
+            case MUX:
+                return getFinalFinalFile(request, config).exists();
+            case MPEG1:
+                return (flashFile.exists()) && !ClipStatus.getInstance().isKnown(uuid);
+            case MPEG2:
+                return (flashFile.exists()) && !ClipStatus.getInstance().isKnown(uuid);
+            case WAV:
+                throw new ProcessorException("WAV transcoding not yet implemented");
+        }
+        return false;
+    }
 }

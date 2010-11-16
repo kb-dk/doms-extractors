@@ -45,25 +45,64 @@ public class DemuxerProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
-        //TODO create utility methods to get temp & final file objects
-        String outputDir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
-        String fileName = Util.getDemuxFilename(request);
-        File outputDirFile = new File(outputDir);
-        outputDirFile.mkdirs();
-        File outputFile = new File(outputDir, fileName);
-        if (outputFile.exists()) {
-            throw new ProcessorException("Output file '" + outputFile.getAbsolutePath() + "' already exists. This shouldn't happen");
+        createTempDirectory(request, config);
+
+        switch (request.getClipType()) {
+            case MUX:
+                if (config.getInitParameter(Constants.DEMUXER_ALGORITHM).equals("seamless")) {
+                    seamlessClip(request, config);
+                } else {
+                    log.warn("Using naive clipping. This is deprecated.");
+                    naiveClip(request, config);
+                }
+                break;
+             case MPEG1:
+                 mpegClip(request, config);
+                 break;
+             case MPEG2:
+                 mpegClip(request, config);
+                 break;
+             case WAV:
+                 throw new ProcessorException("WAV clipping not yet implemented");
         }
-        if (config.getInitParameter(Constants.DEMUXER_ALGORITHM).equals("seamless")) {
-            seamlessClip(request, outputFile, config);
-        } else {
-            log.warn("Using naive clipping. This is deprecated.");
-            naiveClip(request, outputFile);
-        }
+
+
         if ("true".equals(config.getInitParameter(Constants.RELEASE_AFTER_DEMUX))) {
             Util.unlockRequest(request);
         }
     }
+
+    private void createTempDirectory(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        String outputDir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
+        File outputDirFile = new File(outputDir);
+        if (outputDirFile.mkdirs()) {
+            log.info("Created directory '" + outputDirFile.getAbsolutePath() + "'");
+        }
+        File outputFile = Util.getDemuxFile(request, config);
+        if (outputFile.exists()) {
+            throw new ProcessorException("Output file '" + outputFile.getAbsolutePath() + "' already exists. This shouldn't happen");
+        }
+    }
+
+    private void mpegClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        File outputFile = Util.getPreviewFile(request, config);
+        long blocksize = 1880L;
+        final int clipSize = request.getClips().size();
+        if (clipSize > 1) throw new ProcessorException("Haven't implemented mpeg mulitclipping yet");
+        TranscodeRequest.FileClip clip = request.getClips().get(0);
+        String start = "";
+        if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) start = "skip=" + clip.getStartOffsetBytes()/blocksize;
+        String length = "";
+        if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + clip.getClipLength()/blocksize;
+        String command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "|ffmpeg -i - "
+                + " -ar 44100 -f flv -vcodec flv -y "
+                + " " + getFfmpegAspectRatio(request) + " "
+                + " " + "-b 200000 -ab 96000 -g 160 -cmp dct -subcmp dct -mbd 2 -flags +aic+cbp+mv0+mv4 -trellis 1 -ac 1 -deinterlace " + " "
+                + outputFile.getAbsolutePath();
+        runClipperCommand(command);
+    }
+
+
 
     /**
      * Seamless clipping works by concatenating all the files first and then cutting the concatenated
@@ -71,9 +110,9 @@ public class DemuxerProcessor extends ProcessorChainElement {
      * first and that the length is equal to the file length minus startOffset for the first clip and
      * then zero for every clip but the last. These constraints are not checked.
      * @param request
-     * @param outputFile
      */
-    private void seamlessClip(TranscodeRequest request, File outputFile, ServletConfig config) throws ProcessorException {
+    private void seamlessClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        File outputFile = Util.getDemuxFile(request, config);
         Long offsetBytes = 0L;
         Long totalLengthBytes = 0L;
         String fileList = "";
@@ -104,27 +143,23 @@ public class DemuxerProcessor extends ProcessorChainElement {
             }
         }
         Long blocksize = 1880L;
- /*       String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
-                + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
-                + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo " +
-                "--sout '#std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}'";*/
+        /*       String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+   + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
+   + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo " +
+   "--sout '#std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}'";*/
 
-        Double aspectRatio = request.getDisplayAspectRatio();
-        String ffmpegResolution = null;
-        if (aspectRatio != null) {
-            long width = Math.round(aspectRatio*previewHeight);
-            if (width%2 == 1) width += 1;
-            ffmpegResolution = " -s " + width + "x" + previewHeight;
-        } else {
-            ffmpegResolution = " -s 320x240";
-        }
-         String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+        String ffmpegResolution = getFfmpegAspectRatio(request);
+        String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                 + "--sout '#duplicate{dst=std{access=file, mux=ts, dst=-},dst=std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}}' |"
-                 + "ffmpeg -i - -b 200 " + ffmpegResolution + " -ar 44100 " + Util.getPreviewFile(request, config);
+                + "ffmpeg -i - -b 200 " + ffmpegResolution + " -ar 44100 " + Util.getPreviewFile(request, config);
 
-        
+
+        runClipperCommand(clipperCommand);
+    }
+
+    private void runClipperCommand(String clipperCommand) throws ProcessorException {
         log.info("Executing '" + clipperCommand + "'");
         try {
             ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
@@ -140,7 +175,21 @@ public class DemuxerProcessor extends ProcessorChainElement {
         }
     }
 
-    private void naiveClip(TranscodeRequest request, File outputFile) throws ProcessorException {
+    private String getFfmpegAspectRatio(TranscodeRequest request) {
+        Double aspectRatio = request.getDisplayAspectRatio();
+        String ffmpegResolution = null;
+        if (aspectRatio != null) {
+            long width = Math.round(aspectRatio*previewHeight);
+            if (width%2 == 1) width += 1;
+            ffmpegResolution = " -s " + width + "x" + previewHeight;
+        } else {
+            ffmpegResolution = " -s 320x240";
+        }
+        return ffmpegResolution;
+    }
+
+    private void naiveClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        File outputFile = Util.getDemuxFile(request, config);
         boolean firstClip = true;
         for (TranscodeRequest.FileClip clip: request.getClips()) {
             String command = getClipperCommand(clip, firstClip, outputFile.getAbsolutePath());

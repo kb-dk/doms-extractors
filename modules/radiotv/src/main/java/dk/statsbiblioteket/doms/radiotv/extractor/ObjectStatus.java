@@ -33,6 +33,15 @@ public class ObjectStatus {
     protected String serviceUrl;
     protected String streamId;
     protected String previewStreamId;
+    protected int positionInQueue;
+
+    public int getPositionInQueue() {
+        return positionInQueue;
+    }
+
+    public void setPositionInQueue(int positionInQueue) {
+        this.positionInQueue = positionInQueue;
+    }
 
     public String getServiceUrl() {
         return serviceUrl;

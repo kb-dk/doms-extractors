@@ -43,13 +43,16 @@ public class EstimatorProcessor extends ProcessorChainElement {
         Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
         Integer videoBitrate = Integer.parseInt(config.getInitParameter(Constants.VIDEO_BITRATE));
         //The above rates are kilobit/second
+        //TODO unfortunately these values cannot be trusted for flash video
         Long finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;
         request.setFinalFileLengthBytes(finalFileSizeBytes);
-        int demuxedBitrate = 0;
-        if (request.getClips().get(0).getProgramId() == 2030) {
-            demuxedBitrate = 4974;
-        } else {
-            demuxedBitrate = 3766;
+        int demuxedBitrate = 0;        
+        if (request.getClipType().equals(ClipTypeEnum.MUX)) {
+            if (request.getClips().get(0).getProgramId() == 2030) {
+                demuxedBitrate = 4974;
+            } else {
+                demuxedBitrate = 3766;
+            }
         }
         Long demuxedFileSize = request.getTotalLengthSeconds()*demuxedBitrate*1000L/8L;
         request.setDemuxedFileLengthBytes(demuxedFileSize);

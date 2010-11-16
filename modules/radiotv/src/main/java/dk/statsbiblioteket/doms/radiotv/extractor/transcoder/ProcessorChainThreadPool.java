@@ -30,6 +30,7 @@ import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.Queue;
@@ -98,6 +99,15 @@ public class ProcessorChainThreadPool {
                  }
              }
          }.start();
+    }
+
+    public int getPosition(TranscodeRequest request) {
+        Iterator<ProcessorChainThread> threads = theQueue.iterator();
+        int position = 0;
+        while (threads.hasNext()) {
+            position++;
+            if (threads.next().getRequest().getPid().equals(request.getPid())) return position;
+        } return 0;
     }
 
 }

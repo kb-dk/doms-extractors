@@ -105,7 +105,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
         }
     }
 
-    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, ProcessorException {
         Long totalLengthSeconds = 0L;
         String locatorClassName = config.getInitParameter(Constants.FILE_LOCATOR_CLASS);
         Class locatorClass = Class.forName(locatorClassName);
@@ -128,7 +128,8 @@ public class ShardParserProcessor extends ProcessorChainElement {
             String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
             String filePath = finder.getFilePath(fileName, config);
             TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
-            Long bitRate = Util.getBitrate(fileName);
+            request.setClipType(ClipTypeEnum.getType(request));
+            Long bitRate = request.getClipType().getBitrate();
             Long startSeconds = null;
             Long lengthSeconds = null;
             if (startOffset != null && !"".equals(startOffset)) {
@@ -159,6 +160,8 @@ public class ShardParserProcessor extends ProcessorChainElement {
         }
         request.setClips(clips);
         request.setTotalLengthSeconds(totalLengthSeconds);
+        request.setClipType(ClipTypeEnum.getType(request));
+
         log.debug("Total length set to '" + request.getTotalLengthSeconds() + "'");
     }
 

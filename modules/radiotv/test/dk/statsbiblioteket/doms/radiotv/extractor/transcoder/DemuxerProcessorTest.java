@@ -35,9 +35,12 @@ import java.util.Enumeration;
 public class DemuxerProcessorTest extends TestCase {
 
     private File tempdir = new File("./tempdir");
+    private File outdir = new File("./outdir");
 
     public void setUp() throws IOException {
         if (tempdir.exists()) Files.delete(tempdir);
+        if (outdir.exists()) Files.delete(outdir);
+        outdir.mkdirs();
         //TODO: check if source file exists and download by ftp if it doesn't
     }
 
@@ -45,7 +48,7 @@ public class DemuxerProcessorTest extends TestCase {
         //if (tempdir.exists()) Files.delete(tempdir);
     }
 
-    public void testProcessSeamless() throws ProcessorException {
+    public void testProcessSeamlessMux() throws ProcessorException {
 
         ServletConfig config = new ServletConfig(){
             public String getServletName() {
@@ -59,6 +62,8 @@ public class DemuxerProcessorTest extends TestCase {
                      return "./tempdir";
                  } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
                      return "seamless";
+                 } else if (s.equals(Constants.FINAL_DIR_INIT_PARAM)) {
+                     return "./outdir" ;
                  }
                  else return null;
             }
@@ -77,12 +82,52 @@ public class DemuxerProcessorTest extends TestCase {
         clip3.setClipLength(500000000L);
         clip3.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
+        request.setClipType(ClipTypeEnum.MUX);
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
         (new DemuxerProcessor()).process(request, config);
         File outputFile = new File(tempdir, "foobar_first.ts");
         assertTrue(outputFile.exists());
         assertTrue(outputFile.length() > 1000000L);
     }
+
+    public void testProcessMpeg1() throws ProcessorException {
+        ServletConfig config = new ServletConfig(){
+            public String getServletName() {
+                return null;
+            }
+            public ServletContext getServletContext() {
+                return null;
+            }
+            public String getInitParameter(String s) {
+                if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
+                    return "./tempdir";
+                } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
+                    return "seamless";
+                } else if (s.equals(Constants.FINAL_DIR_INIT_PARAM)) {
+                    return "./outdir" ;
+                }
+                else return null;
+            }
+            public Enumeration<String> getInitParameterNames() {
+                return null;
+            }
+        };
+
+        int desiredLengthMinutes = 3;
+        String mpegfile = "./muxdata/testdata_mpeg1_testdata.mpeg";
+        TranscodeRequest request = new TranscodeRequest("foobar");
+        request.setClipType(ClipTypeEnum.MPEG1);
+        request.setDisplayAspectRatio(1.8);
+        TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(mpegfile);
+        clip.setStartOffsetBytes(1000000000L);
+        clip.setClipLength(request.getClipType().getBitrate()*desiredLengthMinutes*60L);
+        request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip}));
+        (new DemuxerProcessor()).process(request, config);
+        File outputFile = Util.getPreviewFile(request, config);
+        assertTrue("Output flash file exists", outputFile.exists());
+        assertTrue("File has reasonable length", outputFile.length() > 1000000L);
+    }
+
 
     public void testProcessNaive() throws ProcessorException {
 
@@ -117,6 +162,7 @@ public class DemuxerProcessorTest extends TestCase {
         clip3.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
+        request.setClipType(ClipTypeEnum.MUX);
         (new DemuxerProcessor()).process(request, config);
         File outputFile = new File(tempdir, "foobar_first.ts");
         assertTrue(outputFile.exists());
@@ -154,6 +200,7 @@ public class DemuxerProcessorTest extends TestCase {
         clip3.setClipLength(500000000L);
         clip3.setProgramId(2005);
         TranscodeRequest request = new TranscodeRequest("foobar");
+        request.setClipType(ClipTypeEnum.MUX);        
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
         ProcessorChainElement first = new DemuxerProcessor();
         ProcessorChainElement second = new TranscoderProcessor();
