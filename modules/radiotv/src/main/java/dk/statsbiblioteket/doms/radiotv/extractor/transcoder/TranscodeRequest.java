@@ -48,6 +48,16 @@ public class TranscodeRequest {
 
     private ClipTypeEnum clipType;
 
+    private boolean flashIsDone = false;
+
+    public boolean isFlashIsDone() {
+        return flashIsDone;
+    }
+
+    public void setFlashIsDone(boolean flashIsDone) {
+        this.flashIsDone = flashIsDone;
+    }
+
     public ClipTypeEnum getClipType() {
         return clipType;
     }

@@ -74,7 +74,11 @@ public class ProcessorChainThread extends Thread {
         } catch (ProcessorException e) {
             log.error("Processing failed for '" + request.getPid() + "'", e);
             throw new RuntimeException(e);
-        } finally {
+        } catch (Exception e) {
+            log.error("Processing failed for '" + request.getPid() + "'", e);
+            throw new RuntimeException(e);
+        }
+        finally {
             Util.unlockRequest(request);
             log.info("Cleaning up after processing '" + request.getPid() + "'");
             ClipStatus.getInstance().remove(request.getPid());

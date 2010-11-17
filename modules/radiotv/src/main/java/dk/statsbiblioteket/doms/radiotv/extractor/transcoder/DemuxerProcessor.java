@@ -49,21 +49,19 @@ public class DemuxerProcessor extends ProcessorChainElement {
 
         switch (request.getClipType()) {
             case MUX:
-                if (config.getInitParameter(Constants.DEMUXER_ALGORITHM).equals("seamless")) {
-                    seamlessClip(request, config);
-                } else {
-                    log.warn("Using naive clipping. This is deprecated.");
-                    naiveClip(request, config);
-                }
+                seamlessClip(request, config);
+                request.setFlashIsDone(true);
                 break;
-             case MPEG1:
-                 mpegClip(request, config);
-                 break;
-             case MPEG2:
-                 mpegClip(request, config);
-                 break;
-             case WAV:
-                 throw new ProcessorException("WAV clipping not yet implemented");
+            case MPEG1:
+                mpegClip(request, config);
+                request.setFlashIsDone(true);
+                break;
+            case MPEG2:
+                mpegClip(request, config);
+                request.setFlashIsDone(true);
+                break;
+            case WAV:
+                throw new ProcessorException("WAV clipping not yet implemented");
         }
 
 
@@ -153,7 +151,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                 + "--sout '#duplicate{dst=std{access=file, mux=ts, dst=-},dst=std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}}' |"
-                + "ffmpeg -i - -b 200 " + ffmpegResolution + " -ar 44100 " + Util.getPreviewFile(request, config);
+                + "ffmpeg -i - -b 200000 -async 2 -vcodec libx264 -vpre libx264-superfast -ab 96000 -deinterlace " + ffmpegResolution + " -ar 44100 " + Util.getPreviewFile(request, config);
 
 
         runClipperCommand(clipperCommand);

@@ -111,6 +111,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
         Class locatorClass = Class.forName(locatorClassName);
         MediafileFinder finder = (MediafileFinder) locatorClass.getConstructor().newInstance();
         List<TranscodeRequest.FileClip> clips = new ArrayList<TranscodeRequest.FileClip>();
+        request.setClips(clips);
         DocumentBuilder builder = null;
         Document shardMetadataDocument = null;
         XPathFactory xpathFactory = XPathFactory.newInstance();
@@ -128,6 +129,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
             String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
             String filePath = finder.getFilePath(fileName, config);
             TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
+            clips.add(clip);
             request.setClipType(ClipTypeEnum.getType(request));
             Long bitRate = request.getClipType().getBitrate();
             Long startSeconds = null;
@@ -151,14 +153,14 @@ public class ShardParserProcessor extends ProcessorChainElement {
 
             }
             if (startSeconds == 0) clip.setStartOffsetBytes(null);
-            if (startSeconds + lengthSeconds == 3600 && fileName.startsWith("mux")) clip.setClipLength(null);
+            if (startSeconds != null && lengthSeconds != null && startSeconds + lengthSeconds == 3600 && fileName.startsWith("mux")) {
+                clip.setClipLength(null);
+            }
             if (channelIdString != null && !"".equals(channelIdString)) {
                 clip.setProgramId(Integer.parseInt(channelIdString));
             }
-            clips.add(clip);
             log.debug("Added a clip '" + clip + "'");
         }
-        request.setClips(clips);
         request.setTotalLengthSeconds(totalLengthSeconds);
         request.setClipType(ClipTypeEnum.getType(request));
 

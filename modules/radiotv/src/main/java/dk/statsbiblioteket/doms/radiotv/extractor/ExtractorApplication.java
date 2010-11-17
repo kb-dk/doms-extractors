@@ -55,7 +55,7 @@ public class ExtractorApplication {
             }  else if (s.equals(Constants.FILE_LOCATOR_URL)) {
                 return "http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?";
             } else if (s.equals(Constants.FINAL_DIR_INIT_PARAM)) {
-                return "./output";
+                return "/home/larm/streamingContent";
             } else if (s.equals(Constants.TEMP_DIR_INIT_PARAM)) {
                 return "./tempdir";
             } else if (s.equals(Constants.DEMUXER_ALGORITHM)) {
@@ -93,29 +93,47 @@ public class ExtractorApplication {
 
     /**
      * Command line argument to test extraction of programs
-     * @param args a list of uuid'er of programs to fetch
+     * @param args a list of uuid'er of programs to fetch or .xml files containing shard data
 
      */
     public static void main(String[] args) throws IOException {
        log.info("Starting extraction");
-        for (String uuid: args) {
-            log.info("Starting process for '" + uuid + "'");
-            ProcessorChainElement transcoder = new TranscoderProcessor();
-            ProcessorChainElement demuxer = new DemuxerProcessor();
-            ProcessorChainElement estimator = new EstimatorProcessor();
-            ProcessorChainElement parser = new ShardParserProcessor();
-            ProcessorChainElement fetcher = new ShardFetcherProcessor();
-            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
-            transcoder.setParentElement(demuxer);
-            demuxer.setParentElement(estimator);
-            estimator.setParentElement(aspecter);
-            aspecter.setParentElement(parser);
-            parser.setParentElement(fetcher);
-            TranscodeRequest request = new TranscodeRequest(uuid);
-            request.setPid(uuid);
-            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-            //thread.run();
-            ProcessorChainThreadPool.addProcessorChainThread(thread);
+        for (String arg: args) {
+            log.info("Starting process for '" + arg + "'");
+            if (arg.startsWith("http")) {
+                ProcessorChainElement transcoder = new TranscoderProcessor();
+                ProcessorChainElement demuxer = new DemuxerProcessor();
+                ProcessorChainElement estimator = new EstimatorProcessor();
+                ProcessorChainElement parser = new ShardParserProcessor();
+                ProcessorChainElement fetcher = new ShardFetcherProcessor();
+                ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+                transcoder.setParentElement(demuxer);
+                demuxer.setParentElement(estimator);
+                estimator.setParentElement(aspecter);
+                aspecter.setParentElement(parser);
+                parser.setParentElement(fetcher);
+                TranscodeRequest request = new TranscodeRequest(arg);
+                request.setPid(arg);
+                ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+                ProcessorChainThreadPool.addProcessorChainThread(thread);
+            }  else if(arg.endsWith(".xml")) {
+                ProcessorChainElement transcoder = new TranscoderProcessor();
+                ProcessorChainElement demuxer = new DemuxerProcessor();
+                ProcessorChainElement estimator = new EstimatorProcessor();
+                ProcessorChainElement parser = new ShardParserProcessor();
+                ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+                transcoder.setParentElement(demuxer);
+                demuxer.setParentElement(estimator);
+                estimator.setParentElement(aspecter);
+                aspecter.setParentElement(parser);
+                TranscodeRequest request = new TranscodeRequest(arg);
+                File file = new File(arg);
+                request.setShard(Files.loadString(file));
+                request.setPid(file.getName().replace(".xml",""));
+                log.debug("Set content: '" + request.getShard() + "'");
+                ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+                ProcessorChainThreadPool.addProcessorChainThread(thread);
+            }
         }
     }
 }

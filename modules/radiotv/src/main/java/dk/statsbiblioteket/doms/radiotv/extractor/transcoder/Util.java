@@ -126,33 +126,14 @@ public class Util {
     }
 
     static String getStreamId(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-         switch (request.getClipType()) {
-                 case MUX:
-                     return "mp4:" + getFinalFilename(request);
-                 case MPEG1:
-                     return "flv:" + getPreviewFile(request, config).getName();
-                 case MPEG2:
-                     return "flv:" + getPreviewFile(request, config).getName();
-                 case WAV:
-                     throw new ProcessorException("not implemented");
-            }
-        return null;
+        File flashFile = getPreviewFile(request, config);
+        File mp4File = getFinalFinalFile(request, config);
+        if (mp4File.exists()) {
+            return "mp4:" + getFinalFilename(request);
+        } else if (flashFile.exists()) {
+            return "flv:" + getPreviewFile(request, config).getName();
+        } else return null;
     }
 
-    static boolean getIsDone(ServletConfig config, TranscodeRequest request) throws ProcessorException {
-        File flashFile = getPreviewFile(request, config);
-        ClipTypeEnum clipType = ClipTypeEnum.getType(request);
-        String uuid = request.getPid();
-        switch (clipType) {
-            case MUX:
-                return getFinalFinalFile(request, config).exists();
-            case MPEG1:
-                return (flashFile.exists()) && !ClipStatus.getInstance().isKnown(uuid);
-            case MPEG2:
-                return (flashFile.exists()) && !ClipStatus.getInstance().isKnown(uuid);
-            case WAV:
-                throw new ProcessorException("WAV transcoding not yet implemented");
-        }
-        return false;
-    }
+  
 }

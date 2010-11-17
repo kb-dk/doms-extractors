@@ -34,6 +34,15 @@ public class ObjectStatus {
     protected String streamId;
     protected String previewStreamId;
     protected int positionInQueue;
+    protected Boolean previewIsComplete;
+
+    public Boolean isPreviewIsComplete() {
+        return previewIsComplete;
+    }
+
+    public void setPreviewIsComplete(Boolean previewIsComplete) {
+        this.previewIsComplete = previewIsComplete;
+    }
 
     public int getPositionInQueue() {
         return positionInQueue;

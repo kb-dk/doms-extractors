@@ -46,7 +46,8 @@ public class StatusExtractor {
         String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
-        boolean isDone = Util.getIsDone(config, request);
+        //boolean isDone = Util.getIsDone(config, request);
+        boolean isDone = (Util.getFinalFinalFile(request, config).exists()) || (Util.getPreviewFile(request, config).exists() && !ClipStatus.getInstance().isKnown(uuid));
         if (isDone) {
             log.debug("Found already fully ready result for '" + uuid + "'");
             ObjectStatus status = new ObjectStatus();
@@ -61,6 +62,7 @@ public class StatusExtractor {
             ObjectStatus status = new ObjectStatus();
             completionPercentage = Math.min(completionPercentage, 99.5);
             status.setCompletionPercentage(completionPercentage);
+            status.setPreviewIsComplete(request.isFlashIsDone());
             status.setStatus(ObjectStatusEnum.STARTED);
             File previewFile = Util.getPreviewFile(request, config);
             if (previewFile.exists() && previewFile.length() > 0) {
@@ -83,27 +85,10 @@ public class StatusExtractor {
         double completionPercentage = 0.0;
         File tempFinalFile = Util.getIntialFinalFile(request, config);
         File demuxFile = Util.getDemuxFile(request, config);
-        File flashFile = Util.getPreviewFile(request, config);
-        switch (request.getClipType()) {
-            case MUX:
-                if (tempFinalFile.exists()) {
-                    completionPercentage = 100*(demuxWeight + (1.0-demuxWeight)*tempFinalFile.length()/request.getFinalFileLengthBytes());
-                } else if (demuxFile.exists()) {
-                    completionPercentage = 100*demuxWeight*Math.min(1.0,demuxFile.length()/(request.getDemuxedFileLengthBytes()));
-                }
-                break;
-            case MPEG1:
-                if (flashFile.exists()) {
-                completionPercentage = 100*flashFile.length()/request.getFinalFileLengthBytes();
-                };
-                break;
-            case MPEG2:
-                if (flashFile.exists()) {
-                completionPercentage = 100*flashFile.length()/request.getFinalFileLengthBytes();
-                };
-                break;
-            case WAV:
-                throw new ProcessorException("not implemented");
+        if (tempFinalFile.exists()) {
+            completionPercentage = 100*(demuxWeight + (1.0-demuxWeight)*tempFinalFile.length()/request.getFinalFileLengthBytes());
+        } else if (demuxFile.exists()) {
+            completionPercentage = 100*demuxWeight*Math.min( (long)1.0 , ((long)demuxFile.length())/(request.getDemuxedFileLengthBytes().longValue())  );
         }
         return completionPercentage;
     }
