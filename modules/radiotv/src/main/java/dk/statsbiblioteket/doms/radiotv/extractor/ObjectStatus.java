@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ObjectStatus {
 
     protected ObjectStatusEnum status;
-    protected Double completionPercentage;
+    protected Double completionPercentage = 0.0;
     protected Long flashFileLengthBytes;
     protected String serviceUrl;
     protected String streamId;
