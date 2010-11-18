@@ -30,16 +30,12 @@ import java.io.File;
 import java.io.IOException;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 
 public class FlashTranscoderProcessor extends ProcessorChainElement {
 
-    //TODO move to init param
-    private static final int videoHeightPixels = 240;
+    private static Logger log = Logger.getLogger(FlashTranscoderProcessor.class);
 
-     private static Logger log = Logger.getLogger(FlashTranscoderProcessor.class);
-
-    private static String ffmpegCommandLineOptions = "-b 200000 -async 2 -vcodec libx264 -vpre libx264-superfast -ab 96000 -deinterlace  -ar 44100 ";
-    //" -ar 44100 -f flv -vcodec flv -b 200000 -ab 96000 -g 160 -cmp dct -subcmp dct -mbd 2 -flags +aic+cbp+mv0+mv4 -trellis 1 -ac 1 -deinterlace ";
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -91,17 +87,15 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
         }
         Long blocksize = 1880L;
 
-        String ffmpegResolution = getFfmpegAspectRatio(request);
         String clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                + "--sout '#std{access=file, mux=ts, dst=-}' |"
-                + "ffmpeg -i - " + ffmpegCommandLineOptions + ffmpegResolution + " " + Util.getFlashFile(request, config);
+                + "--sout '#std{access=file, mux=ts, dst=-}' | "
+                + getFfmpegCommandLine(request, config);
         runClipperCommand(clipperCommand);
     }
 
     private void mpegClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        File outputFile = Util.getFlashFile(request, config);
         long blocksize = 1880L;
         final int clipSize = request.getClips().size();
         if (clipSize > 1) throw new ProcessorException("Haven't implemented mpeg mulitclipping yet");
@@ -110,27 +104,37 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
         if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) start = "skip=" + clip.getStartOffsetBytes()/blocksize;
         String length = "";
         if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + clip.getClipLength()/blocksize;
-        String command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "|ffmpeg -i - "
-                + ffmpegCommandLineOptions
-                + " " + getFfmpegAspectRatio(request) + " "
-                + outputFile.getAbsolutePath();
+        String command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "| "
+                + getFfmpegCommandLine(request, config);
         runClipperCommand(command);
     }
 
-     private String getFfmpegAspectRatio(TranscodeRequest request) {
+    private static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
+        String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
+                + " -b " + config.getInitParameter(Constants.VIDEO_BITRATE) + "000"
+                + " -ab" + config.getInitParameter(Constants.AUDIO_BITRATE) + "000"
+                + " " + getFfmpegAspectRatio(request, config)
+                + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
+                + " " + Util.getFlashFile(request, config);
+        return line;
+    }
+
+
+    private static String getFfmpegAspectRatio(TranscodeRequest request, ServletConfig config) {
         Double aspectRatio = request.getDisplayAspectRatio();
-        String ffmpegResolution = null;
+        String ffmpegResolution;
+        Long height = Long.parseLong(config.getInitParameter(Constants.PICTURE_HEIGHT));
         if (aspectRatio != null) {
-            long width = Math.round(aspectRatio* videoHeightPixels);
+            long width = Math.round(aspectRatio*height);
             if (width%2 == 1) width += 1;
-            ffmpegResolution = " -s " + width + "x" + videoHeightPixels;
+            ffmpegResolution = " -s " + width + "x" + height;
         } else {
             ffmpegResolution = " -s 320x240";
         }
         return ffmpegResolution;
     }
 
-     private void runClipperCommand(String clipperCommand) throws ProcessorException {
+    private void runClipperCommand(String clipperCommand) throws ProcessorException {
         log.info("Executing '" + clipperCommand + "'");
         try {
             ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});

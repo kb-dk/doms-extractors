@@ -39,16 +39,11 @@
         </init-param>
 
 
-        <!-- Control multithreading: How many simultaneous processes to allow and whether to
-        allow unlimited transcoding but limited demuxing
+        <!-- Control multithreading: How many simultaneous processes to allow
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.maxActive</param-name>
-            <param-value>4</param-value>
-        </init-param>
-         <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.releaseAfterDemux</param-name>
-            <param-value>true</param-value>
+            <param-value>8</param-value>
         </init-param>
 
 
@@ -68,6 +63,44 @@
             <param-value>fedoraAdminPass</param-value>
         </init-param>
 
+        <!--
+           Encoding parameters passed to ffmpeg
+        -->
+
+        <!--
+        Video bitrate (kbps)
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate</param-name>
+            <param-value>200</param-value>
+        </init-param>
+
+        <!--
+        Audio bitrate (kbps)
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate</param-name>
+            <param-value>96</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight</param-name>
+            <param-value>240</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.ffmpegParameters</param-name>
+            <param-value> -async 2 -vodec libx264 -deinterlace -ar 44100 </param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Preset</param-name>
+            <param-value>libx264-superfast</param-value>
+        </init-param>
+
+        <!--
+           Lines below here are parameters used in the two-stage demuxing-transcoding chain
+        -->
          <!--
          Basic Handbrake parameters. Changing the framerate and/or audio and video codecs will
          probably break everything
@@ -86,23 +119,10 @@
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters</param-name>
             <param-value>-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 </param-value>
         </init-param>
-
-        <!--
-        Video bitrate (kbps)
-        -->
-        <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate</param-name>
-            <param-value>200</param-value>
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.releaseAfterDemux</param-name>
+            <param-value>true</param-value>
         </init-param>
-
-        <!--
-        Audio bitrate (kbps)
-        -->
-        <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate</param-name>
-            <param-value>96</param-value>
-        </init-param>
-
 
         <!--
         Lines below here are unlikley to require tweaking.

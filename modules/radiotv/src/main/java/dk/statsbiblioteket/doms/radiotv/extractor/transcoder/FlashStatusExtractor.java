@@ -55,14 +55,16 @@ public class FlashStatusExtractor {
             request = ClipStatus.getInstance().get(uuid);
             final File flashFile = Util.getFlashFile(request, config);
             final long flashFileLength = flashFile.length();
-            double completionPercentage = 100.0 * flashFileLength /request.getFinalFileLengthBytes();
             ObjectStatus status = new ObjectStatus();
-            completionPercentage = Math.min(completionPercentage, 99.5);
-            status.setCompletionPercentage(completionPercentage);
+            if (request != null && request.getFinalFileLengthBytes() != null && request.getFinalFileLengthBytes() != 0) {
+                double completionPercentage = 100.0 * flashFileLength/request.getFinalFileLengthBytes();
+                completionPercentage = Math.min(completionPercentage, 99.5);
+                status.setCompletionPercentage(completionPercentage);
+            }
             status.setStatus(ObjectStatusEnum.STARTED);
             status.setFlashFileLengthBytes(flashFileLength);
             status.setStreamId("flv:" + flashFile.getName());
-            if (completionPercentage == 0.0) {
+            if (status.getCompletionPercentage() < 0.00001) {
                 status.setPositionInQueue(Util.getQueuePosition(request, config));
             }
             return status;

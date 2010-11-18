@@ -42,6 +42,11 @@ public class Constants {
     public static final String MAX_ACTIVE_PROCESSING = "dk.statsbiblioteket.doms.radiotv.extractor.maxActive";
     public static final String RELEASE_AFTER_DEMUX = "dk.statsbiblioteket.doms.radiotv.extractor.releaseAfterDemux";
 
+    public static final String PICTURE_HEIGHT = "dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight";
+    public static final String FFMPEG_PARAMS = "dk.statsbiblioteket.doms.radiotv.extractor.ffmpegParameters";
+    public static final String X264_PRESET = "dk.statsbiblioteket.doms.radiotv.extractor.x264Preset";
+
+
 
 
 
