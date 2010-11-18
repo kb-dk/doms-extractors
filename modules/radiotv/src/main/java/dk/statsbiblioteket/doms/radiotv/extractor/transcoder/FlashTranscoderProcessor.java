@@ -38,7 +38,8 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
 
      private static Logger log = Logger.getLogger(FlashTranscoderProcessor.class);
 
-    private static String ffmpegCommandLineOptions = " -ar 44100 -f flv -vcodec flv -b 200000 -ab 96000 -g 160 -cmp dct -subcmp dct -mbd 2 -flags +aic+cbp+mv0+mv4 -trellis 1 -ac 1 -deinterlace ";
+    private static String ffmpegCommandLineOptions = "-b 200000 -async 2 -vcodec libx264 -vpre libx264-superfast -ab 96000 -deinterlace  -ar 44100 ";
+    //" -ar 44100 -f flv -vcodec flv -b 200000 -ab 96000 -g 160 -cmp dct -subcmp dct -mbd 2 -flags +aic+cbp+mv0+mv4 -trellis 1 -ac 1 -deinterlace ";
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -95,7 +96,7 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                 + "--sout '#std{access=file, mux=ts, dst=-}' |"
-                + "ffmpeg -i - " + ffmpegCommandLineOptions + ffmpegResolution + Util.getFlashFile(request, config);
+                + "ffmpeg -i - " + ffmpegCommandLineOptions + ffmpegResolution + " " + Util.getFlashFile(request, config);
         runClipperCommand(clipperCommand);
     }
 
