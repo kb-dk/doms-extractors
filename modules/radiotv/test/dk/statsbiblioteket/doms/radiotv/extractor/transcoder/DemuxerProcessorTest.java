@@ -123,7 +123,7 @@ public class DemuxerProcessorTest extends TestCase {
         clip.setClipLength(request.getClipType().getBitrate()*desiredLengthMinutes*60L);
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip}));
         (new DemuxerProcessor()).process(request, config);
-        File outputFile = Util.getPreviewFile(request, config);
+        File outputFile = Util.getFlashFile(request, config);
         assertTrue("Output flash file exists", outputFile.exists());
         assertTrue("File has reasonable length", outputFile.length() > 1000000L);
     }

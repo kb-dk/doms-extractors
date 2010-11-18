@@ -83,7 +83,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
     }
 
     private void mpegClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        File outputFile = Util.getPreviewFile(request, config);
+        File outputFile = Util.getFlashFile(request, config);
         long blocksize = 1880L;
         final int clipSize = request.getClips().size();
         if (clipSize > 1) throw new ProcessorException("Haven't implemented mpeg mulitclipping yet");
@@ -151,7 +151,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
                 + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                 + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                 + "--sout '#duplicate{dst=std{access=file, mux=ts, dst=-},dst=std{access=file,mux=ts,dst=" + outputFile.getAbsolutePath() + "}}' |"
-                + "ffmpeg -i - -b 200000 -async 2 -vcodec libx264 -vpre libx264-superfast -ab 96000 -deinterlace " + ffmpegResolution + " -ar 44100 " + Util.getPreviewFile(request, config);
+                + "ffmpeg -i - -b 200000 -async 2 -vcodec libx264 -vpre libx264-superfast -ab 96000 -deinterlace " + ffmpegResolution + " -ar 44100 " + Util.getFlashFile(request, config);
 
 
         runClipperCommand(clipperCommand);

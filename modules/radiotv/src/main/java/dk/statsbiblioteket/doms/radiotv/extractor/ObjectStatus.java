@@ -30,11 +30,20 @@ public class ObjectStatus {
 
     protected ObjectStatusEnum status;
     protected Double completionPercentage;
+    protected Long flashFileLengthBytes;
     protected String serviceUrl;
     protected String streamId;
     protected String previewStreamId;
     protected int positionInQueue;
     protected Boolean previewIsComplete;
+
+    public Long getFlashFileLengthBytes() {
+        return flashFileLengthBytes;
+    }
+
+    public void setFlashFileLengthBytes(Long flashFileLengthBytes) {
+        this.flashFileLengthBytes = flashFileLengthBytes;
+    }
 
     public Boolean isPreviewIsComplete() {
         return previewIsComplete;

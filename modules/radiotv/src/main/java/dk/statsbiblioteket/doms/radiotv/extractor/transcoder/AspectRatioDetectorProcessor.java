@@ -86,21 +86,21 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
                         + "|vlc - " +  " --program=" + program + " "
                         + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                         + "--sout '#std{access=file,mux=ts,dst=-}' "
-                        + "|ffmpeg -i - -f mpeg2video /dev/null";
+                        + "|ffmpeg -i - ";
                 break;
             case MPEG1:
                 command = "dd if=" + filename + " "
                         + "bs=" + blocksize + " "
                         + "count=" + blockcount + " "
                         + "skip=" + offset/blocksize + " "
-                        + "| ffmpeg -i - -f mpeg2video /dev/null";
+                        + "| ffmpeg -i -";
                 break;
             case MPEG2:
                 command = "dd if=" + filename + " "
                         + "bs=" + blocksize + " "
                         + "count=" + blockcount + " "
                         + "skip=" + offset/blocksize + " "
-                        + "| ffmpeg -i - -f mpeg2video /dev/null";
+                        + "| ffmpeg -i - ";
                 break;
             case WAV:
                 throw new ProcessorException("radio transcoding not yet supported");

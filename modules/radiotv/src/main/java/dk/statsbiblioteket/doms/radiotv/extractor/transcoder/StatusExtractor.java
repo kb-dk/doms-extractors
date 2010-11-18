@@ -47,7 +47,7 @@ public class StatusExtractor {
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
         //boolean isDone = Util.getIsDone(config, request);
-        boolean isDone = (Util.getFinalFinalFile(request, config).exists()) || (Util.getPreviewFile(request, config).exists() && !ClipStatus.getInstance().isKnown(uuid));
+        boolean isDone = (Util.getFinalFinalFile(request, config).exists()) || (Util.getFlashFile(request, config).exists() && !ClipStatus.getInstance().isKnown(uuid));
         if (isDone) {
             log.debug("Found already fully ready result for '" + uuid + "'");
             ObjectStatus status = new ObjectStatus();
@@ -64,21 +64,17 @@ public class StatusExtractor {
             status.setCompletionPercentage(completionPercentage);
             status.setPreviewIsComplete(request.isFlashIsDone());
             status.setStatus(ObjectStatusEnum.STARTED);
-            File previewFile = Util.getPreviewFile(request, config);
+            File previewFile = Util.getFlashFile(request, config);
             if (previewFile.exists() && previewFile.length() > 0) {
                 status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
                 status.setPreviewStreamId("flv:" + previewFile.getName());
             }
             if (completionPercentage == 0.0) {
-                status.setPositionInQueue(getQueuePosition(request, config));
+                status.setPositionInQueue(Util.getQueuePosition(request, config));
             }
             return status;
         } else return null;
         //TODO look for error conditions - specifically files in the error directory
-    }
-
-    private static int getQueuePosition(TranscodeRequest request, ServletConfig config) {
-        return ProcessorChainThreadPool.getInstance(config).getPosition(request);
     }
 
     private static double getCompletionPercentage(ServletConfig config, TranscodeRequest request) throws ProcessorException {

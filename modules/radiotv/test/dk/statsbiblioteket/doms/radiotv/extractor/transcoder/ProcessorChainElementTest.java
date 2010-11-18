@@ -82,8 +82,8 @@ public class ProcessorChainElementTest extends TestCase {
 
         ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
         thread.run();
-        assertTrue(Util.getPreviewFile(request, config).exists());
-        assertTrue(Util.getPreviewFile(request, config).length() > 1000000L);
+        assertTrue(Util.getFlashFile(request, config).exists());
+        assertTrue(Util.getFlashFile(request, config).length() > 1000000L);
     }
 
 }

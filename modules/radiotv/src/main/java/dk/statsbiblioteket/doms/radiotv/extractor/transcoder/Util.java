@@ -106,7 +106,7 @@ public class Util {
         return new File(getFinalDir(config), getFinalFilename(request));
     }
 
-    public static File getPreviewFile(TranscodeRequest request, ServletConfig config) {
+    public static File getFlashFile(TranscodeRequest request, ServletConfig config) {
         return new File(getFinalDir(config), request.getPid() + ".flv");
     }
 
@@ -126,14 +126,17 @@ public class Util {
     }
 
     static String getStreamId(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        File flashFile = getPreviewFile(request, config);
+        File flashFile = getFlashFile(request, config);
         File mp4File = getFinalFinalFile(request, config);
         if (mp4File.exists()) {
             return "mp4:" + getFinalFilename(request);
         } else if (flashFile.exists()) {
-            return "flv:" + getPreviewFile(request, config).getName();
+            return "flv:" + getFlashFile(request, config).getName();
         } else return null;
     }
 
-  
+
+    static int getQueuePosition(TranscodeRequest request, ServletConfig config) {
+        return ProcessorChainThreadPool.getInstance(config).getPosition(request);
+    }
 }

@@ -46,21 +46,19 @@ public class BroadcastExtractionService {
     }
 
     private ObjectStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
-        ObjectStatus status = StatusExtractor.getStatus(programPid, config);
+        ObjectStatus status = FlashStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;
         } else {
             String uuid = Util.getUuid(programPid);
             TranscodeRequest request = new TranscodeRequest(uuid);
             ClipStatus.getInstance().register(request);
-            ProcessorChainElement transcoder = new TranscoderProcessor();
-            ProcessorChainElement demuxer = new DemuxerProcessor();
-            ProcessorChainElement estimator = new EstimatorProcessor();
+            ProcessorChainElement transcoder = new FlashTranscoderProcessor();
+            ProcessorChainElement estimator = new FlashEstimatorProcessor();
             ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             ProcessorChainElement fetcher = new ShardFetcherProcessor();
-            transcoder.setParentElement(demuxer);
-            demuxer.setParentElement(estimator);
+            transcoder.setParentElement(estimator);
             estimator.setParentElement(aspecter);
             aspecter.setParentElement(parser);
             parser.setParentElement(fetcher);
