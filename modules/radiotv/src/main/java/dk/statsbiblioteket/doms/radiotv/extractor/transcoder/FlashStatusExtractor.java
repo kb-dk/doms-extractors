@@ -64,7 +64,8 @@ public class FlashStatusExtractor {
             status.setStatus(ObjectStatusEnum.STARTED);
             status.setFlashFileLengthBytes(flashFileLength);
             status.setStreamId("flv:" + flashFile.getName());
-            if (status.getCompletionPercentage() != null && status.getCompletionPercentage() < 0.00001) {
+            final Double percentage = status.getCompletionPercentage();
+            if (percentage != null && percentage < 0.00001) {
                 status.setPositionInQueue(Util.getQueuePosition(request, config));
             }
             return status;
