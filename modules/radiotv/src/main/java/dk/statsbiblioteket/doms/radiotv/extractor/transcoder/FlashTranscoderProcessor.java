@@ -112,7 +112,7 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
     private static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
         String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
                 + " -b " + config.getInitParameter(Constants.VIDEO_BITRATE) + "000"
-                + " -ab" + config.getInitParameter(Constants.AUDIO_BITRATE) + "000"
+                + " -ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + "000"
                 + " " + getFfmpegAspectRatio(request, config)
                 + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
                 + " " + Util.getFlashFile(request, config);

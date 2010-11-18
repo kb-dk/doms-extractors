@@ -90,7 +90,7 @@
 
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.ffmpegParameters</param-name>
-            <param-value> -async 2 -vodec libx264 -deinterlace -ar 44100 </param-value>
+            <param-value> -async 2 -vcodec libx264 -deinterlace -ar 44100 </param-value>
         </init-param>
 
         <init-param>
