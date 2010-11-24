@@ -78,6 +78,8 @@ public class ExtractorApplication {
                 return "4";
             } else if (s.equals(Constants.RELEASE_AFTER_DEMUX)) {
                 return "true";
+            } else if (s.equals(Constants.PICTURE_HEIGHT)) {
+                return "240";
             }
 
 
@@ -97,43 +99,29 @@ public class ExtractorApplication {
 
      */
     public static void main(String[] args) throws IOException {
-       log.info("Starting extraction");
+        log.info("Starting extraction");
         for (String arg: args) {
             log.info("Starting process for '" + arg + "'");
-            if (arg.startsWith("http")) {
-                ProcessorChainElement transcoder = new TranscoderProcessor();
-                ProcessorChainElement demuxer = new DemuxerProcessor();
-                ProcessorChainElement estimator = new EstimatorProcessor();
-                ProcessorChainElement parser = new ShardParserProcessor();
-                ProcessorChainElement fetcher = new ShardFetcherProcessor();
-                ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
-                transcoder.setParentElement(demuxer);
-                demuxer.setParentElement(estimator);
-                estimator.setParentElement(aspecter);
-                aspecter.setParentElement(parser);
-                parser.setParentElement(fetcher);
-                TranscodeRequest request = new TranscodeRequest(arg);
-                request.setPid(arg);
-                ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-                ProcessorChainThreadPool.addProcessorChainThread(thread);
-            }  else if(arg.endsWith(".xml")) {
-                ProcessorChainElement transcoder = new TranscoderProcessor();
-                ProcessorChainElement demuxer = new DemuxerProcessor();
-                ProcessorChainElement estimator = new EstimatorProcessor();
-                ProcessorChainElement parser = new ShardParserProcessor();
-                ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
-                transcoder.setParentElement(demuxer);
-                demuxer.setParentElement(estimator);
-                estimator.setParentElement(aspecter);
-                aspecter.setParentElement(parser);
-                TranscodeRequest request = new TranscodeRequest(arg);
+            ProcessorChainElement transcoder = new FlashTranscoderProcessor();
+            ProcessorChainElement estimator = new FlashEstimatorProcessor();
+            ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+            transcoder.setParentElement(estimator);
+            estimator.setParentElement(aspecter);
+            aspecter.setParentElement(parser);
+            TranscodeRequest request = new TranscodeRequest(arg);
+            if (arg.endsWith(".xml")) {
                 File file = new File(arg);
                 request.setShard(Files.loadString(file));
                 request.setPid(file.getName().replace(".xml",""));
                 log.debug("Set content: '" + request.getShard() + "'");
-                ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-                ProcessorChainThreadPool.addProcessorChainThread(thread);
+            } else {
+               ProcessorChainElement fetcher = new ShardFetcherProcessor();
+                parser.setParentElement(fetcher);
+                request.setPid(arg);
             }
+            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+            ProcessorChainThreadPool.addProcessorChainThread(thread);
         }
     }
 }

@@ -42,29 +42,33 @@ public class FlashStatusExtractor {
         String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
-        boolean isDone = Util.getFlashFile(request, config).exists() && !ClipStatus.getInstance().isKnown(uuid);
+        boolean isDone = (Util.hasOutputFile(request, config)) && !ClipStatus.getInstance().isKnown(uuid);
+        Double percentage = 0.0;
         if (isDone) {
             log.debug("Found already fully ready result for '" + uuid + "'");
             ObjectStatus status = new ObjectStatus();
             status.setStatus(ObjectStatusEnum.DONE);
-            status.setStreamId("flv:" + Util.getFlashFile(request, config).getName());
+            status.setStreamId(Util.getStreamId(request, config));
             status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+            status.setCompletionPercentage(100.0);
             return status;
         } else if (ClipStatus.getInstance().isKnown(uuid)) {
             log.debug("Already started transcoding '" + uuid + "'");
             request = ClipStatus.getInstance().get(uuid);
-            final File flashFile = Util.getFlashFile(request, config);
-            final long flashFileLength = flashFile.length();
             ObjectStatus status = new ObjectStatus();
-            if (request != null && request.getFinalFileLengthBytes() != null && request.getFinalFileLengthBytes() != 0) {
-                double completionPercentage = 100.0 * flashFileLength/request.getFinalFileLengthBytes();
-                completionPercentage = Math.min(completionPercentage, 99.5);
-                status.setCompletionPercentage(completionPercentage);
+            status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+            if (Util.hasOutputFile(request, config)) {
+                final long outputFileLength = Util.getOutputFile(request, config).length();
+                if (request != null && request.getFinalFileLengthBytes() != null && request.getFinalFileLengthBytes() != 0) {
+                    double completionPercentage = 100.0 * outputFileLength/request.getFinalFileLengthBytes();
+                    completionPercentage = Math.min(completionPercentage, 99.5);
+                    status.setCompletionPercentage(completionPercentage);
+                }
+                status.setFlashFileLengthBytes(outputFileLength);
+                status.setStreamId(Util.getStreamId(request, config));
+                percentage = status.getCompletionPercentage();
             }
             status.setStatus(ObjectStatusEnum.STARTED);
-            status.setFlashFileLengthBytes(flashFileLength);
-            status.setStreamId("flv:" + flashFile.getName());
-            final Double percentage = status.getCompletionPercentage();
             if (percentage != null && percentage < 0.00001) {
                 status.setPositionInQueue(Util.getQueuePosition(request, config));
             }

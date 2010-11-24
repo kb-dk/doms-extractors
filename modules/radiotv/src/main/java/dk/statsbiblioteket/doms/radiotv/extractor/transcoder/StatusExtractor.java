@@ -60,13 +60,14 @@ public class StatusExtractor {
             request = ClipStatus.getInstance().get(uuid);
             double completionPercentage = getCompletionPercentage(config, request);
             ObjectStatus status = new ObjectStatus();
+            status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
             completionPercentage = Math.min(completionPercentage, 99.5);
             status.setCompletionPercentage(completionPercentage);
             status.setPreviewIsComplete(request.isFlashIsDone());
             status.setStatus(ObjectStatusEnum.STARTED);
             File previewFile = Util.getFlashFile(request, config);
             if (previewFile.exists() && previewFile.length() > 0) {
-                status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+                //status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
                 status.setPreviewStreamId("flv:" + previewFile.getName());
             }
             if (completionPercentage == 0.0) {

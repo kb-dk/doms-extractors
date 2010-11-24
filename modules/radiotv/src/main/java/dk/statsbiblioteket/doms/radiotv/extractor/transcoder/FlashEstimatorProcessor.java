@@ -35,10 +35,19 @@ public class FlashEstimatorProcessor extends ProcessorChainElement {
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
-        Integer videoBitrate = Integer.parseInt(config.getInitParameter(Constants.VIDEO_BITRATE));
-        //The above rates are kilobit/second
-        Long finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;
+        ClipTypeEnum clipType = request.getClipType();
+        Long finalFileSizeBytes;
+        if (clipType.equals(ClipTypeEnum.MPEG1) || clipType.equals(ClipTypeEnum.MPEG2) || clipType.equals(ClipTypeEnum.MUX)) {
+            Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
+            Integer videoBitrate = Integer.parseInt(config.getInitParameter(Constants.VIDEO_BITRATE));
+            //The above rates are kilobit/second
+            finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;
+        } else {
+            Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
+            Integer videoBitrate = 0;
+            //The above rates are kilobit/second
+            finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;
+        }
         request.setFinalFileLengthBytes(finalFileSizeBytes);
         log.debug("Estimated filesize for '" + request.getPid() + "' :" + finalFileSizeBytes);
     }

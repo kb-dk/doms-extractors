@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -110,6 +111,10 @@ public class Util {
         return new File(getFinalDir(config), request.getPid() + ".flv");
     }
 
+    public static File getMp3File(TranscodeRequest request, ServletConfig config) {
+         return new File(getFinalDir(config), request.getPid() + ".mp3");
+    }
+
     public static void unlockRequest(TranscodeRequest request) {
         synchronized (request) {
             if (request.getThePool() != null && request.getLockObject() != null) {
@@ -126,17 +131,45 @@ public class Util {
     }
 
     static String getStreamId(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        File flashFile = getFlashFile(request, config);
-        File mp4File = getFinalFinalFile(request, config);
-        if (mp4File.exists()) {
-            return "mp4:" + getFinalFilename(request);
-        } else if (flashFile.exists()) {
-            return "flv:" + getFlashFile(request, config).getName();
-        } else return null;
+        File outputFile = getOutputFile(request, config);
+        String filename = outputFile.getName();
+        if (filename.endsWith(".mp4")) {
+            return "mp4:" + filename;
+        } else if (filename.endsWith(".mp3")) {
+            return "mp3:" + filename;
+        } else if (filename.endsWith(".flv")) {
+            return "flv:" + filename;
+        } else return null;      
     }
 
 
     static int getQueuePosition(TranscodeRequest request, ServletConfig config) {
         return ProcessorChainThreadPool.getInstance(config).getPosition(request);
     }
+
+
+    public static boolean hasOutputFile(TranscodeRequest request, ServletConfig config) {
+        final String uuid = request.getPid();
+        final FileFilter filter = new FileFilter(){
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().startsWith(uuid+".");
+            }
+        };
+        File outputDir = getFinalDir(config);
+        return outputDir.listFiles(filter).length > 0;
+    }
+
+    public static File getOutputFile(TranscodeRequest request, ServletConfig config) {
+        final String uuid = request.getPid();
+        final FileFilter filter = new FileFilter(){
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().startsWith(uuid+".");
+            }
+        };
+        File outputDir = getFinalDir(config);
+        return outputDir.listFiles(filter)[0];
+    }
+
 }
