@@ -36,13 +36,17 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
         if (clipSize > 1) {
             command = getMultiClipCommand(request, config);
         } else {
+            long bitrate = request.getClipType().getBitrate();
             TranscodeRequest.FileClip clip = request.getClips().get(0);
             String start = "";
-            if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) start = "skip=" + clip.getStartOffsetBytes()/blocksize;
+            if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) start = " -ss " + clip.getStartOffsetBytes()/bitrate;
             String length = "";
-            if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + clip.getClipLength()/blocksize;
-            command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "| "
-                    + getFfmpegMp3CommandLine(request, config);
+            if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = " -t " + clip.getClipLength()/bitrate;
+            command = "ffmpeg -i " + clip.getFilepath()
+                    + start + length + " -ab "
+                    + config.getInitParameter(Constants.AUDIO_BITRATE) + "000 "
+                    + Util.getMp3File(request, config);
+
         }
         FlashTranscoderProcessor.runClipperCommand(command);
     }
@@ -72,7 +76,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
             }
         }
         String command = "ffmpeg " + files + " -ab " + config.getInitParameter(Constants.AUDIO_BITRATE)
-                + " -ss " + start + " -t " + length + Util.getMp3File(request, config);
+                + "000 -ss " + start + " -t " + length + Util.getMp3File(request, config);
         return command;
     }
 
