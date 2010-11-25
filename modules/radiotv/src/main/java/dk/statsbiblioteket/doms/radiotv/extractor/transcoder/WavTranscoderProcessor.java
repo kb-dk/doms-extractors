@@ -42,12 +42,14 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
             String length = "";
             if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = " -t " + clip.getClipLength()/bitrate;
             command = "ffmpeg -i " + clip.getFilepath()
-                    + start + length + " -ab "
-                    + config.getInitParameter(Constants.AUDIO_BITRATE) + "000 "
-                    + Util.getMp3File(request, config);
+                    + start + length + " -f wav |" + getLameCommand(request, config);
 
         }
         FlashTranscoderProcessor.runClipperCommand(command);
+    }
+
+    private String getLameCommand(TranscodeRequest request, ServletConfig config) {
+        return "lame -b "  + config.getInitParameter(Constants.AUDIO_BITRATE) + " " + Util.getMp3File(request, config);
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {
@@ -70,8 +72,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
                 start = clip.getStartOffsetBytes()/bitrate;
             }
         }
-        String command = "ffmpeg " + files + " -ab " + config.getInitParameter(Constants.AUDIO_BITRATE)
-                + "000 -ss " + start + " -t " + length + Util.getMp3File(request, config);
+        String command = "ffmpeg " + files + " -ab "  + start + " -t " + length + " -f wav |" + getLameCommand(request, config);
         return command;
     }
 
