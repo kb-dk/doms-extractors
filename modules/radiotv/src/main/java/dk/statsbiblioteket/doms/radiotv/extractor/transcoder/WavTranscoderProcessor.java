@@ -30,7 +30,6 @@ import java.io.File;
 public class WavTranscoderProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        long blocksize = 1880L;
         final int clipSize = request.getClips().size();
         String command;
         if (clipSize > 1) {
@@ -49,10 +48,6 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
 
         }
         FlashTranscoderProcessor.runClipperCommand(command);
-    }
-
-    private static String getFfmpegMp3CommandLine(TranscodeRequest request, ServletConfig config) {
-         return "ffmpeg -i - -ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + "000 " + Util.getMp3File(request, config);
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {
