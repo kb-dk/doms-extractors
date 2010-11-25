@@ -103,8 +103,7 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
                         + "| ffmpeg -i - ";
                 break;
             case WAV:
-                throw new ProcessorException("radio transcoding not yet supported");
-                //break;
+                command = "true";
         }
 
         log.info("Executing '" + command + "'");
