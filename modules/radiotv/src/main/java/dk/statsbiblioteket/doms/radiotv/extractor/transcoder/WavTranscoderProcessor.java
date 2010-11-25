@@ -55,25 +55,24 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
         String files = "";
         long start = 0L;
         long length = 0L;
-        long blocksize = 1880L;
         List<TranscodeRequest.FileClip> clips = request.getClips();
+        long bitrate = request.getClipType().getBitrate();
         for (int i=0; i<clips.size(); i++) {
             TranscodeRequest.FileClip clip = clips.get(i);
-            files += " " + clip.getFilepath() + " ";
+            files += " -i " + clip.getFilepath() + " ";
             if (clip.getClipLength() != null) {
-                length += clip.getClipLength()/blocksize;
+                length += clip.getClipLength()/bitrate;
             } else if (clip.getStartOffsetBytes() != null) {
-                length += ((new File(clip.getFilepath())).length() - clip.getStartOffsetBytes())/blocksize;
+                length += (((new File(clip.getFilepath())).length() - clip.getStartOffsetBytes()))/bitrate;
             } else {
-                length += (new File(clip.getFilepath())).length()/blocksize;
+                length += (new File(clip.getFilepath())).length()/bitrate;
             }
             if (i == 0 && clip.getStartOffsetBytes() != null) {
-                start = clip.getStartOffsetBytes()/blocksize;
+                start = clip.getStartOffsetBytes()/bitrate;
             }
         }
-        String command = "cat " + files
-                + " |dd bs=" + blocksize + " skip=" + start + " count=" + length + "| "
-                + getFfmpegMp3CommandLine(request, config);
+        String command = "ffmpeg " + files + " -ab " + config.getInitParameter(Constants.AUDIO_BITRATE)
+                + " -ss " + start + " -t " + length + Util.getMp3File(request, config);
         return command;
     }
 
