@@ -80,6 +80,10 @@ public class ExtractorApplication {
                 return "true";
             } else if (s.equals(Constants.PICTURE_HEIGHT)) {
                 return "240";
+            } else if (s.equals(Constants.FFMPEG_PARAMS)) {
+                return " -async 2 -vcodec libx264 -deinterlace -ar 44100 ";
+            } else if (s.equals(Constants.X264_PRESET)) {
+                return "libx264-superfast";
             }
 
 
