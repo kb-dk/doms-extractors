@@ -49,7 +49,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
     }
 
     private String getLameCommand(TranscodeRequest request, ServletConfig config) {
-        return "lame -b "  + config.getInitParameter(Constants.AUDIO_BITRATE) + " " + Util.getMp3File(request, config);
+        return "lame -b "  + config.getInitParameter(Constants.AUDIO_BITRATE) + " - " + Util.getMp3File(request, config);
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

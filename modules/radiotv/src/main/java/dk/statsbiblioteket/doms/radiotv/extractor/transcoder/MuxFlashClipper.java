@@ -28,7 +28,7 @@ import java.io.File;
 
 public class MuxFlashClipper extends ProcessorChainElement {
 
-    private static final String algorithm = "full_vlc";
+    private static final String algorithm = "vlc";
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -72,7 +72,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
                     + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                     + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                     + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
-                    + ":transcode{acodec=aac,vcodec=h264,vb=" + config.getInitParameter(Constants.VIDEO_BITRATE) + ",venc=x264{profile=baseline,preset=superfast},soverlay,deinterlace,audio-sync,"
+                    + ":transcode{acodec=mp3,vcodec=h264,vb=" + config.getInitParameter(Constants.VIDEO_BITRATE) + ",venc=x264{profile=baseline,preset=superfast},soverlay,deinterlace,audio-sync,"
                     + "ab=" + config.getInitParameter(Constants.AUDIO_BITRATE)
                     + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
                     + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",samplerate=44100,threads=0}"
@@ -80,11 +80,21 @@ public class MuxFlashClipper extends ProcessorChainElement {
                     + ",dst='" + Util.getFlashFile(request, config).getAbsolutePath() +"'}\""
                     + ",select=\"program=" + programNumber + "\"' ";
         } else {
-            clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+           /* clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
                     + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
                     + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                     + "--sout '#std{access=file, mux=ts, dst=-}' | "
-                    + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
+                    + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);*/
+           clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
+                    + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
+                    + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                    + " --sout '#transcode{acodec=mp3,vcodec=h264,vb=" + config.getInitParameter(Constants.VIDEO_BITRATE)
+                    + ",venc=x264{profile=baseline,preset=superfast},deinterlace,audio-sync,"
+                    + "ab=" + config.getInitParameter(Constants.AUDIO_BITRATE)
+                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",samplerate=44100,threads=0}"
+                    + ":std{access=file,mux=ts,dst=-}'|ffmpeg -i - -async 2 -acodec copy -vcodec copy -f flv "
+                   + Util.getFlashFile(request, config).getAbsolutePath();
         }
         FlashTranscoderProcessor.runClipperCommand(clipperCommand);
     }
