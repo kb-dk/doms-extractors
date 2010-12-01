@@ -72,7 +72,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
                 start = clip.getStartOffsetBytes()/bitrate;
             }
         }
-        String command = "sox " + files + " -t wav - trim " + start + ".0 " + length + " .0 |" + getLameCommand(request, config); 
+        String command = "sox " + files + " -t wav - trim " + start + ".0 " + length + ".0 |" + getLameCommand(request, config); 
         return command;
     }
 
