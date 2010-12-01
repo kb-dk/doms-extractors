@@ -60,7 +60,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
         long bitrate = request.getClipType().getBitrate();
         for (int i=0; i<clips.size(); i++) {
             TranscodeRequest.FileClip clip = clips.get(i);
-            files += " -i " + clip.getFilepath() + " ";
+            files += " " + clip.getFilepath() + " ";
             if (clip.getClipLength() != null) {
                 length += clip.getClipLength()/bitrate;
             } else if (clip.getStartOffsetBytes() != null) {
@@ -72,7 +72,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
                 start = clip.getStartOffsetBytes()/bitrate;
             }
         }
-        String command = "ffmpeg " + files + " -ab "  + start + " -t " + length + " -f wav |" + getLameCommand(request, config);
+        String command = "sox " + files + " -t wav - trim " + start + ".0 " + length + " .0 |" + getLameCommand(request, config); 
         return command;
     }
 
