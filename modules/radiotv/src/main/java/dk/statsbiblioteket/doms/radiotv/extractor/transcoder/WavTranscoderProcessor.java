@@ -32,7 +32,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         final int clipSize = request.getClips().size();
         String command;
-        if (clipSize > 1) {
+        /*if (clipSize > 1) {
             command = getMultiClipCommand(request, config);
         } else {
             long bitrate = request.getClipType().getBitrate();
@@ -42,9 +42,10 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
             String length = "";
             if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = " -t " + clip.getClipLength()/bitrate;
             command = "ffmpeg -i " + clip.getFilepath()
-                    + start + length + " -f wav |" + getLameCommand(request, config);
+                    + start + length + " -f wav - |" + getLameCommand(request, config);
 
-        }
+        }*/
+        command = getMultiClipCommand(request, config);
         FlashTranscoderProcessor.runClipperCommand(command);
     }
 
