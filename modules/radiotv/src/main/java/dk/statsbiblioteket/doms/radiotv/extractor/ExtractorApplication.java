@@ -110,8 +110,10 @@ public class ExtractorApplication {
             ProcessorChainElement estimator = new FlashEstimatorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+            ProcessorChainElement pider = new PidExtractorProcessor();
             transcoder.setParentElement(estimator);
-            estimator.setParentElement(aspecter);
+            estimator.setParentElement(pider);
+            pider.setParentElement(aspecter);
             aspecter.setParentElement(parser);
             TranscodeRequest request = new TranscodeRequest(arg);
             if (arg.endsWith(".xml")) {

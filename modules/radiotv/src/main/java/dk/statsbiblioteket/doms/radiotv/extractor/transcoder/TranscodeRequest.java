@@ -48,6 +48,34 @@ public class TranscodeRequest {
 
     private ClipTypeEnum clipType;
 
+    private String videoPid;
+    private String audioPid;
+    private String dvbsubPid;
+
+    public String getVideoPid() {
+        return videoPid;
+    }
+
+    public void setVideoPid(String videoPid) {
+        this.videoPid = videoPid;
+    }
+
+    public String getAudioPid() {
+        return audioPid;
+    }
+
+    public void setAudioPid(String audioPid) {
+        this.audioPid = audioPid;
+    }
+
+    public String getDvbsubPid() {
+        return dvbsubPid;
+    }
+
+    public void setDvbsubPid(String dvbsubPid) {
+        this.dvbsubPid = dvbsubPid;
+    }
+
     private boolean flashIsDone = false;
 
     public boolean isFlashIsDone() {

@@ -70,6 +70,7 @@ public class ProcessorChainThread extends Thread {
         super.run();
         log.info("Starting processor chain for '" + request.getPid() + "'");
         try {
+            Util.getLockFile(request, config).createNewFile();
             tailElement.process(request, config);
         } catch (ProcessorException e) {
             log.error("Processing failed for '" + request.getPid() + "'", e);
@@ -82,6 +83,7 @@ public class ProcessorChainThread extends Thread {
             Util.unlockRequest(request);
             log.info("Cleaning up after processing '" + request.getPid() + "'");
             ClipStatus.getInstance().remove(request.getPid());
+            Util.getLockFile(request, config).delete();
             //TODO cleanup any temporary files. Create error files.
         }
     }

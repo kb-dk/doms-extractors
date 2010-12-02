@@ -5,7 +5,8 @@
         <servlet-name>Broadcast Extraction Service</servlet-name>
 
         <servlet-class>
-            com.sun.jersey.spi.container.servlet.ServletContainer
+            dk.statsbiblioteket.doms.radiotv.extractor.BESServlet
+            <!-- com.sun.jersey.spi.container.servlet.ServletContainer-->
         </servlet-class>
 
         <!--

@@ -56,10 +56,12 @@ public class BroadcastExtractionService {
             ProcessorChainElement transcoder = new FlashTranscoderProcessor();
             ProcessorChainElement estimator = new FlashEstimatorProcessor();
             ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+            ProcessorChainElement pider = new PidExtractorProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             ProcessorChainElement fetcher = new ShardFetcherProcessor();
             transcoder.setParentElement(estimator);
-            estimator.setParentElement(aspecter);
+            estimator.setParentElement(pider);
+            pider.setParentElement(aspecter);
             aspecter.setParentElement(parser);
             parser.setParentElement(fetcher);
             ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
@@ -106,5 +108,7 @@ public class BroadcastExtractionService {
         return status;
     }
 
+
+    
 
 }

@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import javax.servlet.ServletConfig;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -113,6 +114,24 @@ public class Util {
 
     public static File getMp3File(TranscodeRequest request, ServletConfig config) {
          return new File(getFinalDir(config), request.getPid() + ".mp3");
+    }
+
+    public static File getLockFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getTempDir(config), getLockFileName(request));
+    }
+
+    public static String getLockFileName(TranscodeRequest request) {
+        return request.getPid() + ".lck";
+    }
+
+    public static File[] getAllLockFiles(ServletConfig config) {
+        FilenameFilter filter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".lck");
+            }
+        };
+        return (getTempDir(config)).listFiles(filter);
     }
 
     public static void unlockRequest(TranscodeRequest request) {
