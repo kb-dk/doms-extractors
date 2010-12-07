@@ -50,7 +50,7 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
         log.info("Getting shard from '" + url + "'");
         try {
             URLConnection conn = url.openConnection();
-            String userPassword = config.getInitParameter(Constants.DOMS_USER)+":"+config.getInitParameter(Constants.DOMS_PASSWORD);
+            String userPassword = Util.getInitParameter(config, Constants.DOMS_USER)+":"+Util.getInitParameter(config, Constants.DOMS_PASSWORD);
             String encoding = (new BASE64Encoder()).encode(userPassword.getBytes());
             conn.setRequestProperty("Authorization", "Basic " + encoding);
             InputStream is = conn.getInputStream();

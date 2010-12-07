@@ -53,14 +53,14 @@ public class StatusExtractor {
             ObjectStatus status = new ObjectStatus();
             status.setStatus(ObjectStatusEnum.DONE);
             status.setStreamId(Util.getStreamId(request, config));
-            status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+            status.setServiceUrl(Util.getInitParameter(config,Constants.WOWZA_URL));
             return status;
         } else if (ClipStatus.getInstance().isKnown(uuid)) {
             log.debug("Already started transcoding '" + uuid + "'");
             request = ClipStatus.getInstance().get(uuid);
             double completionPercentage = getCompletionPercentage(config, request);
             ObjectStatus status = new ObjectStatus();
-            status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+            status.setServiceUrl(Util.getInitParameter(config, Constants.WOWZA_URL));
             completionPercentage = Math.min(completionPercentage, 99.5);
             status.setCompletionPercentage(completionPercentage);
             status.setPreviewIsComplete(request.isFlashIsDone());

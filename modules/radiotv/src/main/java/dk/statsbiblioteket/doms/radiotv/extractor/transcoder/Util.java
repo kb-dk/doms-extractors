@@ -76,7 +76,7 @@ public class Util {
      * @return
      */
     public static URL getDomsUrl(String pid, ServletConfig config) throws ProcessorException {
-        String urlS = config.getInitParameter(Constants.DOMS_LOCATION)+"/objects/uuid:"+pid+"/datastreams/SHARD_METADATA/content";
+        String urlS = Util.getInitParameter(config, Constants.DOMS_LOCATION) + "/objects/uuid:"+pid+"/datastreams/SHARD_METADATA/content";
         try {
             return new URL(urlS);
         } catch (MalformedURLException e) {
@@ -89,11 +89,11 @@ public class Util {
     }
 
     public static File getTempDir(ServletConfig config) {
-        return new File(config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM));
+        return new File(getInitParameter(config, Constants.TEMP_DIR_INIT_PARAM));
     }
 
     public static File getFinalDir(ServletConfig config) {
-        return new File(config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM));
+        return new File(Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM));
     }
 
     public static File getDemuxFile(TranscodeRequest request, ServletConfig config) {
@@ -191,4 +191,19 @@ public class Util {
         return outputDir.listFiles(filter)[0];
     }
 
+    public static String getInitParameter(ServletConfig config, String paramName) {
+        if (config.getServletContext() != null && config.getServletContext().getInitParameter(paramName) != null) {
+            return config.getServletContext().getInitParameter(paramName);
+        } else {
+            return config.getInitParameter(paramName);
+        }
+    }
+
+    public static String getAudioBitrate(ServletConfig config) {
+        return getInitParameter(config, Constants.AUDIO_BITRATE);
+    }
+
+    public static String getVideoBitrate(ServletConfig config) {
+        return getInitParameter(config, Constants.VIDEO_BITRATE);
+    }
 }

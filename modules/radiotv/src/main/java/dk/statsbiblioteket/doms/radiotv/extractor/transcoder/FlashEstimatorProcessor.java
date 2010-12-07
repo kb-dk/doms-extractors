@@ -38,12 +38,12 @@ public class FlashEstimatorProcessor extends ProcessorChainElement {
         ClipTypeEnum clipType = request.getClipType();
         Long finalFileSizeBytes;
         if (clipType.equals(ClipTypeEnum.MPEG1) || clipType.equals(ClipTypeEnum.MPEG2) || clipType.equals(ClipTypeEnum.MUX)) {
-            Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
-            Integer videoBitrate = Integer.parseInt(config.getInitParameter(Constants.VIDEO_BITRATE));
+            Integer audioBitrate = Integer.parseInt(Util.getInitParameter(config, Constants.AUDIO_BITRATE));
+            Integer videoBitrate = Integer.parseInt(Util.getInitParameter(config, Constants.VIDEO_BITRATE));
             //The above rates are kilobit/second
             finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;
         } else {
-            Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
+            Integer audioBitrate = Integer.parseInt(Util.getInitParameter(config, Constants.AUDIO_BITRATE));
             Integer videoBitrate = 0;
             //The above rates are kilobit/second
             finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;

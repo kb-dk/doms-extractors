@@ -89,18 +89,20 @@ public class PidExtractorProcessor extends ProcessorChainElement {
         }
         Pattern thisProgramPattern = Pattern.compile(".*Program\\s"+request.getClips().get(0).getProgramId()+".*");
         Pattern programPattern = Pattern.compile(".*Program.*");
-        Pattern dvbsubPattern = Pattern.compile(".*Stream.*\\[(0x.*)\\].*dvbsub.*");
-        Pattern videoPattern = Pattern.compile(".*Stream.*\\[(0x.*)\\].*Video.*");
-        Pattern audioPattern1 = Pattern.compile(".*Stream.*\\[(0x.*)\\].*Audio.*");
-        Pattern audioPattern2 = Pattern.compile(".*Stream.*\\[(0x.*)\\].*0x0011.*");
+        Pattern dvbsubPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*dvbsub.*");
+        Pattern videoPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Video.*");
+        Pattern audioPattern1 = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Audio.*");
+        Pattern audioPattern2 = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*0x0011.*");
         String[] commandOutput = runner.getError().split("\\n");
         boolean foundProgram = false;
         for (String line:commandOutput) {
             log.debug("Checking line '" + line + "'");
             if (foundProgram && programPattern.matcher(line).matches()) {
+                log.debug("Found next program section, returning");
                 return;
             }
             if (thisProgramPattern.matcher(line).matches()) {
+                log.debug("Found requested program");
                 foundProgram = true;
             }
             if (foundProgram) {

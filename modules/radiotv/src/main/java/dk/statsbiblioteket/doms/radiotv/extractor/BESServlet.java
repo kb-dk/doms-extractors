@@ -35,6 +35,7 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
     @Override
     public void init() throws ServletException {
         super.init();
+        Util.getTempDir(this.getServletConfig()).mkdirs();
         log.info("initialized BES service");
         cleanup();
     }

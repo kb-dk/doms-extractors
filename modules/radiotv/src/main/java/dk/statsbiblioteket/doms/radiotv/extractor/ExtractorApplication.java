@@ -84,6 +84,8 @@ public class ExtractorApplication {
                 return " -async 2 -vcodec libx264 -deinterlace -ar 44100 ";
             } else if (s.equals(Constants.X264_PRESET)) {
                 return "libx264-superfast";
+            } else if (s.equals(Constants.X264_PRESET_VLC)) {
+                return "profile=baseline,preset=superfast";
             }
 
 

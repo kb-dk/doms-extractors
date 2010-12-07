@@ -87,8 +87,8 @@ public class TranscoderProcessor extends ProcessorChainElement {
         }
         String command = "HandBrakeCLI -i " + inputFile.getAbsolutePath() +
                 " " + config.getInitParameter(Constants.HANDBRAKE_PARAMETERS) + " " +
-                " --vb " + config.getInitParameter(Constants.VIDEO_BITRATE) + " " +
-                " --ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + " " +
+                " --vb " + Util.getVideoBitrate(config) + " " +
+                " --ab " + Util.getAudioBitrate(config) + " " +
                 aspectHandbrake +
                 " " + config.getInitParameter(Constants.X264_PARAMETERS) + " -o " +
                 finalTempFile.getAbsolutePath();

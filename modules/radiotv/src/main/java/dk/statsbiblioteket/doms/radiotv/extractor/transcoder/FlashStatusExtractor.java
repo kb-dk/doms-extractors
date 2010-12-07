@@ -49,14 +49,14 @@ public class FlashStatusExtractor {
             ObjectStatus status = new ObjectStatus();
             status.setStatus(ObjectStatusEnum.DONE);
             status.setStreamId(Util.getStreamId(request, config));
-            status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+            status.setServiceUrl(Util.getInitParameter(config,Constants.WOWZA_URL));
             status.setCompletionPercentage(100.0);
             return status;
         } else if (ClipStatus.getInstance().isKnown(uuid)) {
             log.debug("Already started transcoding '" + uuid + "'");
             request = ClipStatus.getInstance().get(uuid);
             ObjectStatus status = new ObjectStatus();
-            status.setServiceUrl(config.getInitParameter(Constants.WOWZA_URL));
+            status.setServiceUrl(Util.getInitParameter(config, Constants.WOWZA_URL));
             if (Util.hasOutputFile(request, config)) {
                 final long outputFileLength = Util.getOutputFile(request, config).length();
                 if (request != null && request.getFinalFileLengthBytes() != null && request.getFinalFileLengthBytes() != 0) {

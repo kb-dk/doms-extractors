@@ -1,4 +1,5 @@
 <web-app xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+    
     <display-name>Broadcast Extraction Service</display-name>
 
     <servlet>
@@ -9,6 +10,8 @@
             <!-- com.sun.jersey.spi.container.servlet.ServletContainer-->
         </servlet-class>
 
+
+
         <!--
         Broadcast Extraction Service configuration parameters. First we list those
         which are likely to require tweaking in production.
@@ -17,40 +20,42 @@
         <!--
         Directory for temporary files. Will be created if it does not exist. In later
         versions it will be cleaned-up on reload.
-        -->
+
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.tempdir</param-name>
             <param-value>/home/larm/temp</param-value>
         </init-param>
+        -->
 
         <!--
         Directory where the streamable files are to be deployed
-        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.finaldir</param-name>
             <param-value>/home/larm/streamingContent</param-value>
         </init-param>
+        -->
 
         <!--
         URL where streamable files are streamed from
-        -->
+
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl</param-name>
             <param-value>rtmp://130.225.24.62/doms</param-value>
         </init-param>
-
+        -->
 
         <!-- Control multithreading: How many simultaneous processes to allow
-        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.maxActive</param-name>
             <param-value>8</param-value>
         </init-param>
+        -->
 
 
         <!--
         Location and basic authentication for DOMS
         -->
+        <!--
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsLocation</param-name>
             <param-value>http://alhena:7980/fedora</param-value>
@@ -63,6 +68,7 @@
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsPassword</param-name>
             <param-value>fedoraAdminPass</param-value>
         </init-param>
+        -->
 
         <!--
            Encoding parameters passed to ffmpeg
@@ -70,15 +76,15 @@
 
         <!--
         Video bitrate (kbps)
-        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate</param-name>
             <param-value>200</param-value>
         </init-param>
+        -->
 
         <!--
         Audio bitrate (kbps)
-        -->
+
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate</param-name>
             <param-value>96</param-value>
@@ -88,7 +94,7 @@
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight</param-name>
             <param-value>240</param-value>
         </init-param>
-
+        -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.ffmpegParameters</param-name>
             <param-value> -async 2 -vcodec libx264 -deinterlace -ar 44100 </param-value>

@@ -56,8 +56,8 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
 
     protected static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
         String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
-                + " -b " + config.getInitParameter(Constants.VIDEO_BITRATE) + "000"
-                + " -ab " + config.getInitParameter(Constants.AUDIO_BITRATE) + "000"
+                + " -b " + Util.getInitParameter(config, Constants.VIDEO_BITRATE) + "000"
+                + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
                 + " " + getFfmpegAspectRatio(request, config)
                 + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
                 + " " + Util.getFlashFile(request, config);
@@ -68,7 +68,7 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
     protected static String getFfmpegAspectRatio(TranscodeRequest request, ServletConfig config) {
         Double aspectRatio = request.getDisplayAspectRatio();
         String ffmpegResolution;
-        Long height = Long.parseLong(config.getInitParameter(Constants.PICTURE_HEIGHT));
+        Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
         if (aspectRatio != null) {
             long width = Math.round(aspectRatio*height);
             if (width%2 == 1) width += 1;
@@ -80,13 +80,13 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
     }
 
     static int getHeight(TranscodeRequest request, ServletConfig config) {
-        Long height = Long.parseLong(config.getInitParameter(Constants.PICTURE_HEIGHT));
+        Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
         return height.intValue();
    }
 
      static int getWidth(TranscodeRequest request, ServletConfig config) {
        Double aspectRatio = request.getDisplayAspectRatio();
-        Long height = Long.parseLong(config.getInitParameter(Constants.PICTURE_HEIGHT));
+        Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
         if (aspectRatio != null) {
             long width = Math.round(aspectRatio*height);
             if (width%2 == 1) width += 1;

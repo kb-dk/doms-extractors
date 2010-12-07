@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.apache.commons.pool.ObjectPool;
 
 import javax.servlet.ServletConfig;
+import java.io.IOException;
 
 public class ProcessorChainThread extends Thread {
 
@@ -70,7 +71,12 @@ public class ProcessorChainThread extends Thread {
         super.run();
         log.info("Starting processor chain for '" + request.getPid() + "'");
         try {
-            Util.getLockFile(request, config).createNewFile();
+            try {
+                Util.getTempDir(config).mkdirs();
+                Util.getLockFile(request, config).createNewFile();
+            } catch (IOException e) {
+                log.error("Error creating lock file: '" + Util.getLockFile(request, config).getAbsolutePath() + "'");
+            }
             tailElement.process(request, config);
         } catch (ProcessorException e) {
             log.error("Processing failed for '" + request.getPid() + "'", e);

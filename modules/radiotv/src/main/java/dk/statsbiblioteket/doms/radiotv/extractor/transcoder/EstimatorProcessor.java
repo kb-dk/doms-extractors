@@ -40,8 +40,8 @@ public class EstimatorProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        Integer audioBitrate = Integer.parseInt(config.getInitParameter(Constants.AUDIO_BITRATE));
-        Integer videoBitrate = Integer.parseInt(config.getInitParameter(Constants.VIDEO_BITRATE));
+        Integer audioBitrate = Integer.parseInt(Util.getInitParameter(config, Constants.AUDIO_BITRATE));
+        Integer videoBitrate = Integer.parseInt(Util.getInitParameter(config, Constants.VIDEO_BITRATE));
         //The above rates are kilobit/second
         //TODO unfortunately these values cannot be trusted for flash video
         Long finalFileSizeBytes = request.getTotalLengthSeconds()*(audioBitrate + videoBitrate)*1000L/8L;

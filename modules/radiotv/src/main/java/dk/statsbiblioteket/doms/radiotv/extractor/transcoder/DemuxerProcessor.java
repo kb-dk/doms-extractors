@@ -71,7 +71,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
     }
 
     private void createTempDirectory(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        String outputDir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
+        String outputDir = Util.getTempDir(config).getAbsolutePath();
         File outputDirFile = new File(outputDir);
         if (outputDirFile.mkdirs()) {
             log.info("Created directory '" + outputDirFile.getAbsolutePath() + "'");

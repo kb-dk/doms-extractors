@@ -45,6 +45,7 @@ public class Constants {
     public static final String PICTURE_HEIGHT = "dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight";
     public static final String FFMPEG_PARAMS = "dk.statsbiblioteket.doms.radiotv.extractor.ffmpegParameters";
     public static final String X264_PRESET = "dk.statsbiblioteket.doms.radiotv.extractor.x264Preset";
+    public static final String X264_PRESET_VLC = "dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc";
 
 
 

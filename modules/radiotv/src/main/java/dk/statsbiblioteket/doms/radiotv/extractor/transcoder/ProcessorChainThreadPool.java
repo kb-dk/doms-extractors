@@ -54,7 +54,7 @@ public class ProcessorChainThreadPool {
      */
     private ProcessorChainThreadPool(ServletConfig config) {
         theQueue = new LinkedBlockingQueue<ProcessorChainThread>();
-        maxActiveProcesses = Integer.parseInt(config.getInitParameter(Constants.MAX_ACTIVE_PROCESSING));
+        maxActiveProcesses = Integer.parseInt(Util.getInitParameter(config, Constants.MAX_ACTIVE_PROCESSING));
         log.info("Creating thread pool with max active processes = " + maxActiveProcesses);
         thePool = new GenericObjectPool(new BasePoolableObjectFactory() {
             @Override

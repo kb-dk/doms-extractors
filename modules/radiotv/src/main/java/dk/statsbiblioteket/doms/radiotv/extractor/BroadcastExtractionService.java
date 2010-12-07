@@ -84,9 +84,9 @@ public class BroadcastExtractionService {
     }
 
     private void readContextParameters() {
-        String tempdir = config.getInitParameter(Constants.TEMP_DIR_INIT_PARAM);
+        String tempdir = Util.getInitParameter(config, Constants.TEMP_DIR_INIT_PARAM);
         Transcoder.tempdir = tempdir;
-        String finaldir = config.getInitParameter(Constants.FINAL_DIR_INIT_PARAM);
+        String finaldir = Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM);
         Transcoder.finaldir = finaldir;
     }
 

@@ -110,10 +110,11 @@
                     <archiveClasses>true</archiveClasses>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>
+                            <addClasspath>true</addClasspath>                            
                         </manifest>
                     </archive>
                     <webXml>web/WEB-INF/web.xml</webXml>
+                    <containerConfigXML>etc/context.xml</containerConfigXML>
                 </configuration>
             </plugin>
 		</plugins>
