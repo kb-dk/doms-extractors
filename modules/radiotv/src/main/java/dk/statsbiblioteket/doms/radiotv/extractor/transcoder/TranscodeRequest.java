@@ -24,7 +24,10 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class encapsulating information about a download request. The various stages
@@ -51,6 +54,15 @@ public class TranscodeRequest {
     private String videoPid;
     private String audioPid;
     private String dvbsubPid;
+
+    private Set<String> audioPids = new HashSet<String>();
+    public void addAudioPid(String pid) {
+        audioPids.add(pid);
+    }
+
+    public Set<String> getAudioPids() {
+        return audioPids;
+    }
 
     public String getVideoPid() {
         return videoPid;

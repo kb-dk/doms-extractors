@@ -26,6 +26,6 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate"  value="200"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate" value="96"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight" value="240"/>
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc" value="profile=baseline,preset=superfast" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc" value="profile=High,preset=superfast,level=3.0" />
 
 </Context>

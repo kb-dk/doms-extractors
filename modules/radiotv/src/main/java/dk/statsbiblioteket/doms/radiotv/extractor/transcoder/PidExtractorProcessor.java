@@ -77,6 +77,70 @@ public class PidExtractorProcessor extends ProcessorChainElement {
             case WAV:
                 return;
         }
+        extractPidsFromFfmpeg(request, command);
+        if (request.getAudioPids().isEmpty() || request.getVideoPid() == null || request.getDvbsubPid() == null) {
+            if (request.getClipType() == ClipTypeEnum.MUX) {
+                command = "ffmpeg -i " + filename;
+                extractPidsFromFfmpeg(request, command);
+            }
+        }
+        if (request.getAudioPids().isEmpty() || request.getVideoPid() == null || request.getDvbsubPid() == null) {
+            if (request.getClipType() == ClipTypeEnum.MUX) {
+                command = " vlc -vv  --no-audio --no-video --intf dummy --run-time 5  --play-and-exit " + filename;
+                extractPidsFromVlc(request, command);
+            }
+        }
+    }
+
+    private void extractPidsFromVlc(TranscodeRequest request, String command) throws ProcessorException {
+          log.info("Executing '" + command + "'");
+        ExternalJobRunner runner;
+        try {
+            runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
+            log.debug("Command '" + command + "' returned with output '" + runner.getError());
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        } catch (InterruptedException e) {
+            throw new ProcessorException(e);
+        }
+        Pattern thisProgramPattern = Pattern.compile(".*program number="+request.getClips().get(0).getProgramId()+".*");
+        Pattern programPattern = Pattern.compile(".*program number=.*");
+        Pattern dvbsubPattern = Pattern.compile(".*pid=([0-9]{4}).*fcc=dvbs.*");
+        Pattern videoPattern = Pattern.compile(".*pid=([0-9]{4}).*((fcc=mpgv)|(fcc=h264)).*");
+        Pattern audioPattern1 = Pattern.compile(".*pid=([0-9]{4}).*((fcc=mp4a)|(fcc=mpga)).*");
+        String[] commandOutput = runner.getError().split("\\n");
+        boolean foundProgram = false;
+        for (String line:commandOutput) {
+            log.debug("Checking line '" + line + "'");
+            if (foundProgram && programPattern.matcher(line).matches()) {
+                log.debug("Found next program section, returning");
+                return;
+            }
+            if (thisProgramPattern.matcher(line).matches()) {
+                log.debug("Found requested program");
+                foundProgram = true;
+            }
+            if (foundProgram) {
+                Matcher dvbsubMatcher = dvbsubPattern.matcher(line);
+                if (dvbsubMatcher.matches()){
+                    request.setDvbsubPid(dvbsubMatcher.group(1));
+                    log.info("Setting pid for dvbsub '" + dvbsubMatcher.group(1) + "'");
+                }
+                Matcher videoMatcher = videoPattern.matcher(line);
+                if (videoMatcher.matches()) {
+                    request.setVideoPid(videoMatcher.group(1));
+                    log.info("Setting pid for video '" + videoMatcher.group(1) + "'");
+                }
+                Matcher audioMatcher = audioPattern1.matcher(line);
+                if (audioMatcher.matches()) {
+                    request.addAudioPid(audioMatcher.group(1));
+                    log.info("Setting pid for audio '" + audioMatcher.group(1) + "'");
+                }
+            }
+        }
+    }
+
+    private void extractPidsFromFfmpeg(TranscodeRequest request, String command) throws ProcessorException {
         log.info("Executing '" + command + "'");
         ExternalJobRunner runner;
         try {
@@ -118,12 +182,12 @@ public class PidExtractorProcessor extends ProcessorChainElement {
                 }
                 Matcher audioMatcher = audioPattern1.matcher(line);
                 if (audioMatcher.matches()) {
-                    request.setAudioPid(audioMatcher.group(1));
+                    request.addAudioPid(audioMatcher.group(1));
                     log.info("Setting pid for audio '" + audioMatcher.group(1) + "'");
                 }
                 audioMatcher = audioPattern2.matcher(line);
                 if (audioMatcher.matches()) {
-                    request.setAudioPid(audioMatcher.group(1));
+                    request.addAudioPid(audioMatcher.group(1));
                     log.info("Setting pid for audio '" + audioMatcher.group(1) + "'");
                 }
             }

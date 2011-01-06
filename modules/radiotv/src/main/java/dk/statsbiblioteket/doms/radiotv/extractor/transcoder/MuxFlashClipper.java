@@ -73,7 +73,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
                 processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs=" + blocksize + ") ";
             }
         }
-        boolean pidSubtitles = request.getDvbsubPid() != null && request.getAudioPid() != null && request.getVideoPid() != null;
+        boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
 
 
         String clipperCommand;
@@ -91,54 +91,38 @@ public class MuxFlashClipper extends ProcessorChainElement {
                     + ",select=\"program=" + programNumber + "\"' ";
         }
         else {
-            /* clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
-          + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
-          + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-          + "--sout '#std{access=file, mux=ts, dst=-}' | "
-          + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);*/
             if (!pidSubtitles) {
-                clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
-                        + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
-                        + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                        + " --sout '#transcode{acodec=mp3,vcodec=h264,vb=" + Util.getVideoBitrate(config)
-                        + ",venc=x264{profile=baseline,preset=superfast},deinterlace,audio-sync,"
-                        + "ab=" + Util.getAudioBitrate(config)
-                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                        + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",samplerate=44100,threads=0}"
-                        + ":std{access=file,mux=ts,dst=-}'|ffmpeg -i - -async 2 -acodec copy -vcodec copy -f flv "
-                        + Util.getFlashFile(request, config).getAbsolutePath();
-
                 clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                        + " --sout '#transcode{acodec=mp3,vcodec=h264,vb=" + Util.getVideoBitrate(config)
+                        + " --sout '#transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config)
                         + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},deinterlace,audio-sync,"
-                        + "ab=" + Util.getAudioBitrate(config)
-                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                        + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",samplerate=44100,threads=0}"
-                        + ":std{access=file,mux=ts,dst=-}'|ffmpeg -i - -async 2 -acodec copy -vcodec copy -f flv "
-                        + Util.getFlashFile(request, config).getAbsolutePath();
-            } else {
-                clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
-                        + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
-                        + " | vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                        + "--sout-all --sout '#duplicate{dst=\""
-                        + "transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC)+"},soverlay,deinterlace,audio-sync,"
-                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                        + "width=" + FlashTranscoderProcessor.getWidth(request, config)
                         + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                        + ":std{access=file,mux=ts,dst=-}\""
-                        + ",select=\"es=" + request.getVideoPid()+",es="+request.getAudioPid()+",es="+request.getDvbsubPid() + "\"}' |" +
-                        "ffmpeg -i - -async 2 -vcodec copy -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config)
-                        + "000 -f flv " + Util.getFlashFile(request, config);
+                        + ":std{access=file,mux=ts,dst=-}'|ffmpeg -i - -async 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + "000 -vcodec copy -f flv "
+                        + Util.getFlashFile(request, config).getAbsolutePath();
 
+                 clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                    + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
+                    + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
+                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
+                    + ":std{access=file,mux=ts,dst=-}\""
+                    + ",select=\"program=" + programNumber + "\"' | "
+                    + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + Util.getFlashFile(request, config) ;
+
+            } else {
+                String audioPids = "";
+                for (String pid: request.getAudioPids()) {
+                    audioPids += "es=" + pid + ",";
+                }
                  clipperCommand = "cat " + processSubstitutionFileList + " |  vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                         + "--sout-all --sout '#duplicate{dst=\""
-                        + "transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
+                        + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                         + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
                         + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
                         + ":std{access=file,mux=ts,dst=-}\""
-                        + ",select=\"es=" + request.getVideoPid()+",es="+request.getAudioPid()+",es="+request.getDvbsubPid() + "\"}' |" +
-                        "ffmpeg -i - -async 2 -vcodec copy -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config)
+                        + ",select=\"es=" + request.getVideoPid() + "," + audioPids + "es="+request.getDvbsubPid() + "\"}' |" +
+                        "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
                         + "000 -f flv " + Util.getFlashFile(request, config);
-
             }
         }
         FlashTranscoderProcessor.runClipperCommand(clipperCommand);
