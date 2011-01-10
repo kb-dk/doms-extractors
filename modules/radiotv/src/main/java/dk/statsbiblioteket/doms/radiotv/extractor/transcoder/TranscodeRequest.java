@@ -64,6 +64,15 @@ public class TranscodeRequest {
         return audioPids;
     }
 
+    public int getMinimumAudioPid() {
+        int minimum = Integer.MAX_VALUE;
+        for (String pid: audioPids) {
+            Integer newPid = Integer.decode(pid);
+            minimum = Math.min(newPid, minimum);
+        }
+        return minimum;
+    }
+
     public String getVideoPid() {
         return videoPid;
     }

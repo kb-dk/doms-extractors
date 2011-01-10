@@ -110,17 +110,17 @@ public class MuxFlashClipper extends ProcessorChainElement {
                     + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + Util.getFlashFile(request, config) ;
 
             } else {
-                String audioPids = "";
+                /*String audioPids = "";
                 for (String pid: request.getAudioPids()) {
                     audioPids += "es=" + pid + ",";
-                }
+                }*/
                  clipperCommand = "cat " + processSubstitutionFileList + " |  vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                         + "--sout-all --sout '#duplicate{dst=\""
                         + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                         + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
                         + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
                         + ":std{access=file,mux=ts,dst=-}\""
-                        + ",select=\"es=" + request.getVideoPid() + "," + audioPids + "es="+request.getDvbsubPid() + "\"}' |" +
+                        + ",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |" +
                         "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
                         + "000 -f flv " + Util.getFlashFile(request, config);
             }
