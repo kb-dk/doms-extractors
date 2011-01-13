@@ -60,7 +60,7 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
                 + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
                 + " " + getFfmpegAspectRatio(request, config)
                 + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
-                + " " + Util.getFlashFile(request, config);
+                + " -threads 0 " + Util.getFlashFile(request, config);
         return line;
     }
 
