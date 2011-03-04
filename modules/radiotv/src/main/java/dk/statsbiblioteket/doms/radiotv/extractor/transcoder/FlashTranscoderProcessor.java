@@ -100,10 +100,12 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
         log.info("Executing '" + clipperCommand + "'");
         try {
             ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
-            log.info("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");
             if (runner.getExitValue() != 0) {
-                log.debug("Standard out:\n" + runner.getOutput());
-                log.debug("Standard err:\n" + runner.getError());
+                log.warn("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");
+                log.warn("Standard out:\n" + runner.getOutput());
+                log.warn("Standard err:\n" + runner.getError());
+            } else {
+                log.info("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");                
             }
         } catch (IOException e) {
             throw new ProcessorException(e);
