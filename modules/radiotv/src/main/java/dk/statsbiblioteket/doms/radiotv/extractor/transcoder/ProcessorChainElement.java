@@ -34,26 +34,41 @@ public abstract class ProcessorChainElement {
     private static Logger log = Logger.getLogger(ProcessorChainElement.class);
 
     private ProcessorChainElement parentElement;
+    private ProcessorChainElement childElement;
 
     /**
      * Set the parent element of this element, ie the element to be carried out
      * immediately prior to this one. If null, this element is terminal.
      * @param parentElement
+     * @deprecated Iterative processing (using setChildElement) is more flexible and
+     * is to be preferred.
      */
     public void setParentElement(ProcessorChainElement parentElement) {
         this.parentElement = parentElement;
     }
 
+    public void setChildElement(ProcessorChainElement childElement) {
+        this.childElement = childElement;
+    }
+
+
     /**
      * Carry out the chain of processing elements which ends
-     * with this element.
+     * with this element. Ie execute the parent element of this process and then process this element
      * @param request
      * @param config
+     * @deprecated Iterative processing is a better idea
      */
-    public void process(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        if (parentElement != null) parentElement.process(request, config);
-        log.info("Processing '" + request.getPid() + "' with " + this.getClass());
+    public void processRecursively(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        if (parentElement != null) parentElement.processRecursively(request, config);
+        log.info("Processing Recursively'" + request.getPid() + "' with " + this.getClass());
         processThis(request, config);
+    }
+
+    public void processIteratively(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        log.info("Processing Iteratively'" + request.getPid() + "' with " + this.getClass());
+        processThis(request, config);
+        if (childElement != null) childElement.processIteratively(request, config);
     }
 
     /**

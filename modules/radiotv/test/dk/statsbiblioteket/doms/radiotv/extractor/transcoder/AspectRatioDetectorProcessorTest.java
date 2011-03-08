@@ -38,7 +38,7 @@ public class AspectRatioDetectorProcessorTest extends TestCase {
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(clip1));
         request.setClipType(ClipTypeEnum.MUX);
-        (new AspectRatioDetectorProcessor()).process(request, null);
+        (new AspectRatioDetectorProcessor()).processRecursively(request, null);
         assertTrue(request.getDisplayAspectRatio()>1.7);
         assertTrue(request.getDisplayAspectRatio()<1.8);
     }
@@ -51,7 +51,7 @@ public class AspectRatioDetectorProcessorTest extends TestCase {
         TranscodeRequest request = new TranscodeRequest("foobar");
          request.setClipType(ClipTypeEnum.MPEG1);
         request.setClips(Arrays.asList(clip1));
-        (new AspectRatioDetectorProcessor()).process(request, null);
+        (new AspectRatioDetectorProcessor()).processRecursively(request, null);
         assertTrue(request.getDisplayAspectRatio()>1.8);
         assertTrue(request.getDisplayAspectRatio()<1.82);
     }

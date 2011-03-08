@@ -32,7 +32,7 @@ public class ExternalJobRunner {
     private int exit_code;
 
     /**
-     * Runs an external command, blocking until the external process ends after which
+     * Runs an external command, blocking until the external processRecursively ends after which
      * the output and errors can be read.
      * @param command
      * @throws java.io.IOException

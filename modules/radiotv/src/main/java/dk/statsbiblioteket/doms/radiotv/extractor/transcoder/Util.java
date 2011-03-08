@@ -112,6 +112,10 @@ public class Util {
         return new File(getFinalDir(config), request.getPid() + ".flv");
     }
 
+    public static File getFlashPreviewFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getFinalDir(config), request.getPid() + ".preview.flv");
+    }
+
     public static File getMp3File(TranscodeRequest request, ServletConfig config) {
          return new File(getFinalDir(config), request.getPid() + ".mp3");
     }

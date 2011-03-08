@@ -101,35 +101,82 @@ public class ExtractorApplication {
 
     /**
      * Command line argument to test extraction of programs
-     * @param args a list of uuid'er of programs to fetch or .xml files containing shard data
-
+     * @param  args [0] = e (Extract), p (Preview), or t (Thumbnail)
+     * args[1...n] a list of uuid's of programs to fetch or .xml files containing shard data
+     *
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ProcessorException {
         log.info("Starting extraction");
+        ServiceTypeEnum service = null;
         for (String arg: args) {
-            log.info("Starting process for '" + arg + "'");
-            ProcessorChainElement transcoder = new FlashTranscoderProcessor();
-            ProcessorChainElement estimator = new FlashEstimatorProcessor();
-            ProcessorChainElement parser = new ShardParserProcessor();
-            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
-            ProcessorChainElement pider = new PidExtractorProcessor();
-            transcoder.setParentElement(estimator);
-            estimator.setParentElement(pider);
-            pider.setParentElement(aspecter);
-            aspecter.setParentElement(parser);
-            TranscodeRequest request = new TranscodeRequest(arg);
-            if (arg.endsWith(".xml")) {
-                File file = new File(arg);
-                request.setShard(Files.loadString(file));
-                request.setPid(file.getName().replace(".xml",""));
-                log.debug("Set content: '" + request.getShard() + "'");
+            arg = arg.trim();
+            log.info("Processing argument '" + arg + "'");
+            if (arg.length() == 1) {
+                if (arg.equals("e")) {
+                    service = ServiceTypeEnum.BROADCAST_EXTRACTION;
+                } else if (arg.equals("p")) {
+                    service = ServiceTypeEnum.PREVIEW_GENERATION;
+                } else if (arg.equals("t")) {
+                    service = ServiceTypeEnum.THUMBNAIL_GENERATION;
+                }
             } else {
-               ProcessorChainElement fetcher = new ShardFetcherProcessor();
-                parser.setParentElement(fetcher);
-                request.setPid(arg);
+                log.info("Starting process for '" + arg + "'");
+                TranscodeRequest request = new TranscodeRequest(arg);
+                request.setServiceType(service);
+                switch(service) {
+                    case BROADCAST_EXTRACTION:
+                        queueExtraction(arg, request);
+                        break;
+                    case PREVIEW_GENERATION:
+                        queuePreview(arg, request);
+                        break;
+                    case THUMBNAIL_GENERATION:
+                        throw new RuntimeException("Thumbnail generation not implemented");
+                }
             }
-            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-            ProcessorChainThreadPool.addProcessorChainThread(thread);
         }
+    }
+
+    private static void queuePreview(String arg, TranscodeRequest request) throws IOException, ProcessorException {
+        ProcessorChainElement fetcher = new ShardFetcherProcessor();
+        ProcessorChainElement parser = new ShardParserProcessor();
+        ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+        ProcessorChainElement pider = new PidExtractorProcessor();
+        fetcher.setChildElement(parser);
+        parser.setChildElement(aspecter);
+        aspecter.setChildElement(pider);
+        if (arg.endsWith(".xml")) {
+            File file = new File(arg);
+            request.setShard(Files.loadString(file));
+            request.setPid(file.getName().replace(".xml",""));
+            log.debug("Set content: '" + request.getShard() + "'");
+            parser.processIteratively(request, config);
+        } else {
+            fetcher.processIteratively(request, config);
+        }
+    }
+
+    private static void queueExtraction(String arg, TranscodeRequest request) throws IOException {
+        ProcessorChainElement transcoder = new FlashTranscoderProcessor();
+        ProcessorChainElement estimator = new FlashEstimatorProcessor();
+        ProcessorChainElement parser = new ShardParserProcessor();
+        ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+        ProcessorChainElement pider = new PidExtractorProcessor();
+        transcoder.setParentElement(estimator);
+        estimator.setParentElement(pider);
+        pider.setParentElement(aspecter);
+        aspecter.setParentElement(parser);
+        if (arg.endsWith(".xml")) {
+            File file = new File(arg);
+            request.setShard(Files.loadString(file));
+            request.setPid(file.getName().replace(".xml",""));
+            log.debug("Set content: '" + request.getShard() + "'");
+        } else {
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            parser.setParentElement(fetcher);
+            request.setPid(arg);
+        }
+        ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+        ProcessorChainThreadPool.addProcessorChainThread(thread);
     }
 }

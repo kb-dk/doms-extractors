@@ -25,15 +25,12 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.Queue;
 
 public class ProcessorChainThreadPool {
 
@@ -90,7 +87,7 @@ public class ProcessorChainThreadPool {
                              log.info("Locking request '" + theThread.getRequest().getPid() + "' with '" + lockObject +"");
                              theThread.start();
                          } catch (Exception e) {
-                             log.error("Unexpected error starting transcoding process", e);
+                             log.error("Unexpected error starting transcoding processRecursively", e);
                          }
                      }
                      catch (InterruptedException e) {

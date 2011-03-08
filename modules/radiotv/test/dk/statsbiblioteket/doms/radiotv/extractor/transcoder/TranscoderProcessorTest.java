@@ -71,7 +71,7 @@ public class TranscoderProcessorTest extends TestCase {
         tempdir.mkdirs();
         Files.copy(new File(inputFile), new File(tempdir, "foobar_first.ts"), true);
         TranscodeRequest request = new TranscodeRequest("foobar");
-        (new TranscoderProcessor()).process(request, config);
+        (new TranscoderProcessor()).processRecursively(request, config);
         File outputFile = new File(finaldir, "foobar.mp4");
         assertTrue(outputFile.exists());
         assertTrue(outputFile.length() > 1000000L);

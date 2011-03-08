@@ -22,7 +22,6 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import org.apache.log4j.Logger;
-import org.apache.commons.pool.ObjectPool;
 
 import javax.servlet.ServletConfig;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class ProcessorChainThread extends Thread {
             } catch (IOException e) {
                 log.error("Error creating lock file: '" + Util.getLockFile(request, config).getAbsolutePath() + "'");
             }
-            tailElement.process(request, config);
+            tailElement.processRecursively(request, config);
         } catch (ProcessorException e) {
             log.error("Processing failed for '" + request.getPid() + "'", e);
             throw new RuntimeException(e);

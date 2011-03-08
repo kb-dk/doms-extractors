@@ -38,7 +38,7 @@ public class DemuxerProcessor extends ProcessorChainElement {
     /**
      * Takes the list of clips in the clips field of the request and
      * creates a single transport-stream file from them. This method
-     * blocks during the demuxing process.
+     * blocks during the demuxing processRecursively.
      * Side-effect: the temporary directory is created if it doesn't already exist.
      * @param request Pre-condition is that the field "clips" in the
      */

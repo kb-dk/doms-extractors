@@ -84,7 +84,7 @@ public class DemuxerProcessorTest extends TestCase {
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClipType(ClipTypeEnum.MUX);
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
-        (new DemuxerProcessor()).process(request, config);
+        (new DemuxerProcessor()).processRecursively(request, config);
         File outputFile = new File(tempdir, "foobar_first.ts");
         assertTrue(outputFile.exists());
         assertTrue(outputFile.length() > 1000000L);
@@ -122,7 +122,7 @@ public class DemuxerProcessorTest extends TestCase {
         clip.setStartOffsetBytes(1000000000L);
         clip.setClipLength(request.getClipType().getBitrate()*desiredLengthMinutes*60L);
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip}));
-        (new DemuxerProcessor()).process(request, config);
+        (new DemuxerProcessor()).processRecursively(request, config);
         File outputFile = Util.getFlashFile(request, config);
         assertTrue("Output flash file exists", outputFile.exists());
         assertTrue("File has reasonable length", outputFile.length() > 1000000L);
@@ -163,7 +163,7 @@ public class DemuxerProcessorTest extends TestCase {
         TranscodeRequest request = new TranscodeRequest("foobar");
         request.setClips(Arrays.asList(new TranscodeRequest.FileClip[]{clip1,clip2,clip3}));
         request.setClipType(ClipTypeEnum.MUX);
-        (new DemuxerProcessor()).process(request, config);
+        (new DemuxerProcessor()).processRecursively(request, config);
         File outputFile = new File(tempdir, "foobar_first.ts");
         assertTrue(outputFile.exists());
         assertTrue(outputFile.length() > 1000000L);
@@ -205,7 +205,7 @@ public class DemuxerProcessorTest extends TestCase {
         ProcessorChainElement first = new DemuxerProcessor();
         ProcessorChainElement second = new TranscoderProcessor();
         second.setParentElement(first);
-        second.process(request, config);
+        second.processRecursively(request, config);
         File outputFile = new File("./finaldir", "foobar.mp4");
         assertTrue(outputFile.exists());
         assertTrue(outputFile.length() > 1000000L);

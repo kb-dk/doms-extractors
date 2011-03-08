@@ -52,6 +52,7 @@ public class BroadcastExtractionService {
         } else {
             String uuid = Util.getUuid(programPid);
             TranscodeRequest request = new TranscodeRequest(uuid);
+            request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
             ClipStatus.getInstance().register(request);
             ProcessorChainElement transcoder = new FlashTranscoderProcessor();
             ProcessorChainElement estimator = new FlashEstimatorProcessor();
@@ -65,7 +66,8 @@ public class BroadcastExtractionService {
             aspecter.setParentElement(parser);
             parser.setParentElement(fetcher);
             ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
-            thread.start();
+            //thread.start();
+            ProcessorChainThreadPool.addProcessorChainThread(thread);
         }
         status = new ObjectStatus();
         status.setStatus(ObjectStatusEnum.STARTING);

@@ -51,9 +51,21 @@ public class TranscodeRequest {
 
     private ClipTypeEnum clipType;
 
+    private ServiceTypeEnum serviceType;
+
+
     private String videoPid;
     private String audioPid;
     private String dvbsubPid;
+
+
+    public ServiceTypeEnum getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(ServiceTypeEnum serviceType) {
+        this.serviceType = serviceType;
+    }
 
     private Set<String> audioPids = new HashSet<String>();
     public void addAudioPid(String pid) {
