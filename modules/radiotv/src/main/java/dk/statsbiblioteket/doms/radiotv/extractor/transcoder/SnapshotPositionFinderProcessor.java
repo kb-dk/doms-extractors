@@ -50,6 +50,7 @@ public class SnapshotPositionFinderProcessor extends ProcessorChainElement {
         long currentPosition = 0L;  // Current position in program
         Integer programId = null;
         for (TranscodeRequest.FileClip clip: request.getClips()) {
+            programId = clip.getProgramId();
             StartEndPairFilePair filePair = new StartEndPairFilePair();
             filePair.setFilepath(clip.getFilepath());
             Long fileLength = (new File(clip.getFilepath())).length();
