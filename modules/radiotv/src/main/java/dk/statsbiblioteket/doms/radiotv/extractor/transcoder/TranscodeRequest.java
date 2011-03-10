@@ -221,6 +221,55 @@ public class TranscodeRequest {
         return clips;
     }
 
+    private List<SnapshotPosition> snapshotPositions;
+
+    public List<SnapshotPosition> getSnapshotPositions() {
+        return snapshotPositions;
+    }
+
+    public void setSnapshotPositions(List<SnapshotPosition> snapshotPositions) {
+        this.snapshotPositions = snapshotPositions;
+    }
+
+    public static class SnapshotPosition {
+        @Override
+        public String toString() {
+            return "SnapshotPosition{" +
+                    "filepath='" + filepath + '\'' +
+                    ", programId=" + programId +
+                    ", bytePosition=" + bytePosition +
+                    '}';
+        }
+
+        private String filepath;
+     private Integer programId;
+     private Long bytePosition;
+
+     public String getFilepath() {
+         return filepath;
+     }
+
+     public void setFilepath(String filepath) {
+         this.filepath = filepath;
+     }
+
+     public Integer getProgramId() {
+         return programId;
+     }
+
+     public void setProgramId(Integer programId) {
+         this.programId = programId;
+     }
+
+     public Long getBytePosition() {
+         return bytePosition;
+     }
+
+     public void setBytePosition(Long bytePosition) {
+         this.bytePosition = bytePosition;
+     }
+ }
+
     /**
      * Class representing the absolute minimum information needed to clip data from a file
      */

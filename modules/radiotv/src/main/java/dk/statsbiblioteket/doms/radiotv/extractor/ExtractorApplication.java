@@ -131,10 +131,30 @@ public class ExtractorApplication {
                         queuePreview(arg, request);
                         break;
                     case THUMBNAIL_GENERATION:
-                        throw new RuntimeException("Thumbnail generation not implemented");
+                        queueThumbnails(arg, request);
+                        break;
                 }
             }
         }
+    }
+
+    private static void queueThumbnails(String arg, TranscodeRequest request) throws IOException, ProcessorException {
+        ProcessorChainElement fetcher = new ShardFetcherProcessor();
+        ProcessorChainElement parser = new ShardParserProcessor();
+        ProcessorChainElement snapshotFinder = new SnapshotPositionFinderProcessor();
+        fetcher.setChildElement(parser);
+        parser.setChildElement(snapshotFinder);
+        ProcessorChainThread thread;
+        if (arg.endsWith(".xml")) {
+            File file = new File(arg);
+            request.setShard(Files.loadString(file));
+            request.setPid(file.getName().replace(".xml",""));
+            log.debug("Set content: '" + request.getShard() + "'");
+            thread = ProcessorChainThread.getIterativeProcessorChainThread(parser, request, config);
+        } else {
+            thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
+        }
+        ProcessorChainThreadPool.addProcessorChainThread(thread);
     }
 
     private static void queuePreview(String arg, TranscodeRequest request) throws IOException, ProcessorException {
