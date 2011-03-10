@@ -43,6 +43,64 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         log.debug("Beginning preview processing of '" + request.getPid() + "'");
         Long blocksize = 1880L;
+        Long previewLengthBytes = ClipTypeEnum.getType(request).getBitrate() * previewLengthSeconds;
+        TranscodeRequest.FileClip longestClip = getLongestClip(request);
+        log.debug("Longest clip for '" + request.getPid() + "' is '" + longestClip + "'");
+        String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes);
+
+        boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
+        String clipperCommand;
+        int programNumber = longestClip.getProgramId();
+        if (pidSubtitles) {
+             clipperCommand = "cat " + processSubstituionDDCommand + " |  vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                        + "--sout-all --sout '#duplicate{dst=\""
+                        + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
+                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                        + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
+                        + ":std{access=file,mux=ts,dst=-}\""
+                        + ",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |" +
+                        "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
+                        + "000 -f flv " + Util.getFlashPreviewFile(request, config);
+        } else {
+            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                               + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
+                               + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
+                               + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                               + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
+                               + ":std{access=file,mux=ts,dst=-}\""
+                               + ",select=\"program=" + programNumber + "\"' | "
+                               + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + Util.getFlashPreviewFile(request, config) ;
+
+        }
+        FlashTranscoderProcessor.runClipperCommand(clipperCommand);
+    }
+
+    private String getDDCommand(Long blocksize, TranscodeRequest.FileClip longestClip, Long previewLengthBytes) {
+        String processSubstituionDDCommand = null;
+        Long clipLength = longestClip.getClipLength();
+        Long clipOffset = longestClip.getStartOffsetBytes();
+        Long fileLength = new File(longestClip.getFilepath()).length();
+        if (clipLength == null && clipOffset == null) {
+            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
+                    " skip=" + fileLength/(2*blocksize) +
+                    " count=" + previewLengthBytes/blocksize + ")";
+        } else if (clipLength != null && clipOffset != null) {
+            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
+                    " skip=" + (clipOffset + clipLength/2)/blocksize +
+                    " count=" + previewLengthBytes/blocksize + ")";
+        } else if (clipLength == null && clipOffset != null) {
+            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
+                    " skip=" + (clipOffset + (fileLength-clipOffset)/2)/blocksize +
+                    " count=" + previewLengthBytes/blocksize + ")";
+        } else if (clipLength != null && clipOffset == null) {
+            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
+                    " skip=" + clipLength/(2*blocksize) +
+                    " count=" + previewLengthBytes/blocksize + ")";
+        }
+        return processSubstituionDDCommand;
+    }
+
+    private TranscodeRequest.FileClip getLongestClip(TranscodeRequest request) {
         TranscodeRequest.FileClip longestClip = null;
         Long lengthOfLongestClip = 0L;
         final int clipSize = request.getClips().size();
@@ -71,54 +129,6 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
                 }
             }
         }
-        log.debug("Longest clip for '" + request.getPid() + "' is '" + longestClip + "'");
-        Long previewLengthBytes = ClipTypeEnum.getType(request).getBitrate() * previewLengthSeconds;
-        String processSubstituionDDCommand = null;
-        Long clipLength = longestClip.getClipLength();
-        Long clipOffset = longestClip.getStartOffsetBytes();
-        Long fileLength = new File(longestClip.getFilepath()).length();
-        if (clipLength == null && clipOffset == null) {
-            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
-                    " skip=" + fileLength/(2*blocksize) +
-                    " count=" + previewLengthBytes/blocksize + ")";
-        } else if (clipLength != null && clipOffset != null) {
-            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
-                    " skip=" + (clipOffset + clipLength/2)/blocksize +
-                    " count=" + previewLengthBytes/blocksize + ")";
-        } else if (clipLength == null && clipOffset != null) {
-            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
-                    " skip=" + (clipOffset + (fileLength-clipOffset)/2)/blocksize +
-                    " count=" + previewLengthBytes/blocksize + ")";
-        } else if (clipLength != null && clipOffset == null) {
-            processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
-                    " skip=" + clipLength/(2*blocksize) +
-                    " count=" + previewLengthBytes/blocksize + ")";
-        }
-
-        boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
-        String clipperCommand;
-        int programNumber = longestClip.getProgramId();
-        if (pidSubtitles) {
-             clipperCommand = "cat " + processSubstituionDDCommand + " |  vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                        + "--sout-all --sout '#duplicate{dst=\""
-                        + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
-                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                        + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                        + ":std{access=file,mux=ts,dst=-}\""
-                        + ",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |" +
-                        "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
-                        + "000 -f flv " + Util.getFlashPreviewFile(request, config);
-        } else {
-            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                               + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
-                               + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
-                               + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                               + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                               + ":std{access=file,mux=ts,dst=-}\""
-                               + ",select=\"program=" + programNumber + "\"' | "
-                               + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + Util.getFlashPreviewFile(request, config) ;
-
-        }
-        FlashTranscoderProcessor.runClipperCommand(clipperCommand);
+        return longestClip;
     }
 }
