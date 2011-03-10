@@ -65,7 +65,7 @@ public class BroadcastExtractionService {
             pider.setParentElement(aspecter);
             aspecter.setParentElement(parser);
             parser.setParentElement(fetcher);
-            ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+            ProcessorChainThread thread = ProcessorChainThread.getRecursiveProcessorChainThread(transcoder, request, config);
             //thread.start();
             ProcessorChainThreadPool.addProcessorChainThread(thread);
         }

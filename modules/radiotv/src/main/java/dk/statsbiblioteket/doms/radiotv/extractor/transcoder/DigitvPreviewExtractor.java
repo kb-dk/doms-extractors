@@ -44,7 +44,7 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
         log.debug("Beginning preview processing of '" + request.getPid() + "'");
         Long blocksize = 1880L;
         Long previewLengthBytes = ClipTypeEnum.getType(request).getBitrate() * previewLengthSeconds;
-        TranscodeRequest.FileClip longestClip = getLongestClip(request);
+        TranscodeRequest.FileClip longestClip = request.getLongestClip();
         log.debug("Longest clip for '" + request.getPid() + "' is '" + longestClip + "'");
         String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes);
 
@@ -100,35 +100,4 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
         return processSubstituionDDCommand;
     }
 
-    private TranscodeRequest.FileClip getLongestClip(TranscodeRequest request) {
-        TranscodeRequest.FileClip longestClip = null;
-        Long lengthOfLongestClip = 0L;
-        final int clipSize = request.getClips().size();
-        for (int iclip = 0; iclip < clipSize; iclip++ ) {
-            TranscodeRequest.FileClip clip = request.getClips().get(iclip);
-            Long clipLength = clip.getClipLength();
-            Long clipOffset = clip.getStartOffsetBytes();
-            // A clip can have:
-            // neither length nor offset, so length = whole file
-            // both length and offset, so length = length specified
-            // offset, but no length, so length = filelength - offset
-            // no offset, but length
-            if (clipLength != null) {
-                if (clipLength > lengthOfLongestClip) {
-                    longestClip = clip;
-                }
-            } else if (clipLength == null && clipOffset == null) {
-               long fileLength = new File(clip.getFilepath()).length();
-                if (fileLength > lengthOfLongestClip) {
-                    longestClip = clip;
-                }
-            } else if (clipLength == null && clipOffset != null) {
-                clipLength = new File(clip.getFilepath()).length() - clipOffset;
-                if (clipLength > lengthOfLongestClip) {
-                    longestClip = clip;
-                }
-            }
-        }
-        return longestClip;
-    }
 }

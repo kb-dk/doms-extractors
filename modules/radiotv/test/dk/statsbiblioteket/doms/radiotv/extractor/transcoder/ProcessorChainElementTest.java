@@ -80,7 +80,7 @@ public class ProcessorChainElementTest extends TestCase {
         demuxer.setParentElement(estimator);
         estimator.setParentElement(aspecter);
 
-        ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+        ProcessorChainThread thread = ProcessorChainThread.getRecursiveProcessorChainThread(transcoder, request, config);
         thread.run();
         assertTrue(Util.getFlashFile(request, config).exists());
         assertTrue(Util.getFlashFile(request, config).length() > 1000000L);

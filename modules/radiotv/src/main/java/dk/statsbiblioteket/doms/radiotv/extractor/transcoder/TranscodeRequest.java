@@ -58,6 +58,15 @@ public class TranscodeRequest {
     private String audioPid;
     private String dvbsubPid;
 
+    private FileClip longestClip;
+
+    public FileClip getLongestClip() {
+        return longestClip;
+    }
+
+    public void setLongestClip(FileClip longestClip) {
+        this.longestClip = longestClip;
+    }
 
     public ServiceTypeEnum getServiceType() {
         return serviceType;

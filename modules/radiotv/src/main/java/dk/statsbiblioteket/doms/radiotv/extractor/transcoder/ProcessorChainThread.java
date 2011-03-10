@@ -30,16 +30,32 @@ public class ProcessorChainThread extends Thread {
 
     private static Logger log = Logger.getLogger(ProcessorChainThread.class);
 
-    private ProcessorChainElement tailElement;
+    private ProcessorChainElement callElement;
     private TranscodeRequest request;
     private ServletConfig config;
 
+    private boolean isRecursive;
+
+    public static ProcessorChainThread getRecursiveProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
+          return new ProcessorChainThread(tailElement, request, config, true);
+    }
+
+     public static ProcessorChainThread getIterativeProcessorChainThread(ProcessorChainElement headElement, TranscodeRequest request, ServletConfig config) {
+          return new ProcessorChainThread(headElement, request, config, false);
+    }
+
+    private ProcessorChainThread(ProcessorChainElement callElement, TranscodeRequest request, ServletConfig config, boolean isRecursive) {
+        this.isRecursive = isRecursive;
+        this.callElement = callElement;
+        this.request = request;
+        this.config = config;
+    }
 
 
-    public ProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
+    private ProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
         super("TranscodeProcessor");
         log.info("Created processor chain for '" + request.getPid() + "'");
-        this.tailElement = tailElement;
+        this.callElement = tailElement;
         this.request = request;
         this.config = config;
     }
@@ -76,7 +92,11 @@ public class ProcessorChainThread extends Thread {
             } catch (IOException e) {
                 log.error("Error creating lock file: '" + Util.getLockFile(request, config).getAbsolutePath() + "'");
             }
-            tailElement.processRecursively(request, config);
+            if (isRecursive) {
+                callElement.processRecursively(request, config);
+            } else {
+                callElement.processIteratively(request, config);
+            }
         } catch (ProcessorException e) {
             log.error("Processing failed for '" + request.getPid() + "'", e);
             throw new RuntimeException(e);

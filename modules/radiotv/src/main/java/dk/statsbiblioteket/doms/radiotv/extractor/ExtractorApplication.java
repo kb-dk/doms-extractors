@@ -145,15 +145,17 @@ public class ExtractorApplication {
         fetcher.setChildElement(parser);
         parser.setChildElement(aspecter);
         aspecter.setChildElement(pider);
+        ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);
             request.setShard(Files.loadString(file));
             request.setPid(file.getName().replace(".xml",""));
             log.debug("Set content: '" + request.getShard() + "'");
-            parser.processIteratively(request, config);
+            thread = ProcessorChainThread.getIterativeProcessorChainThread(parser, request, config);
         } else {
-            fetcher.processIteratively(request, config);
+            thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
         }
+        ProcessorChainThreadPool.addProcessorChainThread(thread);
     }
 
     private static void queueExtraction(String arg, TranscodeRequest request) throws IOException {
@@ -176,7 +178,7 @@ public class ExtractorApplication {
             parser.setParentElement(fetcher);
             request.setPid(arg);
         }
-        ProcessorChainThread thread = new ProcessorChainThread(transcoder, request, config);
+        ProcessorChainThread thread = ProcessorChainThread.getRecursiveProcessorChainThread(transcoder, request, config);
         ProcessorChainThreadPool.addProcessorChainThread(thread);
     }
 }
