@@ -83,6 +83,7 @@ public class SnapshotPositionFinderProcessor extends ProcessorChainElement {
         List<TranscodeRequest.SnapshotPosition> snapshotPositions = new ArrayList<TranscodeRequest.SnapshotPosition>();
         for (int iSnapshot = 0; iSnapshot < nSnapshots; iSnapshot++) {
             Long bytePositionInProgram = currentPosition * (iSnapshot + 1L)/(nSnapshots +1L);
+            log.debug("Finding snapshot at position '" + bytePositionInProgram + "' bytes after start of program");
             for (StartEndPairFilePair pair: filePairList) {
                 if (pair.getStart() <= bytePositionInProgram && pair.getEnd() >= bytePositionInProgram) {
                     TranscodeRequest.SnapshotPosition snapshot = new TranscodeRequest.SnapshotPosition();
