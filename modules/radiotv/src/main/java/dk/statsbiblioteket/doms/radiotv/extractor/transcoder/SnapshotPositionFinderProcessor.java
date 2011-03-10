@@ -33,7 +33,7 @@ import java.util.List;
 public class SnapshotPositionFinderProcessor extends ProcessorChainElement {
 
     private static Logger log = Logger.getLogger(SnapshotPositionFinderProcessor.class);
-    int nSnapshots;     //TODO make configurable
+    int nSnapshots = 5;     //TODO make configurable
 
     /**
      * Do as follows:
