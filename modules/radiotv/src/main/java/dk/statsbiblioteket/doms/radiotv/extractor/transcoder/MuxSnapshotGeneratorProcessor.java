@@ -56,6 +56,13 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
                     "--scene-format=png --scene-replace --scene-prefix=" + outputFilePrefix
                     + " --scene-path=" + Util.getFinalDir(config);
             FlashTranscoderProcessor.runClipperCommand(command);
+            /**
+             * Now create a smaller file with
+             * convert -scale 50% drk_2009-11-12_23-55-00.snapshot.preview.0.png temp.jpeg
+             * convert -thumbnail 10% drk_2009-11-12_23-55-00.snapshot.preview.0.png thumb.jpeg
+             * and delete the big file.
+             */
+
             count++;
         }
     }
