@@ -69,12 +69,6 @@ public class PidExtractorProcessor extends ProcessorChainElement {
                         + "count=" + blockcount + " "
                         + "skip=" + offset/blocksize + " "
                         + "|ffmpeg -i - ";
-                if (request.getServiceType().equals(ServiceTypeEnum.PREVIEW_GENERATION)) {
-                    ProcessorChainElement longester = new IdentifyLongestClipProcessor();
-                    ProcessorChainElement previewer = new DigitvPreviewExtractor();
-                    this.setChildElement(longester);
-                    longester.setChildElement(previewer);
-                }
                 break;
             case MPEG1:
                 return;

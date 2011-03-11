@@ -142,8 +142,10 @@ public class ExtractorApplication {
         ProcessorChainElement fetcher = new ShardFetcherProcessor();
         ProcessorChainElement parser = new ShardParserProcessor();
         ProcessorChainElement snapshotFinder = new SnapshotPositionFinderProcessor();
+        ProcessorChainElement dispatcher = new SnapshotGeneratorDispatcherProcessor();
         fetcher.setChildElement(parser);
         parser.setChildElement(snapshotFinder);
+        snapshotFinder.setChildElement(dispatcher);
         ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);
@@ -162,9 +164,13 @@ public class ExtractorApplication {
         ProcessorChainElement parser = new ShardParserProcessor();
         ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
         ProcessorChainElement pider = new PidExtractorProcessor();
+        ProcessorChainElement longer = new IdentifyLongestClipProcessor();
+        ProcessorChainElement dispatcher = new PreviewGeneratorDispatcherProcessor();
         fetcher.setChildElement(parser);
         parser.setChildElement(aspecter);
         aspecter.setChildElement(pider);
+        pider.setChildElement(longer);
+        longer.setChildElement(dispatcher);
         ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);

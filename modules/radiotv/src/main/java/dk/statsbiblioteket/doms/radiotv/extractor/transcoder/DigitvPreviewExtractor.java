@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DigitvPreviewExtractor extends ProcessorChainElement {
 
@@ -46,7 +48,19 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
         Long previewLengthBytes = ClipTypeEnum.getType(request).getBitrate() * previewLengthSeconds;
         TranscodeRequest.FileClip longestClip = request.getLongestClip();
         log.debug("Longest clip for '" + request.getPid() + "' is '" + longestClip + "'");
-        String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes);
+
+        TranscodeRequest.SnapshotPosition previewSnapshot = new TranscodeRequest.SnapshotPosition();
+        //previewSnapshot.setBytePosition(longestClip.getStartOffsetBytes());
+        previewSnapshot.setFilepath(longestClip.getFilepath());
+        previewSnapshot.setProgramId(longestClip.getProgramId());
+        List<TranscodeRequest.SnapshotPosition> pos = new ArrayList<TranscodeRequest.SnapshotPosition>();
+        pos.add(previewSnapshot);
+        request.setSnapshotPositions(pos);
+        MuxSnapshotGeneratorProcessor snapshotter = new MuxSnapshotGeneratorProcessor();
+        snapshotter.setLabel("snapshot.preview");
+        this.setChildElement(snapshotter);
+
+        String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes, previewSnapshot);
 
         boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
         String clipperCommand;
@@ -73,9 +87,13 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
 
         }
         FlashTranscoderProcessor.runClipperCommand(clipperCommand);
+
+
     }
 
-    private String getDDCommand(Long blocksize, TranscodeRequest.FileClip longestClip, Long previewLengthBytes) {
+    private String getDDCommand(Long blocksize, TranscodeRequest.FileClip longestClip, Long previewLengthBytes, TranscodeRequest.SnapshotPosition position) {
+
+
         String processSubstituionDDCommand = null;
         Long clipLength = longestClip.getClipLength();
         Long clipOffset = longestClip.getStartOffsetBytes();
@@ -84,18 +102,22 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
             processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
                     " skip=" + fileLength/(2*blocksize) +
                     " count=" + previewLengthBytes/blocksize + ")";
+            position.setBytePosition(fileLength/2);
         } else if (clipLength != null && clipOffset != null) {
             processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
                     " skip=" + (clipOffset + clipLength/2)/blocksize +
                     " count=" + previewLengthBytes/blocksize + ")";
+            position.setBytePosition(clipOffset + clipLength/2);
         } else if (clipLength == null && clipOffset != null) {
             processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
                     " skip=" + (clipOffset + (fileLength-clipOffset)/2)/blocksize +
                     " count=" + previewLengthBytes/blocksize + ")";
+            position.setBytePosition(clipOffset + (fileLength-clipOffset)/2);
         } else if (clipLength != null && clipOffset == null) {
             processSubstituionDDCommand = "<(dd if=" + longestClip.getFilepath() + " bs=" + blocksize +
                     " skip=" + clipLength/(2*blocksize) +
                     " count=" + previewLengthBytes/blocksize + ")";
+            position.setBytePosition(clipLength/2);
         }
         return processSubstituionDDCommand;
     }
