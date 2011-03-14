@@ -42,7 +42,8 @@ public class FlashStatusExtractor {
         String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
-        boolean isDone = (Util.hasOutputFile(request, config)) && !ClipStatus.getInstance().isKnown(uuid);
+        request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+        boolean isDone = (Util.hasOutputFile(request, config)) && !ClipStatus.getInstance().isKnown(request);
         Double percentage = 0.0;
         if (isDone) {
             log.debug("Found already fully ready result for '" + uuid + "'");
@@ -52,9 +53,9 @@ public class FlashStatusExtractor {
             status.setServiceUrl(Util.getInitParameter(config,Constants.WOWZA_URL));
             status.setCompletionPercentage(100.0);
             return status;
-        } else if (ClipStatus.getInstance().isKnown(uuid)) {
+        } else if (ClipStatus.getInstance().isKnown(request)) {
             log.debug("Already started transcoding '" + uuid + "'");
-            request = ClipStatus.getInstance().get(uuid);
+            request = ClipStatus.getInstance().get(request);
             ObjectStatus status = new ObjectStatus();
             status.setServiceUrl(Util.getInitParameter(config, Constants.WOWZA_URL));
             if (Util.hasOutputFile(request, config)) {

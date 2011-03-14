@@ -32,7 +32,6 @@ import java.util.List;
 public class DigitvPreviewExtractor extends ProcessorChainElement {
 
     private static Logger log = Logger.getLogger(DigitvPreviewExtractor.class);
-    private int previewLengthSeconds = 30; //TODO make configurable
 
 
     /**
@@ -44,20 +43,20 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         log.debug("Beginning preview processing of '" + request.getPid() + "'");
+        int previewLengthSeconds = Integer.parseInt(Util.getInitParameter(config, Constants.PREVIEW_LENGTH));
         Long blocksize = 1880L;
         Long previewLengthBytes = ClipTypeEnum.getType(request).getBitrate() * previewLengthSeconds;
         TranscodeRequest.FileClip longestClip = request.getLongestClip();
         log.debug("Longest clip for '" + request.getPid() + "' is '" + longestClip + "'");
 
         TranscodeRequest.SnapshotPosition previewSnapshot = new TranscodeRequest.SnapshotPosition();
-        //previewSnapshot.setBytePosition(longestClip.getStartOffsetBytes());
         previewSnapshot.setFilepath(longestClip.getFilepath());
         previewSnapshot.setProgramId(longestClip.getProgramId());
         List<TranscodeRequest.SnapshotPosition> pos = new ArrayList<TranscodeRequest.SnapshotPosition>();
         pos.add(previewSnapshot);
         request.setSnapshotPositions(pos);
         MuxSnapshotGeneratorProcessor snapshotter = new MuxSnapshotGeneratorProcessor();
-        snapshotter.setLabel("snapshot.preview");
+        snapshotter.setLabel(MuxSnapshotGeneratorProcessor.PREVIEW_LABEL);
         this.setChildElement(snapshotter);
 
         String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes, previewSnapshot);
@@ -92,8 +91,6 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
     }
 
     private String getDDCommand(Long blocksize, TranscodeRequest.FileClip longestClip, Long previewLengthBytes, TranscodeRequest.SnapshotPosition position) {
-
-
         String processSubstituionDDCommand = null;
         Long clipLength = longestClip.getClipLength();
         Long clipOffset = longestClip.getStartOffsetBytes();

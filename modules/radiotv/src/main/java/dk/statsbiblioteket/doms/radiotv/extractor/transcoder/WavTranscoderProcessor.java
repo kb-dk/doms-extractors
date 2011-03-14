@@ -21,8 +21,6 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
-import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
-
 import javax.servlet.ServletConfig;
 import java.util.List;
 import java.io.File;

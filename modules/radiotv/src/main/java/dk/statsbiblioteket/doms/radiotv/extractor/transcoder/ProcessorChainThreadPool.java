@@ -87,7 +87,7 @@ public class ProcessorChainThreadPool {
                              log.info("Locking request '" + theThread.getRequest().getPid() + "' with '" + lockObject +"");
                              theThread.start();
                          } catch (Exception e) {
-                             log.error("Unexpected error starting transcoding processRecursively", e);
+                             log.error("Unexpected error starting transcoding process", e);
                          }
                      }
                      catch (InterruptedException e) {
@@ -103,8 +103,10 @@ public class ProcessorChainThreadPool {
         int position = 0;
         while (threads.hasNext()) {
             position++;
-            if (threads.next().getRequest().getPid().equals(request.getPid())) return position;
-        } return 0;
+            final TranscodeRequest thisRequest = threads.next().getRequest();
+            if (thisRequest.getPid().equals(request.getPid()) && thisRequest.getServiceType().equals(request.getServiceType())) return position;
+        };
+        return 0;
     }
 
 }

@@ -21,10 +21,15 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.apache.log4j.Logger;
+
 import javax.servlet.ServletConfig;
 import java.util.List;
 
 public class SnapshotGeneratorDispatcherProcessor extends ProcessorChainElement {
+
+    private static final Logger log = Logger.getLogger(SnapshotGeneratorDispatcherProcessor.class);
+
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -34,11 +39,16 @@ public class SnapshotGeneratorDispatcherProcessor extends ProcessorChainElement 
                 this.setChildElement(snapshotter);
                 break;
             case MPEG1:
-                throw new RuntimeException("not implemented");
+                snapshotter = new MpegSnapshotGeneratorProcessor();
+                this.setChildElement(snapshotter);
+                break;
             case MPEG2:
-                throw new RuntimeException("not implemented");
+                 snapshotter = new MpegSnapshotGeneratorProcessor();
+                this.setChildElement(snapshotter);
+                break;
             case WAV:
-                throw new RuntimeException("not implemented");
+                log.info("Radio program. No snapshots generated for '" + request.getPid() + "'");
+                return;
         }
     }
 }

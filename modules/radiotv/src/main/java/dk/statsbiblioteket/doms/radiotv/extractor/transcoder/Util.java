@@ -125,7 +125,7 @@ public class Util {
     }
 
     public static String getLockFileName(TranscodeRequest request) {
-        return request.getPid() + ".lck";
+        return request.getPid() + "." + request.getServiceType() + ".lck";
     }
 
     public static File[] getAllLockFiles(ServletConfig config) {
@@ -172,14 +172,51 @@ public class Util {
 
 
     public static boolean hasOutputFile(TranscodeRequest request, ServletConfig config) {
+        switch(request.getServiceType()) {
+            case BROADCAST_EXTRACTION:
+                return hasExtractedBroadcast(request, config);
+            case PREVIEW_GENERATION:
+                return hasPreview(request, config);
+            case THUMBNAIL_GENERATION:
+                return hasSnapshot(request, config);
+        }
+        log.error("Unexpected state for " + request);
+        return false;
+    }
+
+    public static boolean hasExtractedBroadcast(TranscodeRequest request, ServletConfig config) {
         final String uuid = request.getPid();
         final FileFilter filter = new FileFilter(){
             @Override
             public boolean accept(File pathname) {
-                return pathname.getName().startsWith(uuid+".");
+                return pathname.getName().startsWith(uuid+".") && !pathname.getName().contains("preview");
             }
         };
         File outputDir = getFinalDir(config);
+        return outputDir.listFiles(filter).length > 0;
+    }
+
+    public static boolean hasPreview(TranscodeRequest request, ServletConfig config) {
+        final String uuid = request.getPid();
+        final FileFilter filter = new FileFilter(){
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().startsWith(uuid+".") && pathname.getName().contains("preview");
+            }
+        };
+        File outputDir = getFinalDir(config);
+        return outputDir.listFiles(filter).length > 0;
+    }
+
+    public static boolean hasSnapshot(TranscodeRequest request, ServletConfig config) {
+        final String uuid = request.getPid();
+        final FileFilter filter = new FileFilter(){
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().startsWith(uuid+".") && !pathname.getName().contains("preview");
+            }
+        };
+        File outputDir = new File(getSnapshotDirectory(config));
         return outputDir.listFiles(filter).length > 0;
     }
 
@@ -210,4 +247,65 @@ public class Util {
     public static String getVideoBitrate(ServletConfig config) {
         return getInitParameter(config, Constants.VIDEO_BITRATE);
     }
+
+    /**
+     * Some methods for getting the path and parts of the path for image files
+     */
+
+    public static String getFullPrimarySnapshotFilepath(ServletConfig config, TranscodeRequest request, String label, String count) {
+        return getSnapshotDirectory(config) + "/" + getSnapshotBasename(config, request, label, count) + "." + getPrimarySnapshotSuffix(config) ;
+    }
+
+    public static String getFullFinalSnapshotFilepath(ServletConfig config, TranscodeRequest request, String label, String count) {
+        return getSnapshotDirectory(config) + "/" + getSnapshotBasename(config, request, label, count) + "." + getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT);
+    }
+
+    public static String getFullFinalThumbnailFilepath(ServletConfig config, TranscodeRequest request, String label, String count) {
+        return getSnapshotDirectory(config) + "/" + getSnapshotBasename(config, request, label, count) + ".thumbnail." + getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT);
+    }
+
+    public static String getSnapshotBasename(ServletConfig config, TranscodeRequest request, String label, String count) {
+        return request.getPid() + "." + label + "." + count;
+    }
+
+    public static String getSnapshotDirectory(ServletConfig config) {
+        return getInitParameter(config, Constants.SNAPSHOT_DIRECTORY);
+    }
+
+    public static String getPrimarySnapshotSuffix(ServletConfig config) {
+        return getInitParameter(config, Constants.SNAPSHOT_PRIMARY_FORMAT);
+    }
+
+    public static String[] getSnapshotFilenames(ServletConfig config, TranscodeRequest request) {
+        return getAllSnapshotFilenames(config, request, false);
+    }
+
+     public static String[] getSnapshotThumbnailFilenames(ServletConfig config, TranscodeRequest request) {
+        return getAllSnapshotFilenames(config, request, true);
+    }
+
+    private static String[] getAllSnapshotFilenames(final ServletConfig config, final TranscodeRequest request, final boolean areThumbs) {
+        FileFilter fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                boolean matchesPid = pathname.getName().contains(request.getPid());
+                boolean matchesFormat = pathname.getName().endsWith(getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT));
+                boolean isThumbnail = pathname.getName().contains("thumbnail");
+                if (areThumbs) {
+                    return matchesPid && matchesFormat && isThumbnail;
+                } else {
+                    return matchesPid && matchesFormat && !isThumbnail;
+                }
+            }
+        };
+        File[] allFiles = (new File(getSnapshotDirectory(config))).listFiles(fileFilter);
+        String[] filenames = new String[allFiles.length];
+        for (int i=0; i<allFiles.length; i++) {
+            filenames[i] = allFiles[i].getName();
+        }
+        return filenames;
+    }
+
+
+
 }

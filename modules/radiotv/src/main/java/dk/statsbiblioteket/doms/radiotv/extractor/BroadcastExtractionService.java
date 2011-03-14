@@ -45,6 +45,32 @@ public class BroadcastExtractionService {
         }
     }
 
+    @GET @Path("getsnapshotstatus")
+    @Produces(MediaType.APPLICATION_XML)
+    public SnapshotStatus getSnapshotStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
+        SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
+        if (status != null) {
+            return status;
+        } else {
+            String uuid = Util.getUuid(programPid);
+            TranscodeRequest request = new TranscodeRequest(uuid);
+            request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+            ClipStatus.getInstance().register(request);
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement snapshotFinder = new SnapshotPositionFinderProcessor();
+            ProcessorChainElement dispatcher = new SnapshotGeneratorDispatcherProcessor();
+            fetcher.setChildElement(parser);
+            parser.setChildElement(snapshotFinder);
+            snapshotFinder.setChildElement(dispatcher);
+            ProcessorChainThread thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
+            ProcessorChainThreadPool.addProcessorChainThread(thread);
+            status = new SnapshotStatus();
+            status.setStatus(ObjectStatusEnum.STARTING);
+            return status;
+        }
+    }
+
     private ObjectStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
         ObjectStatus status = FlashStatusExtractor.getStatus(programPid, config);
         if (status != null) {

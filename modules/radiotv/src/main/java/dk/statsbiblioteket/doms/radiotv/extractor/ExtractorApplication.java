@@ -86,6 +86,18 @@ public class ExtractorApplication {
                 return "libx264-superfast";
             } else if (s.equals(Constants.X264_PRESET_VLC)) {
                 return "profile=baseline,preset=superfast";
+            } else if (s.equals(Constants.SNAPSHOT_NUMBER)) {
+                return "5";
+            } else if (s.equals(Constants.SNAPSHOT_VIDEO_LENGTH)) {
+                return "10";
+            } else if (s.equals(Constants.SNAPSHOT_DIRECTORY)) {
+                return "/home/larm/imageDirectory";
+            } else if (s.equals(Constants.SNAPSHOT_PRIMARY_FORMAT)) {
+                return "bmp";
+            } else if (s.equals(Constants.SNAPSHOT_FINAL_FORMAT)) {
+                return "jpeg";
+            } else if (s.equals(Constants.PREVIEW_LENGTH)) {
+                return "30";
             }
 
 

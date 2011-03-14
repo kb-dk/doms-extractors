@@ -21,6 +21,8 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.apache.log4j.Logger;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +31,9 @@ import java.util.Map;
  * A singleton class used to find out the status of running transcodings
  */
 public class ClipStatus {
+
+    private static Logger log = Logger.getLogger(ClipStatus.class);
+
 
     /**
      * This is the unique in-memory map by which we can find out what is happening
@@ -49,20 +54,29 @@ public class ClipStatus {
         return instance;
     }
 
-    public boolean isKnown(String pid) {
-        return map.containsKey(pid);
-    }
-
     public void register(TranscodeRequest request) {
-        map.put(request.getPid(), request);
+        log.info("Registering request " + createKey(request));
+        map.put(createKey(request), request);
     }
 
-    public void remove(String pid) {
-        map.remove(pid);
+    public boolean isKnown(TranscodeRequest request) {
+        return map.containsKey(createKey(request));
     }
 
-    public TranscodeRequest get(String pid) {
-        return map.get(pid);
+    public TranscodeRequest get(TranscodeRequest basicRequest) {
+        return map.get(createKey(basicRequest));
+    }
+
+    public void remove(TranscodeRequest request) {
+        log.info("Deregestering request " + createKey(request));
+        map.remove(createKey(request));
+    }
+
+    private String createKey(TranscodeRequest request) {
+        if (request.getServiceType() == null) {
+            log.error("Attempting to create key for a request without specifying the service type");
+        }
+        return request.getPid() + "#" + request.getServiceType();
     }
 
 }

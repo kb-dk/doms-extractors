@@ -27,10 +27,7 @@ import javax.servlet.ServletConfig;
 import java.io.File;
 import java.util.List;
 
-public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
-
-    Long blocksize = 1880L;
-    Long bitrate = ClipTypeEnum.MUX.getBitrate(); // bytes/second
+public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
 
     public static final String DEFAULT_LABEL = "snapshot";
     public static final String PREVIEW_LABEL = "snapshot.preview";
@@ -41,30 +38,26 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
         this.label = label;
     }
 
+
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        long blocksize = 1880L;  
+        long bitrate = request.getClipType().getBitrate();
         int seconds = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_VIDEO_LENGTH));
         List<TranscodeRequest.SnapshotPosition> snapshots = request.getSnapshotPositions();
         int count = 0;
         for (TranscodeRequest.SnapshotPosition snapshot: snapshots) {
-            int programId = snapshot.getProgramId();
             String filepath = snapshot.getFilepath();
             Long location = snapshot.getBytePosition();
             String command = "cat <(dd if=" + filepath + " bs=" + blocksize +
                     " skip=" + location/blocksize + " count=" + seconds*bitrate/blocksize + " )|"
-                    + " vlc - --program=" + programId
-                    + " --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
+                    + " vlc - "
+                    + " --video-filter scene -V dummy  --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
                     "linear --noaudio  " +
                     "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + Util.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + Util.getSnapshotDirectory(config);
             FlashTranscoderProcessor.runClipperCommand(command);
-            /**
-             * Now create a smaller file with
-             * convert -scale 50% drk_2009-11-12_23-55-00.snapshot.preview.0.png temp.jpeg
-             * convert -thumbnail 10% drk_2009-11-12_23-55-00.snapshot.preview.0.png thumb.jpeg
-             * and delete the big file.
-             */
-         //PLACEHOLDER
+           //PLACEHOLDER
             final String primarySnapshotFilepath = Util.getFullPrimarySnapshotFilepath(config, request, label, "" + count);
             String placeholderCommand = "convert -scale 50% " + primarySnapshotFilepath + " " + Util.getFullFinalSnapshotFilepath(config, request, label, ""+count);
             FlashTranscoderProcessor.runClipperCommand(placeholderCommand);
@@ -74,5 +67,4 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
             count++;
         }
     }
-
 }

@@ -19,9 +19,9 @@
         -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="8" />
 
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraAdmin" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraAdminPass" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://carme:7880/fedora" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraReadOnlyAdmin" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="2ZeMA1bN" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate"  value="200"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate" value="96"/>

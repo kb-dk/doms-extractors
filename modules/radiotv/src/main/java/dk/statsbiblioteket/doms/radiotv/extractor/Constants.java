@@ -47,8 +47,18 @@ public class Constants {
     public static final String X264_PRESET = "dk.statsbiblioteket.doms.radiotv.extractor.x264Preset";
     public static final String X264_PRESET_VLC = "dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc";
 
+    /**
+     *  Constants relating to preview clips
+     */
+     public static final String PREVIEW_LENGTH = "dk.statsbiblioteket.doms.radiotv.extractor.previewLength";
 
-
-
-
+    /**
+     * Constants relating to snapshots
+     */
+    public static final String SNAPSHOT_NUMBER = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotNumber";
+    public static final String SNAPSHOT_VIDEO_LENGTH = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotLength";
+    public static final String SNAPSHOT_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory";
+    public static final String SNAPSHOT_PRIMARY_FORMAT = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotPrimaryFormat";
+    public static final String SNAPSHOT_FINAL_FORMAT = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotFinalFormat";
+    //TODO additional parameters for final scaling
 }

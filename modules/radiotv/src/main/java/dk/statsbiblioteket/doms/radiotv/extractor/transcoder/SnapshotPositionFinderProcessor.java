@@ -23,6 +23,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -33,7 +34,6 @@ import java.util.List;
 public class SnapshotPositionFinderProcessor extends ProcessorChainElement {
 
     private static Logger log = Logger.getLogger(SnapshotPositionFinderProcessor.class);
-    int nSnapshots = 5;     //TODO make configurable
 
     /**
      * Do as follows:
@@ -46,6 +46,7 @@ public class SnapshotPositionFinderProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        int nSnapshots = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_NUMBER));
         List<StartEndPairFilePair> filePairList = new ArrayList<StartEndPairFilePair>();
         long currentPosition = 0L;  // Current position in program
         Integer programId = null;
