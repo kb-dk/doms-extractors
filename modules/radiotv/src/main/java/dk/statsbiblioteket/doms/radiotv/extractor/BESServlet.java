@@ -47,7 +47,8 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
         cleanup();
     }
 
-    private  void cleanup() {
+    //TODO now buggy!!!
+    private void cleanup() {
         File[] lockFiles = Util.getAllLockFiles(this.getServletConfig());
         File mediaDir = Util.getFinalDir(this.getServletConfig());
         for (File lockFile: lockFiles) {

@@ -21,45 +21,46 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *   USA
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 
-import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatus;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatus;
 import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatusEnum;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 
 import javax.servlet.ServletConfig;
 import java.io.UnsupportedEncodingException;
-import java.io.File;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
 
-public class FlashStatusExtractor {
+public class ExtractionStatusExtractor {
 
-    private static Logger log = Logger.getLogger(FlashStatusExtractor.class);
+    private static Logger log = Logger.getLogger(ExtractionStatusExtractor.class);
 
 
-    public static ObjectStatus getStatus(String shardUrl, ServletConfig config) throws UnsupportedEncodingException, ProcessorException {
+    public static ExtractionStatus getStatus(String shardUrl, ServletConfig config) throws UnsupportedEncodingException, ProcessorException {
         String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
         request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
-        boolean isDone = (Util.hasOutputFile(request, config)) && !ClipStatus.getInstance().isKnown(request);
+        OutputFileUtil.getAndCreateOutputDir(request, config);
+        boolean isDone = (OutputFileUtil.hasOutputFile(request, config)) && !RequestRegistry.getInstance().isKnown(request);
         Double percentage = 0.0;
         if (isDone) {
             log.debug("Found already fully ready result for '" + uuid + "'");
-            ObjectStatus status = new ObjectStatus();
+            ExtractionStatus status = new ExtractionStatus();
             status.setStatus(ObjectStatusEnum.DONE);
             status.setStreamId(Util.getStreamId(request, config));
             status.setServiceUrl(Util.getInitParameter(config,Constants.WOWZA_URL));
             status.setCompletionPercentage(100.0);
             return status;
-        } else if (ClipStatus.getInstance().isKnown(request)) {
+        } else if (RequestRegistry.getInstance().isKnown(request)) {
             log.debug("Already started transcoding '" + uuid + "'");
-            request = ClipStatus.getInstance().get(request);
-            ObjectStatus status = new ObjectStatus();
+            request = RequestRegistry.getInstance().get(request);
+            ExtractionStatus status = new ExtractionStatus();
             status.setServiceUrl(Util.getInitParameter(config, Constants.WOWZA_URL));
-            if (Util.hasOutputFile(request, config)) {
-                final long outputFileLength = Util.getOutputFile(request, config).length();
+            if (OutputFileUtil.hasOutputFile(request, config)) {
+                final long outputFileLength = OutputFileUtil.getExistingMediaOutputFile(request, config).length();
                 if (request != null && request.getFinalFileLengthBytes() != null && request.getFinalFileLengthBytes() != 0) {
                     double completionPercentage = 100.0 * outputFileLength/request.getFinalFileLengthBytes();
                     completionPercentage = Math.min(completionPercentage, 99.5);

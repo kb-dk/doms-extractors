@@ -21,9 +21,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *   USA
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.Util;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -42,7 +46,7 @@ public class SnapshotPositionFinderProcessor extends ProcessorChainElement {
      * program. Then for each snapshot it is trivial to find in which file and where the snapshot is to be taken.
      * @param request
      * @param config
-     * @throws ProcessorException
+     * @throws dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {

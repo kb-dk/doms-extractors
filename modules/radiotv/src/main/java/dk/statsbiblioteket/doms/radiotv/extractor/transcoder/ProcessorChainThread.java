@@ -107,7 +107,7 @@ public class ProcessorChainThread extends Thread {
         finally {
             Util.unlockRequest(request);
             log.info("Cleaning up after processing '" + request.getPid() + "'");
-            ClipStatus.getInstance().remove(request);
+            RequestRegistry.getInstance().remove(request);
             Util.getLockFile(request, config).delete();
             //TODO cleanup any temporary files. Create error files.
         }

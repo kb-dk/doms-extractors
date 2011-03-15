@@ -19,7 +19,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
+
+import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 
 import javax.servlet.ServletConfig;
 import java.util.List;
@@ -28,27 +31,13 @@ import java.io.File;
 public class WavTranscoderProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        final int clipSize = request.getClips().size();
         String command;
-        /*if (clipSize > 1) {
-            command = getMultiClipCommand(request, config);
-        } else {
-            long bitrate = request.getClipType().getBitrate();
-            TranscodeRequest.FileClip clip = request.getClips().get(0);
-            String start = "";
-            if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) start = " -ss " + clip.getStartOffsetBytes()/bitrate;
-            String length = "";
-            if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = " -t " + clip.getClipLength()/bitrate;
-            command = "ffmpeg -i " + clip.getFilepath()
-                    + start + length + " -f wav - |" + getLameCommand(request, config);
-
-        }*/
         command = getMultiClipCommand(request, config);
-        FlashTranscoderProcessor.runClipperCommand(command);
+        ExternalJobRunner.runClipperCommand(command);
     }
 
     private String getLameCommand(TranscodeRequest request, ServletConfig config) {
-        return "lame -b "  + Util.getAudioBitrate(config) + " - " + Util.getMp3File(request, config);
+        return "lame -b "  + Util.getAudioBitrate(config) + " - " + OutputFileUtil.getMP3AudioOutputFile(request, config);
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

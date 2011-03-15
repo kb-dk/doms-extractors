@@ -19,9 +19,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
@@ -54,15 +56,15 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
                     + " vlc - "
                     + " --video-filter scene -V dummy  --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
                     "linear --noaudio  " +
-                    "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + Util.getSnapshotBasename(config, request, label, ""+count)
-                    + " --scene-path=" + Util.getSnapshotDirectory(config);
-            FlashTranscoderProcessor.runClipperCommand(command);
+                    "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
+                    + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
+            ExternalJobRunner.runClipperCommand(command);
            //PLACEHOLDER
-            final String primarySnapshotFilepath = Util.getFullPrimarySnapshotFilepath(config, request, label, "" + count);
-            String placeholderCommand = "convert -scale 50% " + primarySnapshotFilepath + " " + Util.getFullFinalSnapshotFilepath(config, request, label, ""+count);
-            FlashTranscoderProcessor.runClipperCommand(placeholderCommand);
-            placeholderCommand = "convert -scale 20% " + primarySnapshotFilepath + " " + Util.getFullFinalThumbnailFilepath(config, request, label, ""+count);
-            FlashTranscoderProcessor.runClipperCommand(placeholderCommand);
+            final String primarySnapshotFilepath = OutputFileUtil.getFullPrimarySnapshotFilepath(config, request, label, "" + count);
+            String placeholderCommand = "convert -scale 50% " + primarySnapshotFilepath + " " + OutputFileUtil.getFullFinalSnapshotFilepath(config, request, label, ""+count);
+            ExternalJobRunner.runClipperCommand(placeholderCommand);
+            placeholderCommand = "convert -scale 20% " + primarySnapshotFilepath + " " + OutputFileUtil.getFullFinalThumbnailFilepath(config, request, label, ""+count);
+            ExternalJobRunner.runClipperCommand(placeholderCommand);
             (new File(primarySnapshotFilepath)).delete();
             count++;
         }

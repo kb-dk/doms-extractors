@@ -21,8 +21,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *   USA
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -60,7 +61,7 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
                 + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
                 + " " + getFfmpegAspectRatio(request, config)           
                 + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
-                + " -threads 0 " + Util.getFlashFile(request, config);
+                + " -threads 0 " + OutputFileUtil.getFlashVideoOutputFile(request, config);
         return line;
     }
 
@@ -79,12 +80,12 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
         return ffmpegResolution;
     }
 
-    static int getHeight(TranscodeRequest request, ServletConfig config) {
+    public static int getHeight(TranscodeRequest request, ServletConfig config) {
         Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
         return height.intValue();
    }
 
-     static int getWidth(TranscodeRequest request, ServletConfig config) {
+     public static int getWidth(TranscodeRequest request, ServletConfig config) {
        Double aspectRatio = request.getDisplayAspectRatio();
         Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
         if (aspectRatio != null) {
@@ -95,23 +96,5 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
             return 320;
         }
    }
-
-    protected static void runClipperCommand(String clipperCommand) throws ProcessorException {
-        log.info("Executing '" + clipperCommand + "'");
-        try {
-            ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
-            if (runner.getExitValue() != 0) {
-                log.warn("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");
-                log.warn("Standard out:\n" + runner.getOutput());
-                log.warn("Standard err:\n" + runner.getError());
-            } else {
-                log.info("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");                
-            }
-        } catch (IOException e) {
-            throw new ProcessorException(e);
-        } catch (InterruptedException e) {
-            throw new ProcessorException(e);
-        }
-    }
 
 }

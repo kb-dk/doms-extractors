@@ -30,9 +30,9 @@ import java.util.Map;
 /**
  * A singleton class used to find out the status of running transcodings
  */
-public class ClipStatus {
+public class RequestRegistry {
 
-    private static Logger log = Logger.getLogger(ClipStatus.class);
+    private static Logger log = Logger.getLogger(RequestRegistry.class);
 
 
     /**
@@ -44,13 +44,13 @@ public class ClipStatus {
     /**
      * the unique instance
      */
-    private static ClipStatus instance;
+    private static RequestRegistry instance;
 
-    private ClipStatus() {
+    private RequestRegistry() {
     }
 
-    public static synchronized ClipStatus getInstance() {
-        if (instance == null) instance = new ClipStatus();
+    public static synchronized RequestRegistry getInstance() {
+        if (instance == null) instance = new RequestRegistry();
         return instance;
     }
 

@@ -19,9 +19,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatusEnum;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -37,17 +38,18 @@ public class SnapshotStatusExtractor {
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);
         request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
-        boolean isDone = (Util.getSnapshotFilenames(config, request).length != 0 && !ClipStatus.getInstance().isKnown(request));
+        OutputFileUtil.getAndCreateOutputDir(request, config);
+        boolean isDone = (OutputFileUtil.getSnapshotFilenames(config, request).length != 0 && !RequestRegistry.getInstance().isKnown(request));
         if (isDone) {
             log.debug("Found snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();
-            String[] snapshots = Util.getSnapshotFilenames(config, request);
-            String[] thumbnails = Util.getSnapshotThumbnailFilenames(config, request);
+            String[] snapshots = OutputFileUtil.getSnapshotFilenames(config, request);
+            String[] thumbnails = OutputFileUtil.getSnapshotThumbnailFilenames(config, request);
             status.setStatus(ObjectStatusEnum.DONE);
             status.setSnapshotFilename(snapshots);
             status.setThumbnailFilename(thumbnails);
             return status;
-        } else if (ClipStatus.getInstance().isKnown(request)) {
+        } else if (RequestRegistry.getInstance().isKnown(request)) {
             log.debug("Already doing snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();
             status.setStatus(ObjectStatusEnum.STARTED);

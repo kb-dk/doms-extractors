@@ -19,12 +19,16 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.MpegSnapshotGeneratorProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.MuxSnapshotGeneratorProcessor;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
-import java.util.List;
 
 public class SnapshotGeneratorDispatcherProcessor extends ProcessorChainElement {
 

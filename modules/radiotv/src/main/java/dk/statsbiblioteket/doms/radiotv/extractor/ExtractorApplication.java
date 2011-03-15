@@ -22,6 +22,12 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewGeneratorDispatcherProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotGeneratorDispatcherProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotPositionFinderProcessor;
 import dk.statsbiblioteket.util.Files;
 
 import javax.servlet.ServletConfig;
@@ -163,6 +169,8 @@ public class ExtractorApplication {
             File file = new File(arg);
             request.setShard(Files.loadString(file));
             request.setPid(file.getName().replace(".xml",""));
+            request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
             log.debug("Set content: '" + request.getShard() + "'");
             thread = ProcessorChainThread.getIterativeProcessorChainThread(parser, request, config);
         } else {
@@ -188,6 +196,8 @@ public class ExtractorApplication {
             File file = new File(arg);
             request.setShard(Files.loadString(file));
             request.setPid(file.getName().replace(".xml",""));
+            request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
             log.debug("Set content: '" + request.getShard() + "'");
             thread = ProcessorChainThread.getIterativeProcessorChainThread(parser, request, config);
         } else {
@@ -210,6 +220,8 @@ public class ExtractorApplication {
             File file = new File(arg);
             request.setShard(Files.loadString(file));
             request.setPid(file.getName().replace(".xml",""));
+            request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
             log.debug("Set content: '" + request.getShard() + "'");
         } else {
             ProcessorChainElement fetcher = new ShardFetcherProcessor();

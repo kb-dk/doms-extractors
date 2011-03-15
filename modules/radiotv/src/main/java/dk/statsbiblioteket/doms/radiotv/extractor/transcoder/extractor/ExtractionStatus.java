@@ -21,12 +21,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
  *   USA
  */
-package dk.statsbiblioteket.doms.radiotv.extractor;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
+
+import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatusEnum;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name="objectstatus")
-public class ObjectStatus {
+public class ExtractionStatus {
 
     protected ObjectStatusEnum status;
     protected Double completionPercentage = 0.0;
@@ -85,7 +87,7 @@ public class ObjectStatus {
         this.streamId = streamId;
     }
 
-    public ObjectStatus() {
+    public ExtractionStatus() {
     }
 
     public ObjectStatusEnum getStatus() {

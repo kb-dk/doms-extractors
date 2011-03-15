@@ -21,16 +21,20 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class ExternalJobRunner {
-     private final StringBuffer standard_out = new StringBuffer();
+    private final StringBuffer standard_out = new StringBuffer();
     private final StringBuffer standard_err = new StringBuffer();
     private int exit_code;
-
+    private static final Logger log = Logger.getLogger(ExternalJobRunner.class);
     /**
      * Runs an external command, blocking until the external processRecursively ends after which
      * the output and errors can be read.
@@ -38,7 +42,7 @@ public class ExternalJobRunner {
      * @throws java.io.IOException
      * @throws InterruptedException
      */
-    public ExternalJobRunner(String... command) throws IOException, InterruptedException {
+    public ExternalJobRunner(final String... command) throws IOException, InterruptedException {
         final Process p;
         if (command.length == 1) {
              p = Runtime.getRuntime().exec(command[0]);
@@ -78,6 +82,13 @@ public class ExternalJobRunner {
                         }
                     } catch (IOException e) {
                         //TODO need logging
+                    } finally {
+                        try {
+                            log.debug("Closing stream for '" + command + "'");
+                            stream.close();
+                        } catch (IOException e) {
+                            log.error("Error closing an InputStream for '" + command + "'", e);
+                        }
                     }
                 }
             }
@@ -91,6 +102,7 @@ public class ExternalJobRunner {
         (new Thread(err_harvester)).start();
         p.waitFor();
         exit_code = p.exitValue();
+        //p.getInputStream().close();
         // We busy-wait here to make sure that we do not exit this method before the
         // harvester threads have got a lock on the output buffers
         while (! (out_harvester.started && err_harvester.started)) { }
@@ -111,5 +123,23 @@ public class ExternalJobRunner {
 
     public int getExitValue() {
         return exit_code;
+    }
+
+    public static void runClipperCommand(String clipperCommand) throws ProcessorException {
+        log.info("Executing '" + clipperCommand + "'");
+        try {
+            ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
+            if (runner.getExitValue() != 0) {
+                log.warn("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");
+                log.warn("Standard out:\n" + runner.getOutput());
+               log.warn("Standard err:\n" + runner.getError());
+            } else {
+                log.info("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");                
+            }
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        } catch (InterruptedException e) {
+            throw new ProcessorException(e);
+        }
     }
 }

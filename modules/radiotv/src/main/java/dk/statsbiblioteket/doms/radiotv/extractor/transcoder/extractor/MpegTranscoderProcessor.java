@@ -19,7 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
+
+import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
 
 import javax.servlet.ServletConfig;
 import java.util.List;
@@ -48,7 +54,7 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
             command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "| "
                     + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
         }
-        FlashTranscoderProcessor.runClipperCommand(command);
+        ExternalJobRunner.runClipperCommand(command);
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

@@ -19,9 +19,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.MuxSnapshotGeneratorProcessor;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -38,7 +42,7 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
      * Clip a 30 second preview from the middle of the longest subclip
      * @param request
      * @param config
-     * @throws ProcessorException
+     * @throws dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -73,7 +77,7 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
                         + ":std{access=file,mux=ts,dst=-}\""
                         + ",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |" +
                         "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
-                        + "000 -f flv " + Util.getFlashPreviewFile(request, config);
+                        + "000 -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);
         } else {
             clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                                + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
@@ -82,10 +86,10 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
                                + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
                                + ":std{access=file,mux=ts,dst=-}\""
                                + ",select=\"program=" + programNumber + "\"' | "
-                               + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + Util.getFlashPreviewFile(request, config) ;
+                               + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config) ;
 
         }
-        FlashTranscoderProcessor.runClipperCommand(clipperCommand);
+        ExternalJobRunner.runClipperCommand(clipperCommand);
 
 
     }

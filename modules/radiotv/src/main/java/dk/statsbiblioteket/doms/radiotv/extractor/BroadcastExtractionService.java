@@ -1,10 +1,17 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatus;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatusExtractor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotGeneratorDispatcherProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotPositionFinderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatus;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatusExtractor;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -35,7 +42,7 @@ public class BroadcastExtractionService {
 
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
-    public ObjectStatus getObjectStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
+    public ExtractionStatus getObjectStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
         log.debug("Request for program '" + programPid + "'");
         if (dummyService) {
             log.warn("Returning dummy status for program '" + programPid + "'");
@@ -55,7 +62,8 @@ public class BroadcastExtractionService {
             String uuid = Util.getUuid(programPid);
             TranscodeRequest request = new TranscodeRequest(uuid);
             request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
-            ClipStatus.getInstance().register(request);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
+            RequestRegistry.getInstance().register(request);
             ProcessorChainElement fetcher = new ShardFetcherProcessor();
             ProcessorChainElement parser = new ShardParserProcessor();
             ProcessorChainElement snapshotFinder = new SnapshotPositionFinderProcessor();
@@ -71,15 +79,16 @@ public class BroadcastExtractionService {
         }
     }
 
-    private ObjectStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
-        ObjectStatus status = FlashStatusExtractor.getStatus(programPid, config);
+    private ExtractionStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
+        ExtractionStatus status = ExtractionStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;
         } else {
             String uuid = Util.getUuid(programPid);
             TranscodeRequest request = new TranscodeRequest(uuid);
             request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
-            ClipStatus.getInstance().register(request);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
+            RequestRegistry.getInstance().register(request);
             ProcessorChainElement transcoder = new FlashTranscoderProcessor();
             ProcessorChainElement estimator = new FlashEstimatorProcessor();
             ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
@@ -95,7 +104,7 @@ public class BroadcastExtractionService {
             //thread.start();
             ProcessorChainThreadPool.addProcessorChainThread(thread);
         }
-        status = new ObjectStatus();
+        status = new ExtractionStatus();
         status.setStatus(ObjectStatusEnum.STARTING);
         return status;
     }
@@ -120,8 +129,8 @@ public class BroadcastExtractionService {
 
 
     static int dummyState = 0;
-    private ObjectStatus getDummyObjectStatus(String pid) {
-        ObjectStatus status = new ObjectStatus();
+    private ExtractionStatus getDummyObjectStatus(String pid) {
+        ExtractionStatus status = new ExtractionStatus();
         if (dummyState%3 == 0) {
             status.setStatus(ObjectStatusEnum.STARTING);
         } else if (dummyState%3 == 1) {
