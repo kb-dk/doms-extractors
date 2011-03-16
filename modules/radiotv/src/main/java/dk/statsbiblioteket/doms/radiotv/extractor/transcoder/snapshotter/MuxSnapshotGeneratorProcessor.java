@@ -45,6 +45,7 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);        
         int seconds = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_VIDEO_LENGTH));
         List<TranscodeRequest.SnapshotPosition> snapshots = request.getSnapshotPositions();
         int count = 0;

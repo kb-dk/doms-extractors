@@ -25,10 +25,7 @@ import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -147,7 +144,7 @@ public class Util {
 
     public static String getStreamId(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         File outputFile = OutputFileUtil.getExistingMediaOutputFile(request, config);
-        String filename = outputFile.getAbsolutePath();
+        String filename = getRelativePath(new File(Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM)), outputFile);
         if (filename.endsWith(".mp4")) {
             return "mp4:" + filename;
         } else if (filename.endsWith(".mp3")) {
@@ -155,6 +152,23 @@ public class Util {
         } else if (filename.endsWith(".flv")) {
             return "flv:" + filename;
         } else return null;      
+    }
+
+    public static String getRelativePath(File parent, File child) throws ProcessorException {
+        try {
+            String parentS = parent.getCanonicalPath();
+            String childS = child.getCanonicalPath();
+            if (!childS.startsWith(parentS)) {
+                throw new ProcessorException(parentS + " is not a parent of " + childS);
+            }
+            String result = childS.replaceFirst(parentS, "");
+            if (result.startsWith(File.separator)) {
+                result.replaceFirst(File.separator, "");
+            }
+            return result;
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        }
     }
 
 

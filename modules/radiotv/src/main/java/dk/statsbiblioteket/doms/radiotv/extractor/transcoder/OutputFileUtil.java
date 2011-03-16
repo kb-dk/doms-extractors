@@ -135,11 +135,11 @@ public class OutputFileUtil {
         return outputDir.listFiles(filter).length > 0;
     }
 
-     public static String[] getSnapshotFilenames(ServletConfig config, TranscodeRequest request) {
+     public static String[] getSnapshotFilenames(ServletConfig config, TranscodeRequest request) throws ProcessorException {
         return getAllSnapshotFilenames(config, request, false);
     }
 
-     public static String[] getSnapshotThumbnailFilenames(ServletConfig config, TranscodeRequest request) {
+     public static String[] getSnapshotThumbnailFilenames(ServletConfig config, TranscodeRequest request) throws ProcessorException {
         return getAllSnapshotFilenames(config, request, true);
     }
 
@@ -167,7 +167,7 @@ public class OutputFileUtil {
         return outputDir.listFiles(filter).length > 0;
     }
 
-    private static String[] getAllSnapshotFilenames(final ServletConfig config, final TranscodeRequest request, final boolean areThumbs) {
+    private static String[] getAllSnapshotFilenames(final ServletConfig config, final TranscodeRequest request, final boolean areThumbs) throws ProcessorException {
         FileFilter fileFilter = new FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -184,7 +184,7 @@ public class OutputFileUtil {
         File[] allFiles = getOutputDir(request, config).listFiles(fileFilter);
         String[] filenames = new String[allFiles.length];
         for (int i=0; i<allFiles.length; i++) {
-            filenames[i] = allFiles[i].getAbsolutePath();
+            filenames[i] = Util.getRelativePath(new File(Util.getInitParameter(config, Constants.SNAPSHOT_DIRECTORY)), allFiles[i]);
         }
         return filenames;
     }

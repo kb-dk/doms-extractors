@@ -55,7 +55,7 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
         Util.unlockRequest(request);
     }
 
-    protected static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
+    public static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
         String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
                 + " -b " + Util.getInitParameter(config, Constants.VIDEO_BITRATE) + "000"
                 + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"

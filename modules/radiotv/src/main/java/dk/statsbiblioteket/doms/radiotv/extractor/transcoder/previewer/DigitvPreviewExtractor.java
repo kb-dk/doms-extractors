@@ -90,9 +90,9 @@ public class DigitvPreviewExtractor extends ProcessorChainElement {
 
         }
         ExternalJobRunner.runClipperCommand(clipperCommand);
-
-
     }
+
+
 
     private String getDDCommand(Long blocksize, TranscodeRequest.FileClip longestClip, Long previewLengthBytes, TranscodeRequest.SnapshotPosition position) {
         String processSubstituionDDCommand = null;

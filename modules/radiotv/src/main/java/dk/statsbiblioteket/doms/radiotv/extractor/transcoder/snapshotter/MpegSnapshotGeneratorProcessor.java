@@ -43,6 +43,7 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
         long blocksize = 1880L;  
         long bitrate = request.getClipType().getBitrate();
         int seconds = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_VIDEO_LENGTH));

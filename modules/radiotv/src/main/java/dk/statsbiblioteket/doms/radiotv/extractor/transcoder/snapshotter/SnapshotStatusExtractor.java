@@ -33,7 +33,7 @@ public class SnapshotStatusExtractor {
     private static Logger log = Logger.getLogger(SnapshotStatusExtractor.class);
 
 
-    public static SnapshotStatus getStatus(String shardUrl, ServletConfig config) throws UnsupportedEncodingException {
+    public static SnapshotStatus getStatus(String shardUrl, ServletConfig config) throws UnsupportedEncodingException, ProcessorException {
         String uuid = Util.getUuid(shardUrl);
         if (uuid == null) throw new IllegalArgumentException("Invalid url - no uuid found: '" + shardUrl + "'");
         TranscodeRequest request = new TranscodeRequest(uuid);

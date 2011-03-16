@@ -36,16 +36,16 @@ public class PreviewGeneratorDispatcherProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         switch(request.getClipType()) {
             case MUX:
-                ProcessorChainElement previewer = new DigitvPreviewExtractor();
-                this.setChildElement(previewer);
+                this.setChildElement(new DigitvPreviewExtractor());
                 break;
             case MPEG1:
-                throw new RuntimeException("not implemented");
+                this.setChildElement(new MpegPreviewExtractor());
+                break;
             case MPEG2:
-                throw new RuntimeException("not implemented");
+                this.setChildElement(new MpegPreviewExtractor());
+                break;
             case WAV:
-                throw new RuntimeException("not implemented");
-                
+                this.setChildElement(new WavPreviewExtractor());
         }
     }
 }

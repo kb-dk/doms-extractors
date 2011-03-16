@@ -36,7 +36,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
         ExternalJobRunner.runClipperCommand(command);
     }
 
-    private String getLameCommand(TranscodeRequest request, ServletConfig config) {
+    public static String getLameCommand(TranscodeRequest request, ServletConfig config) {
         return "lame -b "  + Util.getAudioBitrate(config) + " - " + OutputFileUtil.getMP3AudioOutputFile(request, config);
     }
 
