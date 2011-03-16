@@ -75,6 +75,8 @@ public class MpegPreviewProcessor extends ProcessorChainElement {
         String command = "dd if=" + longestClip.getFilepath() + " bs=" + blocksize + " skip=" + clipStartPosition/blocksize + " count=" + previewLengthBytes/blocksize + "| "
                 + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
         ExternalJobRunner.runClipperCommand(command);
-        request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
+        RequestRegistry.getInstance().remove(request);
+        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+        RequestRegistry.getInstance().register(request);
     }
 }

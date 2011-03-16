@@ -83,6 +83,8 @@ public class BroadcastExtractionService {
         }
     }
 
+    @GET @Path("/getpreviewstatus")
+    @Produces(MediaType.APPLICATION_XML)
     public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
         PreviewerStatus status = PreviewerStatusExtractor.getStatus(programPid, config);
         if (status != null) {

@@ -39,7 +39,7 @@ public class SnapshotStatusExtractor {
         TranscodeRequest request = new TranscodeRequest(uuid);
         request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
         OutputFileUtil.getAndCreateOutputDir(request, config);
-        boolean isDone = (OutputFileUtil.getSnapshotFilenames(config, request).length != 0 && !RequestRegistry.getInstance().isKnown(request));
+        boolean isDone = (OutputFileUtil.hasOutputFile(request, config) && !RequestRegistry.getInstance().isKnown(request));
         if (isDone) {
             log.debug("Found snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();

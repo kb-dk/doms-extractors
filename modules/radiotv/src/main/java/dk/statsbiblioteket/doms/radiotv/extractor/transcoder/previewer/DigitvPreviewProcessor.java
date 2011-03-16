@@ -90,6 +90,9 @@ public class DigitvPreviewProcessor extends ProcessorChainElement {
 
         }
         ExternalJobRunner.runClipperCommand(clipperCommand);
+        RequestRegistry.getInstance().remove(request);
+        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+        RequestRegistry.getInstance().register(request);
     }
 
 

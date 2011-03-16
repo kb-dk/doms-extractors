@@ -39,7 +39,7 @@ public class PreviewerStatusExtractor {
         TranscodeRequest request = new TranscodeRequest(uuid);
         request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
         OutputFileUtil.getAndCreateOutputDir(request, config);
-        boolean isDone = (OutputFileUtil.getExistingMediaOutputFile(request, config).length() != 0 && !RequestRegistry.getInstance().isKnown(request));
+        boolean isDone = (OutputFileUtil.hasOutputFile(request, config) && !RequestRegistry.getInstance().isKnown(request));
         if (isDone) {
            log.debug("Found preview file for '" + uuid + "'");
             PreviewerStatus status = new PreviewerStatus();
