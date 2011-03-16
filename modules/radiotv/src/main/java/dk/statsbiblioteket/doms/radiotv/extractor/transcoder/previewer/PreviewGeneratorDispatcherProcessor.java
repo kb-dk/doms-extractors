@@ -24,7 +24,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.DigitvPreviewExtractor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.DigitvPreviewProcessor;
 
 import javax.servlet.ServletConfig;
 
@@ -36,16 +36,16 @@ public class PreviewGeneratorDispatcherProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         switch(request.getClipType()) {
             case MUX:
-                this.setChildElement(new DigitvPreviewExtractor());
+                this.setChildElement(new DigitvPreviewProcessor());
                 break;
             case MPEG1:
-                this.setChildElement(new MpegPreviewExtractor());
+                this.setChildElement(new MpegPreviewProcessor());
                 break;
             case MPEG2:
-                this.setChildElement(new MpegPreviewExtractor());
+                this.setChildElement(new MpegPreviewProcessor());
                 break;
             case WAV:
-                this.setChildElement(new WavPreviewExtractor());
+                this.setChildElement(new WavPreviewProcessor());
         }
     }
 }

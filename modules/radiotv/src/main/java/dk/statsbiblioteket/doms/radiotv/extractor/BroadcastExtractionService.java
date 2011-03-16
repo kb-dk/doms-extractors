@@ -5,6 +5,10 @@ import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.Extractio
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatusExtractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewGeneratorDispatcherProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewerStatus;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewerStatusExtractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotGeneratorDispatcherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotPositionFinderProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatus;
@@ -52,7 +56,7 @@ public class BroadcastExtractionService {
         }
     }
 
-    @GET @Path("getsnapshotstatus")
+    @GET @Path("/getsnapshotstatus")
     @Produces(MediaType.APPLICATION_XML)
     public SnapshotStatus getSnapshotStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
         SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
@@ -78,6 +82,36 @@ public class BroadcastExtractionService {
             return status;
         }
     }
+
+    public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
+        PreviewerStatus status = PreviewerStatusExtractor.getStatus(programPid, config);
+        if (status != null) {
+            return status;
+        } else {
+            String uuid = Util.getUuid(programPid);
+            TranscodeRequest request = new TranscodeRequest(uuid);
+            request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
+            RequestRegistry.getInstance().register(request);
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+            ProcessorChainElement pider = new PidExtractorProcessor();
+            ProcessorChainElement longer = new IdentifyLongestClipProcessor();
+            ProcessorChainElement dispatcher = new PreviewGeneratorDispatcherProcessor();
+            fetcher.setChildElement(parser);
+            parser.setChildElement(aspecter);
+            aspecter.setChildElement(pider);
+            pider.setChildElement(longer);
+            longer.setChildElement(dispatcher);
+            ProcessorChainThread thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
+            ProcessorChainThreadPool.addProcessorChainThread(thread);
+            status = new PreviewerStatus();
+            status.setStatus(ObjectStatusEnum.STARTING);
+            return status;
+        }
+    }
+    
 
     private ExtractionStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
         ExtractionStatus status = ExtractionStatusExtractor.getStatus(programPid, config);

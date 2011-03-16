@@ -33,9 +33,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DigitvPreviewExtractor extends ProcessorChainElement {
+public class DigitvPreviewProcessor extends ProcessorChainElement {
 
-    private static Logger log = Logger.getLogger(DigitvPreviewExtractor.class);
+    private static Logger log = Logger.getLogger(DigitvPreviewProcessor.class);
 
 
     /**

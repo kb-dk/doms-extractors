@@ -30,9 +30,9 @@ import org.apache.log4j.Logger;
 import javax.servlet.ServletConfig;
 import java.io.File;
 
-public class WavPreviewExtractor extends ProcessorChainElement {
+public class WavPreviewProcessor extends ProcessorChainElement {
 
-    private static Logger log = Logger.getLogger(WavPreviewExtractor.class);
+    private static Logger log = Logger.getLogger(WavPreviewProcessor.class);
 
 
     @Override

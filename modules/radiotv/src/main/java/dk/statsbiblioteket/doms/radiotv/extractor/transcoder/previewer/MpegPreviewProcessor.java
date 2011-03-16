@@ -26,7 +26,6 @@ import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.MpegSnapshotGeneratorProcessor;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.MuxSnapshotGeneratorProcessor;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -34,9 +33,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MpegPreviewExtractor extends ProcessorChainElement {
+public class MpegPreviewProcessor extends ProcessorChainElement {
 
-    private static Logger log = Logger.getLogger(MpegPreviewExtractor.class);
+    private static Logger log = Logger.getLogger(MpegPreviewProcessor.class);
 
 
     @Override
