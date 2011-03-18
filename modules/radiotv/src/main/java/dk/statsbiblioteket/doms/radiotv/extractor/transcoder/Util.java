@@ -162,8 +162,8 @@ public class Util {
                 throw new ProcessorException(parentS + " is not a parent of " + childS);
             }
             String result = childS.replaceFirst(parentS, "");
-            if (result.startsWith(File.separator)) {
-                result.replaceFirst(File.separator, "");
+            while (result.startsWith(File.separator)) {
+                result = result.replaceFirst(File.separator, "");
             }
             return result;
         } catch (IOException e) {
