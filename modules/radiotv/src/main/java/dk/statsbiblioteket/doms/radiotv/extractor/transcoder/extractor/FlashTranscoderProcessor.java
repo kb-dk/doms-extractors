@@ -56,12 +56,21 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
     }
 
     public static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
+        String outputFile = null;
+        switch (request.getServiceType()) {
+            case PREVIEW_GENERATION:
+                outputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config).getAbsolutePath();
+                break;
+            case BROADCAST_EXTRACTION:
+                outputFile = OutputFileUtil.getFlashVideoOutputFile(request, config).getAbsolutePath();
+                break;
+        }
         String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
                 + " -b " + Util.getInitParameter(config, Constants.VIDEO_BITRATE) + "000"
                 + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
                 + " " + getFfmpegAspectRatio(request, config)           
                 + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
-                + " -threads 0 " + OutputFileUtil.getFlashVideoOutputFile(request, config);
+                + " -threads 0 " + outputFile;
         return line;
     }
 
