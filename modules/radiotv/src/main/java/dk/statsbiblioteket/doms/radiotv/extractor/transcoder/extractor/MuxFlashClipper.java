@@ -116,7 +116,13 @@ public class MuxFlashClipper extends ProcessorChainElement {
                         + "000 -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config);
             }
         }
+        symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
         ExternalJobRunner.runClipperCommand(clipperCommand);
+    }
+
+    public static void symlinkToRootDir(ServletConfig config, File file) throws ProcessorException {
+        File rootdir = new File(Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM));
+        ExternalJobRunner.runClipperCommand("ln -s " + file.getAbsolutePath() + " " + rootdir.getAbsolutePath());
     }
 
 }

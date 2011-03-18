@@ -22,6 +22,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.OutputFileUtil;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
@@ -54,7 +55,17 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
             command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "| "
                     + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
         }
-        ExternalJobRunner.runClipperCommand(command);
+        String outputFile = null;
+        switch (request.getServiceType()) {
+            case PREVIEW_GENERATION:
+                outputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config).getAbsolutePath();
+                break;
+            case BROADCAST_EXTRACTION:
+                outputFile = OutputFileUtil.getFlashVideoOutputFile(request, config).getAbsolutePath();
+                break;
+        }
+        MuxFlashClipper.symlinkToRootDir(config, new File(outputFile));
+        ExternalJobRunner.runClipperCommand(command);      
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

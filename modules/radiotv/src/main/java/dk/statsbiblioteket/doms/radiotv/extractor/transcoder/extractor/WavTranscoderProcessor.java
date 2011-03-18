@@ -33,6 +33,7 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         String command;
         command = getMultiClipCommand(request, config);
+        MuxFlashClipper.symlinkToRootDir(config, OutputFileUtil.getMP3AudioOutputFile(request, config));                
         ExternalJobRunner.runClipperCommand(command);
     }
 
