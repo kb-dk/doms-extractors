@@ -43,16 +43,18 @@ public class SnapshotStatusExtractor {
         if (isDone) {
             log.debug("Found snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();
-            String[] snapshots = OutputFileUtil.getSnapshotFilenames(config, request);
-            String[] thumbnails = OutputFileUtil.getSnapshotThumbnailFilenames(config, request);
+            status.setId(uuid);
+            String[] snapshots = OutputFileUtil.getAllSnapshotFilenames(config, request);
             status.setStatus(ObjectStatusEnum.DONE);
             status.setSnapshotFilename(snapshots);
-            status.setThumbnailFilename(thumbnails);
             return status;
         } else if (RequestRegistry.getInstance().isKnown(request)) {
             log.debug("Already doing snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();
+            status.setId(uuid);
             status.setStatus(ObjectStatusEnum.STARTED);
+            String[] snapshots = OutputFileUtil.getAllSnapshotFilenames(config, request);
+            status.setSnapshotFilename(snapshots);
             return status;
         } else return null;
     }

@@ -55,7 +55,6 @@ public class MpegPreviewProcessor extends ProcessorChainElement {
         pos.add(previewSnapshot);
         request.setSnapshotPositions(pos);
         MpegSnapshotGeneratorProcessor snapshotter = new MpegSnapshotGeneratorProcessor();
-        snapshotter.setLabel(MpegSnapshotGeneratorProcessor.PREVIEW_LABEL);
         this.setChildElement(snapshotter);
 
         Long clipLength = longestClip.getClipLength();
@@ -76,7 +75,7 @@ public class MpegPreviewProcessor extends ProcessorChainElement {
                 + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
         ExternalJobRunner.runClipperCommand(command);
         RequestRegistry.getInstance().remove(request);
-        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+        request.setServiceType(ServiceTypeEnum.PREVIEW_THUMBNAIL_GENERATION);
         RequestRegistry.getInstance().register(request);
     }
 }

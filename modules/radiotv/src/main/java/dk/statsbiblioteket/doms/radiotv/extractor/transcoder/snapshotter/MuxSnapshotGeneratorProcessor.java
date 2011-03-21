@@ -66,14 +66,10 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
              * convert -scale 50% drk_2009-11-12_23-55-00.snapshot.preview.0.png temp.jpeg
              * convert -thumbnail 10% drk_2009-11-12_23-55-00.snapshot.preview.0.png thumb.jpeg
              * and delete the big file.
-             */
-         //PLACEHOLDER
-            final String primarySnapshotFilepath = OutputFileUtil.getFullPrimarySnapshotFilepath(config, request, label, "" + count);
-            String placeholderCommand = "convert -scale 50% " + primarySnapshotFilepath + " " + OutputFileUtil.getFullFinalSnapshotFilepath(config, request, label, ""+count);
-            ExternalJobRunner.runClipperCommand(placeholderCommand);
-            placeholderCommand = "convert -scale 20% " + primarySnapshotFilepath + " " + OutputFileUtil.getFullFinalThumbnailFilepath(config, request, label, ""+count);
-            ExternalJobRunner.runClipperCommand(placeholderCommand);
-            (new File(primarySnapshotFilepath)).delete();
+             */        
+            final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);
+            SnapshotUtil.imageMagickConvert(config, fullPrimarySnapshotFile, OutputFileUtil.getFullFinalSnapshotFile(config, request, label, "" + count));
+            fullPrimarySnapshotFile.delete();
             count++;
         }
     }

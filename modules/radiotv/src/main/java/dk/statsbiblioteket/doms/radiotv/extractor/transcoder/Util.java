@@ -144,7 +144,7 @@ public class Util {
 
     public static String getStreamId(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         File outputFile = OutputFileUtil.getExistingMediaOutputFile(request, config);
-        String filename = getRelativePath(new File(Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM)), outputFile);
+        String filename = getRelativePath(OutputFileUtil.getBaseOutputDir(request, config) , outputFile);
         if (filename.endsWith(".mp4")) {
             return "mp4:" + filename;
         } else if (filename.endsWith(".mp3")) {

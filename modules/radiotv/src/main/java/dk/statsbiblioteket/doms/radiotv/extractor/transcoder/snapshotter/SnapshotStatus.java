@@ -28,8 +28,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="snapshotstatus")
 public class SnapshotStatus {
     protected ObjectStatusEnum status;
+    protected String Id;
     protected String[] snapshotFilename;
     protected String[] thumbnailFilename;
+
+    public String getId() {
+        return Id;
+    }
+
+    public void setId(String id) {
+        Id = id;
+    }
 
     public String[] getSnapshotFilename() {
         return snapshotFilename;

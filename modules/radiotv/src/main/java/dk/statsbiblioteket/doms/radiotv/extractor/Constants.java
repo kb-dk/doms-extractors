@@ -50,7 +50,9 @@ public class Constants {
     /**
      *  Constants relating to preview clips
      */
-     public static final String PREVIEW_LENGTH = "dk.statsbiblioteket.doms.radiotv.extractor.previewLength";
+    public static final String PREVIEW_LENGTH = "dk.statsbiblioteket.doms.radiotv.extractor.previewLength";
+    public static final String PREVIEW_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory";
+    //public static final String PREVIEW_THUMBNAIL_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewThumbnailDirectory";
 
     /**
      * Constants relating to snapshots
@@ -60,5 +62,8 @@ public class Constants {
     public static final String SNAPSHOT_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory";
     public static final String SNAPSHOT_PRIMARY_FORMAT = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotPrimaryFormat";
     public static final String SNAPSHOT_FINAL_FORMAT = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotFinalFormat";
+    public static final String SNAPSHOT_SCALE_SIZE = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotScaleSize";
+    public static final String SNAPSHOT_QUALITY = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality";
+
     //TODO additional parameters for final scaling
 }

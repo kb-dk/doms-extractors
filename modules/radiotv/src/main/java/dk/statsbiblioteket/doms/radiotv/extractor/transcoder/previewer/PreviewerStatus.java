@@ -30,6 +30,15 @@ public class PreviewerStatus {
     protected ObjectStatusEnum status;
     protected String streamId;
      protected String serviceUrl;
+    protected String previewThumbnail;
+
+    public String getPreviewThumbnail() {
+        return previewThumbnail;
+    }
+
+    public void setPreviewThumbnail(String previewThumbnail) {
+        this.previewThumbnail = previewThumbnail;
+    }
 
     public ObjectStatusEnum getStatus() {
         return status;

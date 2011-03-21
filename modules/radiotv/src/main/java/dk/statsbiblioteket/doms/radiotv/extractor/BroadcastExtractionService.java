@@ -23,6 +23,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * On receiving a request for a given shard url:
@@ -56,9 +58,9 @@ public class BroadcastExtractionService {
         }
     }
 
-    @GET @Path("/getsnapshotstatus")
-    @Produces(MediaType.APPLICATION_XML)
-    public SnapshotStatus getSnapshotStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
+    /**@GET @Path("/getsnapshotstatus")
+    @Produces(MediaType.APPLICATION_XML) */
+    public SnapshotStatus getSnapshotStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
         SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;
@@ -81,6 +83,16 @@ public class BroadcastExtractionService {
             status.setStatus(ObjectStatusEnum.STARTING);
             return status;
         }
+    }
+
+    @GET @Path("/getsnapshotstatus")
+    @Produces(MediaType.APPLICATION_XML)
+    public List<SnapshotStatus> getSnapshotStatus(@QueryParam("programpid") List<String> pids) throws ProcessorException, UnsupportedEncodingException {
+       List<SnapshotStatus> result = new ArrayList<SnapshotStatus>();
+        for (String pid: pids) {
+            result.add(getSnapshotStatus(pid));
+        }
+        return result;
     }
 
     @GET @Path("/getpreviewstatus")

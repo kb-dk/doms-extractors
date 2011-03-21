@@ -36,14 +36,26 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
 
     private String label = DEFAULT_LABEL;
 
-    public void setLabel(String label) {
+    private void setLabel(String label) {
         this.label = label;
     }
 
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+        //request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+        switch (request.getServiceType()) {
+            case THUMBNAIL_GENERATION:
+                setLabel(DEFAULT_LABEL);
+                break;
+            case PREVIEW_THUMBNAIL_GENERATION:
+                setLabel(PREVIEW_LABEL);
+                break;
+            case BROADCAST_EXTRACTION:
+                throw new RuntimeException("This processor should not be called with service type BROADCAST_EXTRACTION");
+            case PREVIEW_GENERATION:
+                throw new RuntimeException("This processor should not be called with service type PREVIEW_GENERATION");
+        }
         long blocksize = 1880L;  
         long bitrate = request.getClipType().getBitrate();
         int seconds = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_VIDEO_LENGTH));
@@ -60,13 +72,9 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
                     "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
             ExternalJobRunner.runClipperCommand(command);
-           //PLACEHOLDER
-            final String primarySnapshotFilepath = OutputFileUtil.getFullPrimarySnapshotFilepath(config, request, label, "" + count);
-            String placeholderCommand = "convert -scale 50% " + primarySnapshotFilepath + " " + OutputFileUtil.getFullFinalSnapshotFilepath(config, request, label, ""+count);
-            ExternalJobRunner.runClipperCommand(placeholderCommand);
-            placeholderCommand = "convert -scale 20% " + primarySnapshotFilepath + " " + OutputFileUtil.getFullFinalThumbnailFilepath(config, request, label, ""+count);
-            ExternalJobRunner.runClipperCommand(placeholderCommand);
-            (new File(primarySnapshotFilepath)).delete();
+            final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);
+            SnapshotUtil.imageMagickConvert(config, fullPrimarySnapshotFile, OutputFileUtil.getFullFinalSnapshotFile(config, request, label, "" + count));
+            fullPrimarySnapshotFile.delete();            
             count++;
         }
     }

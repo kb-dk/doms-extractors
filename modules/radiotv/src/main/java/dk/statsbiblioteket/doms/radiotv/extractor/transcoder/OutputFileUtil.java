@@ -37,27 +37,54 @@ public class OutputFileUtil {
     private static Logger log = Logger.getLogger(Util.class);
     private final static int depth = 4;
 
-    private static File getOutputDir(TranscodeRequest request, ServletConfig config) {
-        String rootDir = null;
-        switch (request.getServiceType()) {
-             case BROADCAST_EXTRACTION:
-                 rootDir = Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM);
-                 break;
-            case PREVIEW_GENERATION:
-                 rootDir = Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM);
-                 break;
-            case THUMBNAIL_GENERATION:
-                rootDir = Util.getInitParameter(config, Constants.SNAPSHOT_DIRECTORY);
-                break;
-        }
+    /**
+     * Get the specific directory for the putput of this request. This lies 4
+     * directories down under the base output directory.
+     * @param request
+     * @param config
+     * @return
+     */
+    public static File getOutputDir(TranscodeRequest request, ServletConfig config) {
+        File rootDir = getBaseOutputDir(request, config);
         String relativePath = "";
         String pid = request.getPid();
         for (int pos = 0; pos < depth; pos++) {
             relativePath += pid.charAt(pos) + "/";
         }
-        return new File(rootDir + "/" + relativePath);
+        return new File(rootDir, relativePath);
     }
 
+    /**
+     * Get the root output directory for this type of request.
+     * @param request
+     * @param config
+     * @return
+     */
+    public static File getBaseOutputDir(TranscodeRequest request, ServletConfig config) {
+        String rootDir = "";
+        switch (request.getServiceType()) {
+             case BROADCAST_EXTRACTION:
+                 rootDir = Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM);
+                 break;
+            case PREVIEW_GENERATION:
+                 rootDir = Util.getInitParameter(config, Constants.PREVIEW_DIRECTORY);
+                 break;
+            case THUMBNAIL_GENERATION:
+                rootDir = Util.getInitParameter(config, Constants.SNAPSHOT_DIRECTORY);
+                break;
+            case PREVIEW_THUMBNAIL_GENERATION:
+                rootDir = Util.getInitParameter(config, Constants.SNAPSHOT_DIRECTORY);
+                break;
+        }
+        return new File(rootDir);
+    }
+
+    /**
+     * Determine whether any output files from this request have been created.
+     * @param request
+     * @param config
+     * @return
+     */
     public static boolean hasOutputFile(TranscodeRequest request, ServletConfig config) {
          switch(request.getServiceType()) {
             case BROADCAST_EXTRACTION:
@@ -66,11 +93,19 @@ public class OutputFileUtil {
                 return hasPreview(request, config);
             case THUMBNAIL_GENERATION:
                 return hasSnapshot(request, config);
+            case PREVIEW_THUMBNAIL_GENERATION:
+                return hasPreview(request, config);
         }
         log.error("Unexpected state for " + request);
         return false;
     }
 
+    /**
+     * Return the final output directory for this request. Create it if necessary.
+     * @param request
+     * @param config
+     * @return
+     */
     public static File getAndCreateOutputDir(TranscodeRequest request, ServletConfig config) {
         File result = getOutputDir(request, config);
         result.mkdirs();
@@ -135,14 +170,6 @@ public class OutputFileUtil {
         return outputDir.listFiles(filter).length > 0;
     }
 
-     public static String[] getSnapshotFilenames(ServletConfig config, TranscodeRequest request) throws ProcessorException {
-        return getAllSnapshotFilenames(config, request, false);
-    }
-
-     public static String[] getSnapshotThumbnailFilenames(ServletConfig config, TranscodeRequest request) throws ProcessorException {
-        return getAllSnapshotFilenames(config, request, true);
-    }
-
    private static boolean hasPreview(TranscodeRequest request, ServletConfig config) {
         final String uuid = request.getPid();
         final FileFilter filter = new FileFilter(){
@@ -167,24 +194,19 @@ public class OutputFileUtil {
         return outputDir.listFiles(filter).length > 0;
     }
 
-    private static String[] getAllSnapshotFilenames(final ServletConfig config, final TranscodeRequest request, final boolean areThumbs) throws ProcessorException {
+    public static String[] getAllSnapshotFilenames(final ServletConfig config, final TranscodeRequest request) throws ProcessorException {
         FileFilter fileFilter = new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 boolean matchesPid = pathname.getName().contains(request.getPid());
                 boolean matchesFormat = pathname.getName().endsWith(Util.getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT));
-                boolean isThumbnail = pathname.getName().contains("thumbnail");
-                if (areThumbs) {
-                    return matchesPid && matchesFormat && isThumbnail;
-                } else {
-                    return matchesPid && matchesFormat && !isThumbnail;
-                }
+                return matchesFormat && matchesPid;
             }
         };
         File[] allFiles = getOutputDir(request, config).listFiles(fileFilter);
         String[] filenames = new String[allFiles.length];
         for (int i=0; i<allFiles.length; i++) {
-            filenames[i] = Util.getRelativePath(new File(Util.getInitParameter(config, Constants.SNAPSHOT_DIRECTORY)), allFiles[i]);
+            filenames[i] = Util.getRelativePath(OutputFileUtil.getBaseOutputDir(request, config), allFiles[i]);
         }
         return filenames;
     }
@@ -195,17 +217,12 @@ public class OutputFileUtil {
     }
 
 
-
-    //TODO refactor these to return File objects
-    public static String getFullFinalThumbnailFilepath(ServletConfig config, TranscodeRequest request, String label, String count) {
-        return getAndCreateOutputDir(request, config).getAbsolutePath() + "/" + getSnapshotBasename(config, request, label, count) + ".thumbnail." + Util.getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT);
+    public static File getFullPrimarySnapshotFile(ServletConfig config, TranscodeRequest request, String label, String count) {
+         return new File(getAndCreateOutputDir(request, config), getSnapshotBasename(config, request, label, count) + "." + Util.getPrimarySnapshotSuffix(config));
     }
 
-    public static String getFullPrimarySnapshotFilepath(ServletConfig config, TranscodeRequest request, String label, String count) {
-        return getAndCreateOutputDir(request, config) + "/" + getSnapshotBasename(config, request, label, count) + "." + Util.getPrimarySnapshotSuffix(config) ;
+    public static File getFullFinalSnapshotFile(ServletConfig config, TranscodeRequest request, String label, String count) {
+         return new File(getAndCreateOutputDir(request, config), getSnapshotBasename(config, request, label, count) + "." + Util.getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT));
     }
 
-    public static String getFullFinalSnapshotFilepath(ServletConfig config, TranscodeRequest request, String label, String count) {
-        return getAndCreateOutputDir(request, config) + "/" + getSnapshotBasename(config, request, label, count) + "." + Util.getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT);
-    }
 }

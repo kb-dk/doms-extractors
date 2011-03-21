@@ -2,9 +2,20 @@
 <Context>
 
     <!--
-    Directory where the streamable files are to be deployed
+    Directory where the full streamable files are to be deployed
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.finaldir" value="/home/larm/streamingContent"/>
+
+    <!--
+    Directory where thumbnails are placed
+    -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory" value="/home/larm/imageDirectory"/>
+
+    <!--
+    Directory where preview videos are placed
+    -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory" value="/home/larm/previewDirectory"/>
+
 
     <!-- A small temporary directory where lock files can be stored
     -->
@@ -33,9 +44,10 @@
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotNumber"   value="5"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotLength"  value="10"/>
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory"  value="/home/larm/imageDirectory"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotPrimaryFormat"  value="bmp"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotFinalFormat"   value="jpeg"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotScaleSize"  value="32"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality"   value="75"/>
 
 
 </Context>
