@@ -114,7 +114,7 @@
                         </manifest>
                     </archive>
                     <webXml>web/WEB-INF/web.xml</webXml>
-                    <containerConfigXML>etc/context.xml</containerConfigXML>
+                    <!--<containerConfigXML>etc/context.xml</containerConfigXML>-->
                 </configuration>
             </plugin>
 		</plugins>

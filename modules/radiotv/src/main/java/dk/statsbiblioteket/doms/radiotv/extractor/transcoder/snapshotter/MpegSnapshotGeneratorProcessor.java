@@ -34,6 +34,11 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
     public static final String DEFAULT_LABEL = "snapshot";
     public static final String PREVIEW_LABEL = "snapshot.preview";
 
+    /**
+     * Just a factor to control for the fact that we don't need to read so much from an mpeg file as we do from a mux,
+     */
+    public static final int MPEG_SPEEDUP = 4;
+
     private String label = DEFAULT_LABEL;
 
     private void setLabel(String label) {
@@ -65,11 +70,11 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
             String filepath = snapshot.getFilepath();
             Long location = snapshot.getBytePosition();
             String command = "cat <(dd if=" + filepath + " bs=" + blocksize +
-                    " skip=" + location/blocksize + " count=" + seconds*bitrate/blocksize + " )|"
+                    " skip=" + location/blocksize + " count=" + seconds*bitrate/(MPEG_SPEEDUP*blocksize) + " )|"
                     + " vlc - "
                     + " --video-filter scene -V dummy  --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
                     "linear --noaudio  " +
-                    "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
+                    "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-ratio=1000 --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
             ExternalJobRunner.runClipperCommand(command);
             final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);

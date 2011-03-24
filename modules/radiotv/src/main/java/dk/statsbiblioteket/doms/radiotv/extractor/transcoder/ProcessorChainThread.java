@@ -24,6 +24,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
+import java.io.File;
 import java.io.IOException;
 
 public class ProcessorChainThread extends Thread {
@@ -85,10 +86,12 @@ public class ProcessorChainThread extends Thread {
     public void run() {
         super.run();
         log.info("Starting processor chain for '" + request.getPid() + "'");
+        File lockFile = null;
         try {
             try {
                 Util.getTempDir(config).mkdirs();
-                Util.getLockFile(request, config).createNewFile();
+                lockFile = Util.getLockFile(request, config);
+                lockFile.createNewFile();
             } catch (IOException e) {
                 log.error("Error creating lock file: '" + Util.getLockFile(request, config).getAbsolutePath() + "'");
             }
@@ -108,8 +111,7 @@ public class ProcessorChainThread extends Thread {
             Util.unlockRequest(request);
             log.info("Cleaning up after processing '" + request.getPid() + "'");
             RequestRegistry.getInstance().remove(request);
-            Util.getLockFile(request, config).delete();
-            //TODO cleanup any temporary files. Create error files.
+            lockFile.delete();
         }
     }
 }

@@ -29,8 +29,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SnapshotStatus {
     protected ObjectStatusEnum status;
     protected String Id;
-    protected String[] snapshotFilename;
+   // protected String[] snapshotFilename;
     protected String[] thumbnailFilename;
+    protected SnapshotFilenames snapshotFilenames;
+    protected String snapshotWebRoot;
+
+    public String getSnapshotWebRoot() {
+        return snapshotWebRoot;
+    }
+
+    public void setSnapshotWebRoot(String snapshotWebRoot) {
+        this.snapshotWebRoot = snapshotWebRoot;
+    }
 
     public String getId() {
         return Id;
@@ -40,13 +50,21 @@ public class SnapshotStatus {
         Id = id;
     }
 
-    public String[] getSnapshotFilename() {
+    public SnapshotFilenames getSnapshotFilenames() {
+        return snapshotFilenames;
+    }
+
+    public void setSnapshotFilenames(SnapshotFilenames snapshotFilenames) {
+        this.snapshotFilenames = snapshotFilenames;
+    }
+
+    /* public String[] getSnapshotFilename() {
         return snapshotFilename;
     }
 
     public void setSnapshotFilename(String[] snapshotFilename) {
         this.snapshotFilename = snapshotFilename;
-    }
+    }*/
 
     public String[] getThumbnailFilename() {
         return thumbnailFilename;

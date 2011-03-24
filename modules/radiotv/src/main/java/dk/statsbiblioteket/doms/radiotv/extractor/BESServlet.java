@@ -21,7 +21,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.Util;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -36,39 +36,105 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
     public void init() throws ServletException {
         super.init();
         Util.getTempDir(this.getServletConfig()).mkdirs();
-        log.info("initialized BES service");
-        cleanup();
+        try {
+            cleanup();
+        } catch (Exception e) {
+            log.error(e);
+        }
+        log.info("initialized BES service");        
     }
 
     @Override
     public void destroy() {
         super.destroy();
+        try {
+            cleanup();
+        } catch (Exception e) {
+            log.error(e);
+        }
         log.info("destroyed BES service");
-        cleanup();
     }
 
-    //TODO now buggy!!!
+
     private void cleanup() {
+        log.info("Initiating cleanup of unfinished processes.");
         File[] lockFiles = Util.getAllLockFiles(this.getServletConfig());
-        File mediaDir = Util.getFinalDir(this.getServletConfig());
         for (File lockFile: lockFiles) {
-            final String mediaFileNamePrefix = lockFile.getName().replace(".lck", "");
-            FileFilter filter = new FileFilter() {
-                @Override
-                public boolean accept(File pathname) {
-                       return pathname.getName().startsWith(mediaFileNamePrefix);
-                 }
-            };
-            File[] mediaFiles = mediaDir.listFiles(filter);
-            for (File mediaFile:mediaFiles) {
-                log.info("Deleting unfinished media file '" + mediaFile.getAbsolutePath() + "'");
-                if (!mediaFile.delete()) {
-                    log.error("Failed to delete '" + mediaFile.getAbsolutePath() + "'");
+            log.info("Cleaning up after '" + lockFile.getAbsolutePath() + "'");
+            switch (Util.getServiceTypeFromLockFile(lockFile)) {
+                case BROADCAST_EXTRACTION:
+                    cleanupExtraction(lockFile);
+                    break;
+                case PREVIEW_GENERATION:
+                    cleanupPreview(lockFile);
+                    break;
+                case THUMBNAIL_GENERATION:
+                    cleanupSnapshots(lockFile);
+                    break;
+                case PREVIEW_THUMBNAIL_GENERATION:
+                    log.error("There should not be lock files specifically for preview thumbnail generation. " +
+                            "File '" + lockFile.getAbsolutePath() + "' should not exist.");
+                    break;
+            }
+        }
+    }
+
+    private void cleanupExtraction(File lockFile) {
+        TranscodeRequest request = new TranscodeRequest(Util.getPidFromLockFile(lockFile));
+        request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+        try {
+            File mediaFile = OutputFileUtil.getExistingMediaOutputFile(request, this.getServletConfig());
+            log.info("Cleaning up partial file '" + mediaFile.getAbsolutePath() + "'");
+            if (mediaFile != null && !mediaFile.delete()) {
+                log.error("Could not delete file '" + mediaFile.getAbsolutePath() + "'");
+            }
+        } catch (Exception e) {
+            log.info("No media file found corresponding to lockFile '" + lockFile.getAbsolutePath() + "'");
+        }
+        if (!lockFile.delete()) {
+            log.error("Could not delete lock file: '" + lockFile.getAbsolutePath() + "'");
+        }
+    }
+
+    private void cleanupPreview(File lockFile) {
+        TranscodeRequest request = new TranscodeRequest(Util.getPidFromLockFile(lockFile));
+        request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
+        try {
+            File mediaFile = OutputFileUtil.getExistingMediaOutputFile(request, this.getServletConfig());
+            log.info("Cleaning up partial file '" + mediaFile.getAbsolutePath() + "'");
+            if (mediaFile != null && !mediaFile.delete()) {
+                log.error("Could not delete file '" + mediaFile.getAbsolutePath() + "'");
+            }
+        } catch (Exception e) {
+            log.info("No media file found corresponding to lockFile '" + lockFile.getAbsolutePath() + "'");
+        }
+        if (!lockFile.delete()) {
+            log.error("Could not delete lock file: '" + lockFile.getAbsolutePath() + "'");
+        }
+    }
+
+    private void cleanupSnapshots(File lockFile) {
+        TranscodeRequest request = new TranscodeRequest(Util.getPidFromLockFile(lockFile));
+        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+        try {
+            for (File mediaFile: OutputFileUtil.getOutputDir(request, this.getServletConfig()).listFiles()) {
+                if (!mediaFile.getName().contains("preview")) {
+                    try {
+                        log.info("Cleaning up partial file '" + mediaFile.getAbsolutePath() + "'");
+                        if (mediaFile != null && !mediaFile.delete()) {
+                            log.error("Could not delete file '" + mediaFile.getAbsolutePath() + "'");
+                        }
+                    } catch (Exception e) {
+                        log.info("No media file found corresponding to lockFile '" + lockFile.getAbsolutePath() + "'");
+                    }
                 }
             }
-            log.info("Deleting lock file '" + lockFile.getAbsolutePath() + "'");
+        } catch (Exception e) {
+            log.error(e);
+        }  finally {
+            log.info("Deleting lockfile '" + lockFile.getAbsolutePath() + "'");
             if (!lockFile.delete()) {
-                log.error("Failed to delete '" + lockFile.getAbsolutePath() + "'");
+                log.error("Could not delete lock file: '" + lockFile.getAbsolutePath() + "'");
             }
         }
     }

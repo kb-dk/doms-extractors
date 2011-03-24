@@ -162,7 +162,9 @@ public class ShardParserProcessor extends ProcessorChainElement {
             log.debug("Added a clip '" + clip + "'");
         }
         request.setTotalLengthSeconds(totalLengthSeconds);
-        request.setClipType(ClipTypeEnum.getType(request));
+        final ClipTypeEnum clipType = ClipTypeEnum.getType(request);
+        log.info("Clip type for '" + request.getPid() + "' found: '" + clipType.name() + "'");
+        request.setClipType(clipType);
 
         log.debug("Total length set to '" + request.getTotalLengthSeconds() + "'");
     }

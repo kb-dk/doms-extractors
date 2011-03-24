@@ -58,7 +58,7 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
                     + " vlc - --program=" + programId
                     + " --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
                     "linear --noaudio  " +
-                    "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
+                    " --scene-ratio=1000 --scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
             ExternalJobRunner.runClipperCommand(command);
             /**

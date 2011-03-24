@@ -38,7 +38,20 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
     }
 
     public static String getLameCommand(TranscodeRequest request, ServletConfig config) {
-        return "lame -b "  + Util.getAudioBitrate(config) + " - " + OutputFileUtil.getMP3AudioOutputFile(request, config);
+        String outputFileName = null;
+        switch (request.getServiceType()) {
+            case BROADCAST_EXTRACTION:
+                outputFileName =  OutputFileUtil.getMP3AudioOutputFile(request, config).getAbsolutePath();
+                break;
+            case PREVIEW_GENERATION:
+                outputFileName =  OutputFileUtil.getMP3AudioPreviewOutputFile(request, config).getAbsolutePath();
+                break;
+            case THUMBNAIL_GENERATION:
+                break;
+            case PREVIEW_THUMBNAIL_GENERATION:
+                break;
+        }
+        return "lame -b "  + Util.getAudioBitrate(config) + " - " + outputFileName;
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

@@ -117,6 +117,15 @@ public class Util {
         return request.getPid() + "." + request.getServiceType() + ".lck";
     }
 
+    public static ServiceTypeEnum getServiceTypeFromLockFile(File lockFile) {
+        String type = lockFile.getName().split("\\.")[1];
+        return ServiceTypeEnum.valueOf(type);
+    }
+
+    public static String getPidFromLockFile(File lockFile) {
+        return lockFile.getName().split("\\.")[0];
+    }
+
     public static File[] getAllLockFiles(ServletConfig config) {
         FilenameFilter filter = new FilenameFilter() {
             @Override

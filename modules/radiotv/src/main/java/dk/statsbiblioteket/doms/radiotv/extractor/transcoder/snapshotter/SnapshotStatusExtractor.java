@@ -21,6 +21,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ObjectStatusEnum;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
@@ -44,17 +45,23 @@ public class SnapshotStatusExtractor {
             log.debug("Found snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();
             status.setId(uuid);
+            status.setSnapshotWebRoot(Util.getInitParameter(config, Constants.SNAPSHOT_SERVICE_URL));
             String[] snapshots = OutputFileUtil.getAllSnapshotFilenames(config, request);
             status.setStatus(ObjectStatusEnum.DONE);
-            status.setSnapshotFilename(snapshots);
+            SnapshotFilenames names = new SnapshotFilenames();
+            names.setSnapshotFilename(snapshots);
+            status.setSnapshotFilenames(names);
             return status;
         } else if (RequestRegistry.getInstance().isKnown(request)) {
             log.debug("Already doing snapshots for '" + uuid + "'");
             SnapshotStatus status = new SnapshotStatus();
             status.setId(uuid);
+            status.setSnapshotWebRoot(Util.getInitParameter(config, Constants.SNAPSHOT_SERVICE_URL));            
             status.setStatus(ObjectStatusEnum.STARTED);
             String[] snapshots = OutputFileUtil.getAllSnapshotFilenames(config, request);
-            status.setSnapshotFilename(snapshots);
+            SnapshotFilenames names = new SnapshotFilenames();
+            names.setSnapshotFilename(snapshots);
+            status.setSnapshotFilenames(names);
             return status;
         } else return null;
     }

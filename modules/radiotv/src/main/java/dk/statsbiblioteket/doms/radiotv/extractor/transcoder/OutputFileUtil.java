@@ -124,6 +124,10 @@ public class OutputFileUtil {
         return new File(getOutputDir(request, config), request.getPid() + ".mp3");
     }
 
+     public static File getMP3AudioPreviewOutputFile(TranscodeRequest request, ServletConfig config) {
+        return new File(getOutputDir(request, config), request.getPid() + ".preview.mp3");
+    }
+
     public static File getExistingMediaOutputFile(TranscodeRequest request, ServletConfig config) {
         switch(request.getServiceType()) {
             case BROADCAST_EXTRACTION:
@@ -182,16 +186,22 @@ public class OutputFileUtil {
         return outputDir.listFiles(filter).length > 0;
     }
 
-    private static boolean hasSnapshot(TranscodeRequest request, ServletConfig config) {
+    private static boolean hasSnapshot(TranscodeRequest request,final ServletConfig config) {
         final String uuid = request.getPid();
         final FileFilter filter = new FileFilter(){
             @Override
             public boolean accept(File pathname) {
-                return pathname.getName().startsWith(uuid+".") && !pathname.getName().contains("preview");
+                return pathname.getName().startsWith(uuid+".")
+                        && !pathname.getName().contains("preview") 
+                        && pathname.getName().endsWith(Util.getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT));
             }
         };
         File outputDir = getOutputDir(request, config);
-        return outputDir.listFiles(filter).length > 0;
+        final File[] files = outputDir.listFiles(filter);
+        if (files != null && files.length > 0) {
+            log.debug("Found existing output file '" + files[0].getAbsolutePath() + "'");
+        }
+        return files.length > 0;
     }
 
     public static String[] getAllSnapshotFilenames(final ServletConfig config, final TranscodeRequest request) throws ProcessorException {
@@ -209,6 +219,18 @@ public class OutputFileUtil {
             filenames[i] = Util.getRelativePath(OutputFileUtil.getBaseOutputDir(request, config), allFiles[i]);
         }
         return filenames;
+    }
+
+     public static File[] getAllSnapshotFiles(final ServletConfig config, final TranscodeRequest request) throws ProcessorException {
+        FileFilter fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                boolean matchesPid = pathname.getName().contains(request.getPid());
+                boolean matchesFormat = pathname.getName().endsWith(Util.getInitParameter(config, Constants.SNAPSHOT_FINAL_FORMAT));
+                return matchesFormat && matchesPid;
+            }
+        };
+        return getOutputDir(request, config).listFiles(fileFilter);       
     }
 
 

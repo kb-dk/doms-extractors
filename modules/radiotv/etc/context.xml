@@ -2,22 +2,25 @@
 <Context>
 
     <!--
-    Directory where the full streamable files are to be deployed
+    Directory where the full streamable files are to be deployed. This directory should streamable from wowza
+    doms and domslive plugin
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.finaldir" value="/home/larm/streamingContent"/>
 
     <!--
-    Directory where thumbnails are placed
+    Directory where thumbnails are placed. This directory should be available as static webcontent from some
+    webserver.
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory" value="/home/larm/imageDirectory"/>
 
     <!--
-    Directory where preview videos are placed
+    Directory where preview videos are placed. This directory should be streamable from wowza vod plugin.
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory" value="/home/larm/previewDirectory"/>
 
 
-    <!-- A small temporary directory where lock files can be stored
+    <!-- A small temporary directory where lock files can be stored. This should be distinct for each instance of bes if
+    there are multiple instances on the same machine/container.
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.tempdir" value="/home/larm/temp/besDEVEL" />
 
@@ -25,6 +28,17 @@
         URL where streamable files are streamed from
         -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl" value="rtmp://iapetus.statsbiblioteket.dk:1935/doms" />
+
+    <!--
+        URL where preview files are streamed from
+        -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.wowzaPreviewUrl" value="rtmp://iapetus.statsbiblioteket.dk:1935/kultur_preview" />
+
+    <!--
+    Address of the content root of the web server from which the snapshot files are delivered. In DEVEL we use tomcat but in stage/prod this
+    should be an apache.
+    -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotWebserver" value="http://iapetus:9311/images/" />
 
      <!-- Control multithreading: How many simultaneous processes to allow
         -->

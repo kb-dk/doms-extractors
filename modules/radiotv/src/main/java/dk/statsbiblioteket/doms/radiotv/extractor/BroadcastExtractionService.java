@@ -49,7 +49,7 @@ public class BroadcastExtractionService {
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
     public ExtractionStatus getObjectStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
-        log.debug("Request for program '" + programPid + "'");
+        log.debug("Received transcoding request for program '" + programPid + "'");
         if (dummyService) {
             log.warn("Returning dummy status for program '" + programPid + "'");
             return getDummyObjectStatus(programPid);
@@ -61,6 +61,7 @@ public class BroadcastExtractionService {
     /**@GET @Path("/getsnapshotstatus")
     @Produces(MediaType.APPLICATION_XML) */
     public SnapshotStatus getSnapshotStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
+        log.info("Received snapshot request for '" + programPid + "'");
         SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;
@@ -98,6 +99,7 @@ public class BroadcastExtractionService {
     @GET @Path("/getpreviewstatus")
     @Produces(MediaType.APPLICATION_XML)
     public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
+        log.info("Received preview request for '" + programPid + "'");        
         PreviewerStatus status = PreviewerStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;

@@ -52,6 +52,7 @@ public class Constants {
      */
     public static final String PREVIEW_LENGTH = "dk.statsbiblioteket.doms.radiotv.extractor.previewLength";
     public static final String PREVIEW_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory";
+    public static final String PREVIEW_SERVICE_URL = "dk.statsbiblioteket.doms.radiotv.extractor.wowzaPreviewUrl";
     //public static final String PREVIEW_THUMBNAIL_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewThumbnailDirectory";
 
     /**
@@ -64,6 +65,6 @@ public class Constants {
     public static final String SNAPSHOT_FINAL_FORMAT = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotFinalFormat";
     public static final String SNAPSHOT_SCALE_SIZE = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotScaleSize";
     public static final String SNAPSHOT_QUALITY = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality";
-
+    public static final String SNAPSHOT_SERVICE_URL = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotWebserver";
     //TODO additional parameters for final scaling
 }

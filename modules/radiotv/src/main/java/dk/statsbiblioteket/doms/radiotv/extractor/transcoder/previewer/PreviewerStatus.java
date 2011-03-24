@@ -32,6 +32,7 @@ public class PreviewerStatus {
      protected String serviceUrl;
     protected String previewThumbnail;
 
+
     public String getPreviewThumbnail() {
         return previewThumbnail;
     }

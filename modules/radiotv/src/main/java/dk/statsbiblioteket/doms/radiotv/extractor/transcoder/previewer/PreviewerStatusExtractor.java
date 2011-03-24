@@ -44,7 +44,7 @@ public class PreviewerStatusExtractor {
            log.debug("Found preview file for '" + uuid + "'");
             PreviewerStatus status = new PreviewerStatus();
             status.setStatus(ObjectStatusEnum.DONE);
-            status.setServiceUrl(Util.getInitParameter(config, Constants.WOWZA_URL));
+            status.setServiceUrl(Util.getInitParameter(config, Constants.PREVIEW_SERVICE_URL));
             status.setStreamId(Util.getStreamId(request, config));
             return status;
         } else if (RequestRegistry.getInstance().isKnown(request)) {
