@@ -24,6 +24,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -48,13 +49,25 @@ public class BroadcastExtractionService {
 
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
-    public ExtractionStatus getObjectStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
-        log.debug("Received transcoding request for program '" + programPid + "'");
+    public ExtractionStatus getObjectStatus(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
+        logIncomingRequest("transcoding", programPid, title, channel, startTime);
         if (dummyService) {
             log.warn("Returning dummy status for program '" + programPid + "'");
             return getDummyObjectStatus(programPid);
         } else {
             return getRealObjectStatus(programPid);
+        }
+    }
+
+    private static void logIncomingRequest(String requestType, String programPid, String title, String channel, long startTime) {
+        log.info("Received " + requestType + " request for program '" + programPid + "'");
+        if (title != null || channel != null) {
+            log.info("This corresponds to '" + title + "' on  '" + channel + "'");
+        }
+        if (startTime != 0L) {
+            Date startDate = new Date();
+            startDate.setTime(startTime);
+            log.info("Start time is '" + startDate + "'");
         }
     }
 
@@ -98,8 +111,8 @@ public class BroadcastExtractionService {
 
     @GET @Path("/getpreviewstatus")
     @Produces(MediaType.APPLICATION_XML)
-    public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid) throws ProcessorException, UnsupportedEncodingException {
-        log.info("Received preview request for '" + programPid + "'");        
+    public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
+        logIncomingRequest("preview", programPid, title, channel, startTime);               
         PreviewerStatus status = PreviewerStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;
