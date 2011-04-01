@@ -64,7 +64,7 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
                 outputFile = OutputFileUtil.getFlashVideoOutputFile(request, config).getAbsolutePath();
                 break;
         }
-        MuxFlashClipper.symlinkToRootDir(config, new File(outputFile));
+        //MuxFlashClipper.symlinkToRootDir(config, new File(outputFile));
         ExternalJobRunner.runClipperCommand(command);      
     }
 

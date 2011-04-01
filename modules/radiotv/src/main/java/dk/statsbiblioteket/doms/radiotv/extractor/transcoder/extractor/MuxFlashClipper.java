@@ -116,7 +116,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
                         + "000 -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config);
             }
         }
-        symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
+        //symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
         ExternalJobRunner.runClipperCommand(clipperCommand);
     }
 
