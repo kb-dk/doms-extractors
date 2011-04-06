@@ -31,7 +31,16 @@ public class PreviewerStatus {
     protected String streamId;
      protected String serviceUrl;
     protected String previewThumbnail;
+    protected int positionInQueue;
 
+
+    public int getPositionInQueue() {
+        return positionInQueue;
+    }
+
+    public void setPositionInQueue(int positionInQueue) {
+        this.positionInQueue = positionInQueue;
+    }
 
     public String getPreviewThumbnail() {
         return previewThumbnail;

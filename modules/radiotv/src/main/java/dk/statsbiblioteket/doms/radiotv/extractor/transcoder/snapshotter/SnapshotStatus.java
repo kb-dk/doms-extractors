@@ -33,6 +33,15 @@ public class SnapshotStatus {
     protected String[] thumbnailFilename;
     protected SnapshotFilenames snapshotFilenames;
     protected String snapshotWebRoot;
+    protected int positionInQueue;
+
+    public int getPositionInQueue() {
+        return positionInQueue;
+    }
+
+    public void setPositionInQueue(int positionInQueue) {
+        this.positionInQueue = positionInQueue;
+    }
 
     public String getSnapshotWebRoot() {
         return snapshotWebRoot;

@@ -29,8 +29,11 @@ import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class ProcessorChainThreadPool {
 
@@ -40,17 +43,17 @@ public class ProcessorChainThreadPool {
      * Singleton instance
      */
     private static ProcessorChainThreadPool instance;
-    private static LinkedBlockingQueue<ProcessorChainThread> theQueue;
+    private static BlockingQueue<ProcessorChainThread> theQueue;
     private static GenericObjectPool thePool;
     private static int maxActiveProcesses;
 
-    
-    
+
     /**
      * Singleton.
      */
     private ProcessorChainThreadPool(ServletConfig config) {
         theQueue = new LinkedBlockingQueue<ProcessorChainThread>();
+        //theQueue = new PriorityBlockingQueue(1000, new ThreadComparator());
         maxActiveProcesses = Integer.parseInt(Util.getInitParameter(config, Constants.MAX_ACTIVE_PROCESSING));
         log.info("Creating thread pool with max active processes = " + maxActiveProcesses);
         thePool = new GenericObjectPool(new BasePoolableObjectFactory() {
@@ -107,6 +110,26 @@ public class ProcessorChainThreadPool {
             if (thisRequest.getPid().equals(request.getPid()) && thisRequest.getServiceType().equals(request.getServiceType())) return position;
         };
         return 0;
+    }
+
+    private static class ThreadComparator implements Comparator<ProcessorChainThread> {
+
+        @Override
+        public int compare(ProcessorChainThread o1, ProcessorChainThread o2) {
+            ServiceTypeEnum type1 = o1.getRequest().getServiceType();
+            ServiceTypeEnum type2 = o1.getRequest().getServiceType();
+            if (type1.equals(ServiceTypeEnum.PREVIEW_GENERATION) && type2.equals(ServiceTypeEnum.THUMBNAIL_GENERATION)) {
+                return 1;
+            } else if (type2.equals(ServiceTypeEnum.PREVIEW_GENERATION) && type1.equals(ServiceTypeEnum.THUMBNAIL_GENERATION)) {
+                return -1;
+            } else if (o1.getTimestamp().equals(o2.getTimestamp())) {
+                return 0;
+            } else if (o1.getTimestamp() > o2.getTimestamp()) {
+                return -1;
+            } else {
+                return 1;
+            }
+        }
     }
 
 }

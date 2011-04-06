@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
 
+     <Parameter name="log4jConfigLocation" value="../../../etc/log4j.DEVEL.xml"
+             override="false"/>
+
     <!--
     Directory where the full streamable files are to be deployed. This directory should streamable from wowza
     doms and domslive plugin

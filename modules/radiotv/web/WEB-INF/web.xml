@@ -174,4 +174,9 @@
         <servlet-name>Broadcast Extraction Service</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+
+     <listener>
+    <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+  </listener>
+
 </web-app>

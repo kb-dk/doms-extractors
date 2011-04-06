@@ -2,6 +2,14 @@
 <Context>
 
     <!--
+       Location of the log4j configuration file to use for this context. Note that this path is always relative to the
+       deploy root (e.g. ~/service/webapps/bes). Trying to use an absolute path WON'T WORK.
+       -->
+       <Parameter name="log4jConfigLocation" value="../../../etc/log4j.bes_ONLINE_PREVIEW.xml"
+                override="false"/>
+
+
+    <!--
     Directory where the full streamable files are to be deployed. This directory should streamable from wowza
     doms and domslive plugin
     -->

@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import javax.servlet.ServletConfig;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 public class ProcessorChainThread extends Thread {
 
@@ -35,7 +36,13 @@ public class ProcessorChainThread extends Thread {
     private TranscodeRequest request;
     private ServletConfig config;
 
+    private Long timestamp;
+
     private boolean isRecursive;
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
 
     public static ProcessorChainThread getRecursiveProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
           return new ProcessorChainThread(tailElement, request, config, true);
@@ -50,6 +57,7 @@ public class ProcessorChainThread extends Thread {
         this.callElement = callElement;
         this.request = request;
         this.config = config;
+        this.timestamp = (new Date()).getTime();
     }
 
 

@@ -38,6 +38,8 @@ public class ExtractionStatus {
     protected String previewStreamId;
     protected int positionInQueue;
     protected Boolean previewIsComplete;
+   
+
 
     public Long getFlashFileLengthBytes() {
         return flashFileLengthBytes;

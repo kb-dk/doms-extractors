@@ -62,6 +62,7 @@ public class SnapshotStatusExtractor {
             SnapshotFilenames names = new SnapshotFilenames();
             names.setSnapshotFilename(snapshots);
             status.setSnapshotFilenames(names);
+            status.setPositionInQueue(Util.getQueuePosition(request, config));
             return status;
         } else return null;
     }

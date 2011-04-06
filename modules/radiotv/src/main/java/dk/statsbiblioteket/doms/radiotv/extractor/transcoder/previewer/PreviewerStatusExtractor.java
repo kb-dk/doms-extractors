@@ -51,6 +51,7 @@ public class PreviewerStatusExtractor {
             log.debug("Already doing preview file for '" + uuid + "'");
             PreviewerStatus status = new PreviewerStatus();
             status.setStatus(ObjectStatusEnum.STARTED);
+            status.setPositionInQueue(Util.getQueuePosition(request, config));
             return status;
         } else return null;
     }
