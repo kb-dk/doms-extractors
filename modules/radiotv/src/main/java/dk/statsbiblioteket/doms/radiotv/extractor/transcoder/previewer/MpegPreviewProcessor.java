@@ -80,7 +80,7 @@ public class MpegPreviewProcessor extends ProcessorChainElement {
             ExternalJobRunner.runClipperCommand(timeout, command);
         } catch (ExternalProcessTimedOutException e) {
             File outputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);
-            log.warn("Delelting '" + outputFile.getAbsolutePath() + "'");
+            log.warn("Deleting '" + outputFile.getAbsolutePath() + "'");
             outputFile.delete();
             throw new ProcessorException(e);
         } finally {

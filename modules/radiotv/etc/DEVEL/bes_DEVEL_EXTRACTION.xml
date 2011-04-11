@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context>
+<Context  docBase="/home/larm/war/bes_DEVEL.war">
 
      <Parameter name="log4jConfigLocation" value="../../../etc/log4j.DEVEL_EXTRACTION.xml"
              override="false"/>
@@ -68,5 +68,12 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotScaleSize"  value="26"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality"   value="75"/>
 
+     <!-- Timeout parameters for various operations -->
+    <!-- Preview timeout expressed as multiple of previewLength -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor" value="4.0" />
+    <!-- extraction timeout expresses as multiple of program length -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value="1.5" />
+    <!-- Snapshot timeout expressed as multiple of snapshot length -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/> 
 
 </Context>

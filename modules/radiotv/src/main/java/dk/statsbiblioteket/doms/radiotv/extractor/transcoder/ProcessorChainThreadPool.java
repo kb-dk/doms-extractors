@@ -107,7 +107,11 @@ public class ProcessorChainThreadPool {
         while (threads.hasNext()) {
             position++;
             final TranscodeRequest thisRequest = threads.next().getRequest();
-            if (thisRequest.getPid().equals(request.getPid()) && thisRequest.getServiceType().equals(request.getServiceType())) return position;
+            if (thisRequest.getPid().equals(request.getPid()) && thisRequest.getServiceType().equals(request.getServiceType())) {
+                log.info("Request '" + request.getPid() + "' has position " + position + " in queue");
+                log.info("Queue size is " + theQueue.size());
+                return position;
+            }
         };
         return 0;
     }

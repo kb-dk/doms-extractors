@@ -76,20 +76,20 @@ public class MpegSnapshotGeneratorProcessor extends ProcessorChainElement {
             String command = "cat <(dd if=" + filepath + " bs=" + blocksize +
                     " skip=" + location/blocksize + " count=" + seconds*bitrate/(MPEG_SPEEDUP*blocksize) + " )|"
                     + " vlc - "
-                    + " --quiet --video-filter scene -V dummy  --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
+                    + " --quiet --demux=ps --video-filter scene -V dummy  --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
                     "linear --noaudio  " +
                     "--scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-ratio=1000 --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
             try {
-                 long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.SNAPSHOT_TIMEOUT_FACTOR))*seconds*1000L);
+                long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.SNAPSHOT_TIMEOUT_FACTOR))*seconds*1000L);
                 log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
                 ExternalJobRunner.runClipperCommand(timeout, command);
+                final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);
+                SnapshotUtil.imageMagickConvert(config, fullPrimarySnapshotFile, OutputFileUtil.getFullFinalSnapshotFile(config, request, label, "" + count));
+                fullPrimarySnapshotFile.delete();
             } catch (ExternalProcessTimedOutException e) {
-                throw new ProcessorException(e); 
+                log.warn(e);
             }
-            final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);
-            SnapshotUtil.imageMagickConvert(config, fullPrimarySnapshotFile, OutputFileUtil.getFullFinalSnapshotFile(config, request, label, "" + count));
-            fullPrimarySnapshotFile.delete();            
             count++;
         }
     }

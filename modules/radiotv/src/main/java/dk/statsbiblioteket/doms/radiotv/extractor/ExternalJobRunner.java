@@ -39,6 +39,7 @@ public class ExternalJobRunner {
     private final StringBuffer standard_err = new StringBuffer();
     private int exit_code;
     private static final Logger log = Logger.getLogger(ExternalJobRunner.class);
+    private String logString = null;
 
     private long timeout = 0L;
 
@@ -54,6 +55,10 @@ public class ExternalJobRunner {
      * @throws InterruptedException
      */
     public ExternalJobRunner(long timeout, final String... command) throws IOException, InterruptedException, ExternalProcessTimedOutException {
+        for (String commandS:command) {
+            if (commandS!= null) logString += commandS + " ";
+        }
+
         if (timeout != 0L) {
             this.timeout = timeout;
         }
@@ -89,7 +94,7 @@ public class ExternalJobRunner {
             }
 
             public void run() {
-                log.debug("Starting harvesting thread for '" + stream_type + "' for '" + command[0] + "'");
+                log.debug("Starting harvesting thread for '" + stream_type + "' for '" + logString + "'");
                  synchronized(buffer) {
                     started = true;
                     String line;
@@ -99,7 +104,7 @@ public class ExternalJobRunner {
                             buffer.append(line+"\n");
                         }
                     } catch (IOException e) {
-                        log.error("Harvesting error for '"  + stream_type + "' for '" + command[0] + "' (has process timed out and been killed?)", e);
+                        log.error("Harvesting error for '"  + stream_type + "' for '" + logString + "' (has process timed out and been killed?)", e);
                         p.destroy();
                         try {
                             killUnixProcess(p);
@@ -108,10 +113,10 @@ public class ExternalJobRunner {
                         }
                     } finally {
                         try {
-                            log.debug("Closing stream for '" + command[0] + "'");
+                            log.debug("Closing stream for '" + logString + "'");
                             stream.close();
                         } catch (IOException e) {
-                            log.error("Error closing an InputStream for '" + command[0] + "'", e);
+                            log.error("Error closing an InputStream for '" + logString + "'", e);
                         }
                     }
                 }
@@ -124,7 +129,7 @@ public class ExternalJobRunner {
         StreamHarvester err_harvester = new StreamHarvester(StreamHarvester.ERR);
         (new Thread(out_harvester)).start();
         (new Thread(err_harvester)).start();
-        log.debug("Waiting for '" + command[0] + "'");
+        log.debug("Waiting for '" + logString + "'");
         Timer timer = new Timer();        
         if (this.timeout != 0L) {
             timer.schedule(new InterruptScheduler(Thread.currentThread()), this.timeout);
@@ -132,7 +137,7 @@ public class ExternalJobRunner {
         try {
             p.waitFor();
         } catch (InterruptedException e) {
-            log.warn("Process '" + command[0] + "' timed out. Destroying.");
+            log.error("Process '" + logString + "' timed out. Destroying.");
             p.destroy();
             try {
                 killUnixProcess(p);
@@ -143,15 +148,15 @@ public class ExternalJobRunner {
         } finally {
            timer.cancel();
         }
-        log.debug("Finished waiting for '" + command[0] + "'");
+        log.debug("Finished waiting for '" + logString + "'");
         exit_code = p.exitValue();
         //p.getInputStream().close();
         // We busy-wait here to make sure that we do not exit this method before the
         // harvester threads have got a lock on the output buffers. Otherwise one risks
         // that the access methods try to read the buffers before anything is written to them.
-        log.debug("Waiting to get handle on output buffers for '" + command[0] + "'");
+        log.debug("Waiting to get handle on output buffers for '" + logString + "'");
         while (! (out_harvester.started && err_harvester.started)) { }
-        log.debug("Finished waiting to get handle on output buffers for '" + command[0] + "'");
+        log.debug("Finished waiting to get handle on output buffers for '" + logString + "'");
     }
 
 
@@ -190,48 +195,48 @@ public class ExternalJobRunner {
     }
 
     public static void runClipperCommand(String clipperCommand) throws ProcessorException, ExternalProcessTimedOutException {
-         runClipperCommand(0L, clipperCommand);
+        runClipperCommand(0L, clipperCommand);
     }
 
 
-public static int getUnixPID(Process process) throws Exception
-{
-    System.out.println(process.getClass().getName());
-    if (process.getClass().getName().equals("java.lang.UNIXProcess"))
+    public static int getUnixPID(Process process) throws Exception
     {
-        Class cl = process.getClass();
-        Field field = cl.getDeclaredField("pid");
-        field.setAccessible(true);
-        Object pidObject = field.get(process);
-        return (Integer) pidObject;
-    } else
-    {
-        throw new IllegalArgumentException("Needs to be a UNIXProcess");
+        System.out.println(process.getClass().getName());
+        if (process.getClass().getName().equals("java.lang.UNIXProcess"))
+        {
+            Class cl = process.getClass();
+            Field field = cl.getDeclaredField("pid");
+            field.setAccessible(true);
+            Object pidObject = field.get(process);
+            return (Integer) pidObject;
+        } else
+        {
+            throw new IllegalArgumentException("Needs to be a UNIXProcess");
+        }
     }
-}
 
-public static int killUnixProcess(Process process) throws Exception
-{
-    int pid = getUnixPID(process);
-    return Runtime.getRuntime().exec("kill " + pid).waitFor();
-}
+    public static int killUnixProcess(Process process) throws Exception
+    {
+        int pid = getUnixPID(process);
+        return Runtime.getRuntime().exec("kill " + pid).waitFor();
+    }
 
     private class InterruptScheduler extends TimerTask
-{
-Thread target = null;
+    {
+        Thread target = null;
 
-public InterruptScheduler(Thread target)
-{
-this.target = target;
-}
+        public InterruptScheduler(Thread target)
+        {
+            this.target = target;
+        }
 
-@Override
-public void run()
-{
-target.interrupt();
-}
+        @Override
+        public void run()
+        {
+            target.interrupt();
+        }
 
-}
+    }
 
 }
 

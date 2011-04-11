@@ -110,7 +110,7 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
         try {
             ExternalJobRunner runner = null;
             try {
-                runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
+                runner = new ExternalJobRunner(10000L, new String[]{"bash", "-c", command});
             } catch (ExternalProcessTimedOutException e) {
                 throw new ProcessorException(e);
             }

@@ -48,7 +48,7 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);        
+        request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
         int seconds = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_VIDEO_LENGTH));
         List<TranscodeRequest.SnapshotPosition> snapshots = request.getSnapshotPositions();
         int count = 0;
@@ -64,21 +64,21 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
                     " --scene-ratio=1000 --scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
             try {
-                    long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.SNAPSHOT_TIMEOUT_FACTOR))*seconds*1000L);
+                long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.SNAPSHOT_TIMEOUT_FACTOR))*seconds*1000L);
                 log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
                 ExternalJobRunner.runClipperCommand(timeout, command);
+                /**
+                 * Now create a smaller file with
+                 * convert -scale 50% drk_2009-11-12_23-55-00.snapshot.preview.0.png temp.jpeg
+                 * convert -thumbnail 10% drk_2009-11-12_23-55-00.snapshot.preview.0.png thumb.jpeg
+                 * and delete the big file.
+                 */
+                final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);
+                SnapshotUtil.imageMagickConvert(config, fullPrimarySnapshotFile, OutputFileUtil.getFullFinalSnapshotFile(config, request, label, "" + count));
+                fullPrimarySnapshotFile.delete();
             } catch (ExternalProcessTimedOutException e) {
-                throw new ProcessorException(e);
+                log.warn(e);
             }
-            /**
-             * Now create a smaller file with
-             * convert -scale 50% drk_2009-11-12_23-55-00.snapshot.preview.0.png temp.jpeg
-             * convert -thumbnail 10% drk_2009-11-12_23-55-00.snapshot.preview.0.png thumb.jpeg
-             * and delete the big file.
-             */        
-            final File fullPrimarySnapshotFile = OutputFileUtil.getFullPrimarySnapshotFile(config, request, label, "" + count);
-            SnapshotUtil.imageMagickConvert(config, fullPrimarySnapshotFile, OutputFileUtil.getFullFinalSnapshotFile(config, request, label, "" + count));
-            fullPrimarySnapshotFile.delete();
             count++;
         }
     }

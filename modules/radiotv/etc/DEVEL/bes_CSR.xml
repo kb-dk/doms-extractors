@@ -77,9 +77,11 @@
 
     <!-- Timeout parameters for various operations -->
     <!-- Preview timeout expressed as multiple of previewLength -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor" value=".001" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value=".00001" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value=".001"/> 
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor" value="4.0" />
+    <!-- extraction timeout expresses as multiple of program length -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value="1.5" />
+    <!-- Snapshot timeout expressed as multiple of snapshot length -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/> 
 
 
 </Context>
