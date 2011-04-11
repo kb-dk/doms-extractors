@@ -108,7 +108,12 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
 
         log.info("Executing '" + command + "'");
         try {
-            ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
+            ExternalJobRunner runner = null;
+            try {
+                runner = new ExternalJobRunner(new String[]{"bash", "-c", command});
+            } catch (ExternalProcessTimedOutException e) {
+                throw new ProcessorException(e);
+            }
             log.debug("Command '" + command + "' returned with output '" + runner.getError());
             log.info("Command '" + command + "' returned with exit code '" + runner.getExitValue() + "'");
             Matcher m = darPattern.matcher(runner.getError());

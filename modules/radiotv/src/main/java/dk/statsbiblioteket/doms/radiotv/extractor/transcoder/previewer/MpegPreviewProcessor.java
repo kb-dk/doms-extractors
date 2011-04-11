@@ -73,8 +73,19 @@ public class MpegPreviewProcessor extends ProcessorChainElement {
         previewSnapshot.setBytePosition(clipStartPosition);
         String command = "dd if=" + longestClip.getFilepath() + " bs=" + blocksize + " skip=" + clipStartPosition/blocksize + " count=" + previewLengthBytes/blocksize + "| "
                 + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
-        ExternalJobRunner.runClipperCommand(command);
-        RequestRegistry.getInstance().remove(request);
+        int clipLengthSeconds = Integer.parseInt(Util.getInitParameter(config, Constants.PREVIEW_LENGTH));
+        try {
+            final long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.PREVIEW_TIMEOUT_FACTOR))*clipLengthSeconds * 1000L);
+            log.debug("Setting timeout to '" + timeout + "' ms.");
+            ExternalJobRunner.runClipperCommand(timeout, command);
+        } catch (ExternalProcessTimedOutException e) {
+            File outputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);
+            log.warn("Delelting '" + outputFile.getAbsolutePath() + "'");
+            outputFile.delete();
+            throw new ProcessorException(e);
+        } finally {
+            RequestRegistry.getInstance().remove(request);
+        }
         request.setServiceType(ServiceTypeEnum.PREVIEW_THUMBNAIL_GENERATION);
         RequestRegistry.getInstance().register(request);
     }

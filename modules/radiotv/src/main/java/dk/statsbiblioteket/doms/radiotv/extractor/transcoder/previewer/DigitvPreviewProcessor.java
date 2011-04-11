@@ -69,7 +69,7 @@ public class DigitvPreviewProcessor extends ProcessorChainElement {
         String clipperCommand;
         int programNumber = longestClip.getProgramId();
         if (pidSubtitles) {
-             clipperCommand = "cat " + processSubstituionDDCommand + " |  vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+             clipperCommand = "cat " + processSubstituionDDCommand + " |  vlc - --demux=ts --quiet --intf dummy --play-and-exit --noaudio --novideo "
                         + "--sout-all --sout '#duplicate{dst=\""
                         + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                         + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
@@ -79,7 +79,7 @@ public class DigitvPreviewProcessor extends ProcessorChainElement {
                         "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
                         + "000 -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);
         } else {
-            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                                + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
                                + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                                + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
@@ -89,8 +89,19 @@ public class DigitvPreviewProcessor extends ProcessorChainElement {
                                + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config) ;
 
         }
-        ExternalJobRunner.runClipperCommand(clipperCommand);
-        RequestRegistry.getInstance().remove(request);
+        int clipLengthSeconds = Integer.parseInt(Util.getInitParameter(config, Constants.PREVIEW_LENGTH));
+        try {
+            final long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.PREVIEW_TIMEOUT_FACTOR))*clipLengthSeconds * 1000L);
+            log.debug("Setting timeout to '" + timeout + "' ms.");            
+            ExternalJobRunner.runClipperCommand(timeout, clipperCommand);
+        } catch (ExternalProcessTimedOutException e) {
+            final File previewOutputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);
+            log.info("Deleting '" + previewOutputFile.getAbsolutePath() + "'");
+            previewOutputFile.delete();
+            throw new ProcessorException(e);
+        } finally {
+            RequestRegistry.getInstance().remove(request);
+        }
         request.setServiceType(ServiceTypeEnum.PREVIEW_THUMBNAIL_GENERATION);
         RequestRegistry.getInstance().register(request);
     }

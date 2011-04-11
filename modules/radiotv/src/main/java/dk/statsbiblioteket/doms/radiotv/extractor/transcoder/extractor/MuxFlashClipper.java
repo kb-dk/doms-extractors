@@ -25,11 +25,14 @@ import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
 
 public class MuxFlashClipper extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(MuxFlashClipper.class);
 
     private static final String algorithm = "vlc";
 
@@ -83,7 +86,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
         if (algorithm.equals("full_vlc")) {
             clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
                     + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
-                    + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                    + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                     + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
                     + ":transcode{acodec=mp3,vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{profile=baseline,preset=superfast},soverlay,deinterlace,audio-sync,"
                     + "ab=" + Util.getAudioBitrate(config)
@@ -95,7 +98,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
         }
         else {
             if (!pidSubtitles) {
-                clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                     + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
                     + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                     + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
@@ -105,7 +108,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
                     + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config) ;
 
             } else {
-                 clipperCommand = "cat " + processSubstitutionFileList + " |  vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                 clipperCommand = "cat " + processSubstitutionFileList + " |  vlc - --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                         + "--sout-all --sout '#duplicate{dst=\""
                         + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                         + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
@@ -117,12 +120,18 @@ public class MuxFlashClipper extends ProcessorChainElement {
             }
         }
         //symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
-        ExternalJobRunner.runClipperCommand(clipperCommand);
+        try {
+            long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
+            log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
+            ExternalJobRunner.runClipperCommand(timeout, clipperCommand);
+        } catch (ExternalProcessTimedOutException e) {
+            File outputFile =  OutputFileUtil.getFlashVideoOutputFile(request, config);
+            log.warn("Deleting '" + outputFile.getAbsolutePath() + "'");
+            outputFile.delete();
+            throw new ProcessorException(e);
+        }
     }
 
-    public static void symlinkToRootDir(ServletConfig config, File file) throws ProcessorException {
-        File rootdir = new File(Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM));
-        ExternalJobRunner.runClipperCommand("ln -s " + file.getAbsolutePath() + " " + rootdir.getAbsolutePath());
-    }
+
 
 }

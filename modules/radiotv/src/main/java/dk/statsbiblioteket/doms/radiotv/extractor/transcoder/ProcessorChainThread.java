@@ -116,10 +116,22 @@ public class ProcessorChainThread extends Thread {
             throw new RuntimeException(e);
         }
         finally {
-            Util.unlockRequest(request);
+            try {
+                Util.unlockRequest(request);
+            } catch (Exception e) {
+                log.error(e);
+            }
             log.info("Cleaning up after processing '" + request.getPid() + "'");
-            RequestRegistry.getInstance().remove(request);
-            lockFile.delete();
+            try {
+                RequestRegistry.getInstance().remove(request);
+            } catch (Exception e) {
+                log.error(e);
+            }
+            try {
+                lockFile.delete();
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
     }
 }

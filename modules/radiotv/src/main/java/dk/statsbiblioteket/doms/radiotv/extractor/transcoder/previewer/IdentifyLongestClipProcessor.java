@@ -34,7 +34,7 @@ public class IdentifyLongestClipProcessor extends ProcessorChainElement {
 
     private static TranscodeRequest.FileClip getLongestClip(TranscodeRequest request) {
         TranscodeRequest.FileClip longestClip = null;
-        Long lengthOfLongestClip = 0L;
+        long lengthOfLongestClip = 0L;
         final int clipSize = request.getClips().size();
         for (int iclip = 0; iclip < clipSize; iclip++ ) {
             TranscodeRequest.FileClip clip = request.getClips().get(iclip);
@@ -48,16 +48,19 @@ public class IdentifyLongestClipProcessor extends ProcessorChainElement {
             if (clipLength != null) {
                 if (clipLength > lengthOfLongestClip) {
                     longestClip = clip;
+                    lengthOfLongestClip = clipLength;
                 }
             } else if (clipLength == null && clipOffset == null) {
                long fileLength = new File(clip.getFilepath()).length();
                 if (fileLength > lengthOfLongestClip) {
                     longestClip = clip;
+                    lengthOfLongestClip = fileLength;
                 }
             } else if (clipLength == null && clipOffset != null) {
                 clipLength = new File(clip.getFilepath()).length() - clipOffset;
                 if (clipLength > lengthOfLongestClip) {
                     longestClip = clip;
+                    lengthOfLongestClip = clipLength;
                 }
             }
         }

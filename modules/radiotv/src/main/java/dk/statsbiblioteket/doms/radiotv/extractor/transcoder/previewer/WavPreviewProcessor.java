@@ -58,6 +58,15 @@ public class WavPreviewProcessor extends ProcessorChainElement {
 
         String command = "sox " + longestClip.getFilepath() + " -t wav - trim " + clipStartPosition/bitrate + ".0 " + previewLengthSeconds + ".0 |" + WavTranscoderProcessor.getLameCommand(request, config);
 
-        ExternalJobRunner.runClipperCommand(command);
+        try {
+             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.PREVIEW_TIMEOUT_FACTOR))*previewLengthSeconds*1000L);
+            log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
+            ExternalJobRunner.runClipperCommand(timeout, command);
+        } catch (ExternalProcessTimedOutException e) {
+            File outputFile = WavTranscoderProcessor.getOutputFile(request, config);
+            log.warn("Deleting '" + outputFile.getAbsolutePath() + "'");
+            outputFile.delete();
+            throw new ProcessorException(e);
+        }
     }
 }

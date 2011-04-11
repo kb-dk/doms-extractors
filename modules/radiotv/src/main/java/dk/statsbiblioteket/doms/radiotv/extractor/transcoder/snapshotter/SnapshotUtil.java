@@ -23,6 +23,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ExternalProcessTimedOutException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.OutputFileUtil;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.Util;
@@ -40,7 +41,11 @@ public class SnapshotUtil {
         String resolution = width + "x" +height;
         String command = "convert " + inputFile.getAbsolutePath() + " -quality " + quality + "% "
                 + " -thumbnail '" + resolution + "' -bordercolor black -border 150 -gravity center -crop " + resolution + "+0+0 +repage " + outputFile.getAbsolutePath();
-        ExternalJobRunner.runClipperCommand(command);
+        try {
+            ExternalJobRunner.runClipperCommand(120000L, command);
+        } catch (ExternalProcessTimedOutException e) {
+            throw new ProcessorException(e);
+        }
     }
 
 }

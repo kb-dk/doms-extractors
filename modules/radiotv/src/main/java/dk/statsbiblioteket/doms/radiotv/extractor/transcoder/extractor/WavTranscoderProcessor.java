@@ -21,37 +21,51 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.util.List;
 import java.io.File;
 
 public class WavTranscoderProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(WavTranscoderProcessor.class);
+
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         String command;
         command = getMultiClipCommand(request, config);
         //MuxFlashClipper.symlinkToRootDir(config, OutputFileUtil.getMP3AudioOutputFile(request, config));                
-        ExternalJobRunner.runClipperCommand(command);
+        try {
+            long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
+            log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
+            ExternalJobRunner.runClipperCommand(timeout, command);
+        } catch (ExternalProcessTimedOutException e) {
+            log.warn("Deleting '" + getOutputFile(request, config).getAbsolutePath() + "'");
+            getOutputFile(request, config).delete();
+        }
     }
 
     public static String getLameCommand(TranscodeRequest request, ServletConfig config) {
-        String outputFileName = null;
-        switch (request.getServiceType()) {
-            case BROADCAST_EXTRACTION:
-                outputFileName =  OutputFileUtil.getMP3AudioOutputFile(request, config).getAbsolutePath();
-                break;
-            case PREVIEW_GENERATION:
-                outputFileName =  OutputFileUtil.getMP3AudioPreviewOutputFile(request, config).getAbsolutePath();
-                break;
-            case THUMBNAIL_GENERATION:
-                break;
-            case PREVIEW_THUMBNAIL_GENERATION:
-                break;
-        }
+        String outputFileName = getOutputFile(request, config).getAbsolutePath();
         return "lame -b "  + Util.getAudioBitrate(config) + " - " + outputFileName;
+    }
+
+    public static File getOutputFile(TranscodeRequest request, ServletConfig config) {
+       switch (request.getServiceType()) {
+            case BROADCAST_EXTRACTION:
+                return  OutputFileUtil.getMP3AudioOutputFile(request, config);
+            case PREVIEW_GENERATION:
+                return OutputFileUtil.getMP3AudioPreviewOutputFile(request, config);
+            case THUMBNAIL_GENERATION:
+                return null;
+            case PREVIEW_THUMBNAIL_GENERATION:
+                return null;
+        }
+        return null;
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

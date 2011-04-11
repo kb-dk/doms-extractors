@@ -24,12 +24,15 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
 import java.util.List;
 
 public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(MuxSnapshotGeneratorProcessor.class);
 
     Long blocksize = 1880L;
     Long bitrate = ClipTypeEnum.MUX.getBitrate(); // bytes/second
@@ -56,11 +59,17 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
             String command = "cat <(dd if=" + filepath + " bs=" + blocksize +
                     " skip=" + location/blocksize + " count=" + seconds*bitrate/blocksize + " )|"
                     + " vlc - --program=" + programId
-                    + " --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
+                    + " --quiet --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
                     "linear --noaudio  " +
                     " --scene-ratio=1000 --scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
                     + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
-            ExternalJobRunner.runClipperCommand(command);
+            try {
+                    long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.SNAPSHOT_TIMEOUT_FACTOR))*seconds*1000L);
+                log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
+                ExternalJobRunner.runClipperCommand(timeout, command);
+            } catch (ExternalProcessTimedOutException e) {
+                throw new ProcessorException(e);
+            }
             /**
              * Now create a smaller file with
              * convert -scale 50% drk_2009-11-12_23-55-00.snapshot.preview.0.png temp.jpeg

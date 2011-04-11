@@ -21,6 +21,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ExternalProcessTimedOutException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
 import org.apache.log4j.Logger;
@@ -29,12 +30,22 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ExternalJobRunner {
     private final StringBuffer standard_out = new StringBuffer();
     private final StringBuffer standard_err = new StringBuffer();
     private int exit_code;
     private static final Logger log = Logger.getLogger(ExternalJobRunner.class);
+
+    private long timeout = 0L;
+
+    public ExternalJobRunner(final String... command) throws IOException, InterruptedException, ExternalProcessTimedOutException {
+         this(0L, command);
+    }
+
     /**
      * Runs an external command, blocking until the external processRecursively ends after which
      * the output and errors can be read.
@@ -42,7 +53,11 @@ public class ExternalJobRunner {
      * @throws java.io.IOException
      * @throws InterruptedException
      */
-    public ExternalJobRunner(final String... command) throws IOException, InterruptedException {
+    public ExternalJobRunner(long timeout, final String... command) throws IOException, InterruptedException, ExternalProcessTimedOutException {
+        if (timeout != 0L) {
+            this.timeout = timeout;
+        }
+
         final Process p;
         if (command.length == 1) {
              p = Runtime.getRuntime().exec(command[0]);
@@ -55,10 +70,12 @@ public class ExternalJobRunner {
             public static final String ERR = "standard_err";
             private StringBuffer buffer;
             private InputStream stream;
+            private String stream_type;
 
             public boolean started = false;
 
             public StreamHarvester (String stream_type) {
+                this.stream_type = stream_type;
                 if (stream_type.equals(OUT)) {
                     buffer = standard_out;
                     stream = p.getInputStream();
@@ -72,6 +89,7 @@ public class ExternalJobRunner {
             }
 
             public void run() {
+                log.debug("Starting harvesting thread for '" + stream_type + "' for '" + command[0] + "'");
                  synchronized(buffer) {
                     started = true;
                     String line;
@@ -81,13 +99,19 @@ public class ExternalJobRunner {
                             buffer.append(line+"\n");
                         }
                     } catch (IOException e) {
-                        //TODO need logging
+                        log.error("Harvesting error for '"  + stream_type + "' for '" + command[0] + "' (has process timed out and been killed?)", e);
+                        p.destroy();
+                        try {
+                            killUnixProcess(p);
+                        } catch (Exception e1) {
+                            log.warn(e);
+                        }
                     } finally {
                         try {
-                            log.debug("Closing stream for '" + command + "'");
+                            log.debug("Closing stream for '" + command[0] + "'");
                             stream.close();
                         } catch (IOException e) {
-                            log.error("Error closing an InputStream for '" + command + "'", e);
+                            log.error("Error closing an InputStream for '" + command[0] + "'", e);
                         }
                     }
                 }
@@ -100,12 +124,34 @@ public class ExternalJobRunner {
         StreamHarvester err_harvester = new StreamHarvester(StreamHarvester.ERR);
         (new Thread(out_harvester)).start();
         (new Thread(err_harvester)).start();
-        p.waitFor();
+        log.debug("Waiting for '" + command[0] + "'");
+        Timer timer = new Timer();        
+        if (this.timeout != 0L) {
+            timer.schedule(new InterruptScheduler(Thread.currentThread()), this.timeout);
+        }
+        try {
+            p.waitFor();
+        } catch (InterruptedException e) {
+            log.warn("Process '" + command[0] + "' timed out. Destroying.");
+            p.destroy();
+            try {
+                killUnixProcess(p);
+            } catch (Exception e1) {
+                log.warn(e);
+            }
+            throw new ExternalProcessTimedOutException();
+        } finally {
+           timer.cancel();
+        }
+        log.debug("Finished waiting for '" + command[0] + "'");
         exit_code = p.exitValue();
         //p.getInputStream().close();
         // We busy-wait here to make sure that we do not exit this method before the
-        // harvester threads have got a lock on the output buffers
+        // harvester threads have got a lock on the output buffers. Otherwise one risks
+        // that the access methods try to read the buffers before anything is written to them.
+        log.debug("Waiting to get handle on output buffers for '" + command[0] + "'");
         while (! (out_harvester.started && err_harvester.started)) { }
+        log.debug("Finished waiting to get handle on output buffers for '" + command[0] + "'");
     }
 
 
@@ -125,10 +171,10 @@ public class ExternalJobRunner {
         return exit_code;
     }
 
-    public static void runClipperCommand(String clipperCommand) throws ProcessorException {
+    public static void runClipperCommand(long timeout, String clipperCommand) throws ProcessorException, ExternalProcessTimedOutException {
         log.info("Executing '" + clipperCommand + "'");
         try {
-            ExternalJobRunner runner = new ExternalJobRunner(new String[]{"bash", "-c", clipperCommand});
+            ExternalJobRunner runner = new ExternalJobRunner(timeout, new String[]{"bash", "-c", clipperCommand});
             if (runner.getExitValue() != 0) {
                 log.warn("Command '" + clipperCommand + "' returned with exit value '" + runner.getExitValue() + "'");
                 log.warn("Standard out:\n" + runner.getOutput());
@@ -142,4 +188,51 @@ public class ExternalJobRunner {
             throw new ProcessorException(e);
         }
     }
+
+    public static void runClipperCommand(String clipperCommand) throws ProcessorException, ExternalProcessTimedOutException {
+         runClipperCommand(0L, clipperCommand);
+    }
+
+
+public static int getUnixPID(Process process) throws Exception
+{
+    System.out.println(process.getClass().getName());
+    if (process.getClass().getName().equals("java.lang.UNIXProcess"))
+    {
+        Class cl = process.getClass();
+        Field field = cl.getDeclaredField("pid");
+        field.setAccessible(true);
+        Object pidObject = field.get(process);
+        return (Integer) pidObject;
+    } else
+    {
+        throw new IllegalArgumentException("Needs to be a UNIXProcess");
+    }
 }
+
+public static int killUnixProcess(Process process) throws Exception
+{
+    int pid = getUnixPID(process);
+    return Runtime.getRuntime().exec("kill " + pid).waitFor();
+}
+
+    private class InterruptScheduler extends TimerTask
+{
+Thread target = null;
+
+public InterruptScheduler(Thread target)
+{
+this.target = target;
+}
+
+@Override
+public void run()
+{
+target.interrupt();
+}
+
+}
+
+}
+
+

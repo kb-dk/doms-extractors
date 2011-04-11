@@ -21,18 +21,20 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.OutputFileUtil;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.util.List;
 import java.io.File;
 
 public class MpegTranscoderProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(MpegTranscoderProcessor.class);
+
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -65,7 +67,15 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
                 break;
         }
         //MuxFlashClipper.symlinkToRootDir(config, new File(outputFile));
-        ExternalJobRunner.runClipperCommand(command);      
+        try {
+            long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
+            log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
+            ExternalJobRunner.runClipperCommand(timeout, command);
+        } catch (ExternalProcessTimedOutException e) {
+            log.warn("Deleting '" + outputFile + "'");
+            (new File(outputFile)).delete();
+            throw new ProcessorException(e);
+        }
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {

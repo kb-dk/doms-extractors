@@ -67,4 +67,10 @@ public class Constants {
     public static final String SNAPSHOT_QUALITY = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality";
     public static final String SNAPSHOT_SERVICE_URL = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotWebserver";
     //TODO additional parameters for final scaling
+
+    public static final String PREVIEW_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor";
+    public static final String TRANSCODING_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor";
+    public static final String SNAPSHOT_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor";
+
+
 }
