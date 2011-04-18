@@ -67,6 +67,10 @@ public class DigitvPreviewProcessor extends ProcessorChainElement {
 
         boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
         String clipperCommand;
+        if (longestClip == null) {
+            String message = "Failed to identify longest clip in '" + request.getPid() + "'\n from shard data \n " + request.getShard();
+            throw new ProcessorException(message);
+        }
         int programNumber = longestClip.getProgramId();
         if (pidSubtitles) {
              clipperCommand = "cat " + processSubstituionDDCommand + " |  vlc - --demux=ts --quiet --intf dummy --play-and-exit --noaudio --novideo "

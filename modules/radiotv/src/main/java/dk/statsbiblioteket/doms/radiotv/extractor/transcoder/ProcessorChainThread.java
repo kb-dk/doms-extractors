@@ -53,6 +53,8 @@ public class ProcessorChainThread extends Thread {
     }
 
     private ProcessorChainThread(ProcessorChainElement callElement, TranscodeRequest request, ServletConfig config, boolean isRecursive) {
+        super("TranscodeProcessor");
+        log.info("Created Recursive processor chain for '" + request.getPid() + "'");
         this.isRecursive = isRecursive;
         this.callElement = callElement;
         this.request = request;
@@ -63,7 +65,7 @@ public class ProcessorChainThread extends Thread {
 
     private ProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
         super("TranscodeProcessor");
-        log.info("Created processor chain for '" + request.getPid() + "'");
+        log.info("Created Iterative processor chain for '" + request.getPid() + "'");
         this.callElement = tailElement;
         this.request = request;
         this.config = config;

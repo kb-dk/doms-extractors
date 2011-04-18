@@ -23,6 +23,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ExternalProcessTimedOutException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.Util;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
 import org.apache.log4j.Logger;
 
@@ -43,9 +44,22 @@ public class ExternalJobRunner {
 
     private long timeout = 0L;
 
+    private long harvesterThreadTimeout = 60*3600*1000L;
+
+    public long getHarvesterThreadTimeout() {
+        return harvesterThreadTimeout;
+    }
+
+    public void setHarvesterThreadTimeout(long harvesterThreadTimeout) {
+        this.harvesterThreadTimeout = harvesterThreadTimeout;
+    }
+
     public ExternalJobRunner(final String... command) throws IOException, InterruptedException, ExternalProcessTimedOutException {
          this(0L, command);
     }
+
+
+
 
     /**
      * Runs an external command, blocking until the external processRecursively ends after which
@@ -95,8 +109,11 @@ public class ExternalJobRunner {
 
             public void run() {
                 log.debug("Starting harvesting thread for '" + stream_type + "' for '" + logString + "'");
-                 synchronized(buffer) {
+                synchronized(buffer) {
                     started = true;
+                    synchronized (this) {
+                        notifyAll();
+                    }
                     String line;
                     BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
                     try {
@@ -124,11 +141,36 @@ public class ExternalJobRunner {
 
         }
 
-
         StreamHarvester out_harvester = new StreamHarvester(StreamHarvester.OUT);
         StreamHarvester err_harvester = new StreamHarvester(StreamHarvester.ERR);
-        (new Thread(out_harvester)).start();
-        (new Thread(err_harvester)).start();
+        synchronized(out_harvester) {
+            (new Thread(out_harvester)).start();
+            if (!out_harvester.started) {
+                try {
+                    log.debug("Waiting for stdout harvester for: '" + logString + "'");
+                    out_harvester.wait(harvesterThreadTimeout);
+                    log.debug("Finished waiting for stdout harvester for: '" + logString + "'");
+                } catch (InterruptedException e) {
+                    log.warn("Failed to start harvester thread.", e);
+                    killInterruptedProcess(p,e);
+                    return;
+                }
+            }
+        }
+        synchronized (err_harvester) {
+            (new Thread(err_harvester)).start();            
+            if (!err_harvester.started){
+                try {
+                    log.debug("Waiting for stderr harvester for: '" + logString + "'");
+                    err_harvester.wait(harvesterThreadTimeout);
+                    log.debug("Finished waiting for stderr harvester for: '" + logString + "'");
+                } catch (InterruptedException e) {
+                    log.warn("Failed to start harvester thread.", e);
+                    killInterruptedProcess(p,e);
+                    return;
+                }
+            }
+        }
         log.debug("Waiting for '" + logString + "'");
         Timer timer = new Timer();        
         if (this.timeout != 0L) {
@@ -137,38 +179,44 @@ public class ExternalJobRunner {
         try {
             p.waitFor();
         } catch (InterruptedException e) {
-            log.error("Process '" + logString + "' timed out. Destroying.");
-            p.destroy();
-            try {
-                killUnixProcess(p);
-            } catch (Exception e1) {
-                log.warn(e);
-            }
+            killInterruptedProcess(p, e);
             throw new ExternalProcessTimedOutException();
         } finally {
-           timer.cancel();
+            try {
+                timer.cancel();
+            } catch (Exception e) {
+                log.warn(e);
+            }
+            try {
+                p.getOutputStream().close();
+            } catch (IOException e) {
+                log.warn(e);
+            }
         }
         log.debug("Finished waiting for '" + logString + "'");
         exit_code = p.exitValue();
-        //p.getInputStream().close();
-        // We busy-wait here to make sure that we do not exit this method before the
-        // harvester threads have got a lock on the output buffers. Otherwise one risks
-        // that the access methods try to read the buffers before anything is written to them.
-        log.debug("Waiting to get handle on output buffers for '" + logString + "'");
-        while (! (out_harvester.started && err_harvester.started)) { }
-        log.debug("Finished waiting to get handle on output buffers for '" + logString + "'");
+    }
+
+    private void killInterruptedProcess(Process p, InterruptedException e) {
+        log.error("Process '" + logString + "' timed out. Destroying.");
+        p.destroy();
+        try {
+            killUnixProcess(p);
+        } catch (Exception e1) {
+            log.warn(e);
+        }
     }
 
 
     public String getOutput() {
         synchronized(standard_out) {
-        return standard_out.toString();
+            return standard_out.toString();
         }
     }
 
     public String getError() {
         synchronized(standard_err) {
-        return standard_err.toString();
+            return standard_err.toString();
         }
     }
 

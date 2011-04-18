@@ -51,6 +51,9 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
         request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
         int seconds = Integer.parseInt(Util.getInitParameter(config, Constants.SNAPSHOT_VIDEO_LENGTH));
         List<TranscodeRequest.SnapshotPosition> snapshots = request.getSnapshotPositions();
+        if (snapshots == null) {
+            throw new ProcessorException("No snapshots generated for '" + request.getPid() + "' with shard \n" + request.getShard());
+        }
         int count = 0;
         for (TranscodeRequest.SnapshotPosition snapshot: snapshots) {
             int programId = snapshot.getProgramId();

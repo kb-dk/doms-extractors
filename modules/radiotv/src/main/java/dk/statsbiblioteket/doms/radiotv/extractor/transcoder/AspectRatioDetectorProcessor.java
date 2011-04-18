@@ -103,7 +103,8 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
                         + "| ffmpeg -i - ";
                 break;
             case WAV:
-                command = "true";
+                return;
+                //command = "true";
         }
 
         log.info("Executing '" + command + "'");

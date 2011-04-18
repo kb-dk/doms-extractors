@@ -15,9 +15,9 @@ do
     pid=${arr[0]}
     extension=${arr[1]##*.}
     echo "Generating preview for pid $pid, type $extension"
-    wget -O - $BES"/rest/bes/getpreviewstatus?programpid="$pid
+    wget -O /dev/null $BES"/rest/bes/getpreviewstatus?programpid="$pid
     if [ $extension != "wav" ]; then
-       wget -O - $BES"/rest/bes/getsnapshotstatus?programpid="$pid 
+       wget -O /dev/null $BES"/rest/bes/getsnapshotstatus?programpid="$pid 
     fi
 done
 

@@ -48,8 +48,9 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         URL url = Util.getDomsUrl(request.getPid(), config);
         log.info("Getting shard from '" + url + "'");
+        URLConnection conn = null;
         try {
-            URLConnection conn = url.openConnection();
+            conn = url.openConnection();
             String userPassword = Util.getInitParameter(config, Constants.DOMS_USER)+":"+Util.getInitParameter(config, Constants.DOMS_PASSWORD);
             String encoding = (new BASE64Encoder()).encode(userPassword.getBytes());
             conn.setRequestProperty("Authorization", "Basic " + encoding);
@@ -69,6 +70,12 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
             }
         } catch (IOException e) {
             throw new ProcessorException(e);
+        } finally {
+            try {
+                conn.getInputStream().close();
+            } catch (IOException e) {
+                log.info("This is probably not important:", e);
+            }
         }
     }
 }

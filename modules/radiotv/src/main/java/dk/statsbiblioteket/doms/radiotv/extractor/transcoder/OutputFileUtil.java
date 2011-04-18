@@ -174,7 +174,7 @@ public class OutputFileUtil {
         return outputDir.listFiles(filter).length > 0;
     }
 
-   private static boolean hasPreview(TranscodeRequest request, ServletConfig config) {
+    private static boolean hasPreview(TranscodeRequest request, ServletConfig config) {
         final String uuid = request.getPid();
         final FileFilter filter = new FileFilter(){
             @Override
@@ -183,7 +183,17 @@ public class OutputFileUtil {
             }
         };
         File outputDir = getOutputDir(request, config);
-        return outputDir.listFiles(filter).length > 0;
+        if (outputDir == null) {
+            log.warn("Returned null output directory for request '" + request.getPid() + "'");
+            return false;
+        }
+        final File[] files = outputDir.listFiles(filter);
+        if (files != null) {
+            return files.length > 0;
+        } else {
+            log.warn("Null file list. Is '" + outputDir.getAbsolutePath() + "' a directory?");
+            return false;
+        }
     }
 
     private static boolean hasSnapshot(TranscodeRequest request,final ServletConfig config) {

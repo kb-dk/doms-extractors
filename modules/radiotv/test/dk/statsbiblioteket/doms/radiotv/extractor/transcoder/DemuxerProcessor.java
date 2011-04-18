@@ -170,6 +170,8 @@ public class DemuxerProcessor extends ProcessorChainElement {
             throw new ProcessorException(e);
         } catch (InterruptedException e) {
             throw new ProcessorException(e);
+        } catch (ExternalProcessTimedOutException e) {
+            throw new ProcessorException(e);
         }
     }
 
@@ -198,7 +200,9 @@ public class DemuxerProcessor extends ProcessorChainElement {
                 throw new ProcessorException(e);
             } catch (InterruptedException e) {
                 throw new ProcessorException(e);
-             }
+             } catch (ExternalProcessTimedOutException e) {
+                throw new ProcessorException(e);                
+            }
         }
     }
 

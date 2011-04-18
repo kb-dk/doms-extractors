@@ -71,6 +71,7 @@ public class Constants {
     public static final String PREVIEW_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor";
     public static final String TRANSCODING_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor";
     public static final String SNAPSHOT_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor";
+    public static final String OUTPUT_BUFFER_THREADWAIT_TIMEOUT = "dk.statsbiblioteket.doms.radiotv.extractor.threadWait";
 
 
 }

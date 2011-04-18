@@ -102,6 +102,8 @@ public class PidExtractorProcessor extends ProcessorChainElement {
             throw new ProcessorException(e);
         } catch (InterruptedException e) {
             throw new ProcessorException(e);
+        } catch (ExternalProcessTimedOutException e) {
+            throw new ProcessorException(e);
         }
         Pattern thisProgramPattern = Pattern.compile(".*program number="+request.getClips().get(0).getProgramId()+".*");
         Pattern programPattern = Pattern.compile(".*program number=.*");
@@ -150,6 +152,8 @@ public class PidExtractorProcessor extends ProcessorChainElement {
             throw new ProcessorException(e);
         } catch (InterruptedException e) {
             throw new ProcessorException(e);
+        } catch (ExternalProcessTimedOutException e) {
+            throw new ProcessorException(e);            
         }
         Pattern thisProgramPattern = Pattern.compile(".*Program\\s"+request.getClips().get(0).getProgramId()+".*");
         Pattern programPattern = Pattern.compile(".*Program.*");

@@ -231,6 +231,11 @@ public class TranscodeRequest {
         this.snapshotPositions = snapshotPositions;
     }
 
+    @Override
+    public String toString() {
+        return pid + "#" + clipType;
+    }
+
     public static class SnapshotPosition {
         @Override
         public String toString() {

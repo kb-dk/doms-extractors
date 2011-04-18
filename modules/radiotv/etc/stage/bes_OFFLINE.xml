@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context>
 
+    <Parameter name="log4jExposeWebAppRoot" value="false" override="false" />
+
     <!--
        Location of the log4j configuration file to use for this context. Note that this path is always relative to the
        deploy root (e.g. ~/service/webapps/bes). Trying to use an absolute path WON'T WORK.
@@ -114,5 +116,14 @@
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality"   value="75"/>
 
-
+     <!-- Timeout parameters for various operations. It is unlikely that these will need to be changed. -->
+    <!-- Preview timeout expressed as multiple of previewLength -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor" value="4.0" />
+    <!-- extraction timeout expresses as multiple of program length -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value="1.5" />
+    <!-- Snapshot timeout expressed as multiple of snapshot length -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/>
+    <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->
+        <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.threadWait" value="300000"/>
+    
 </Context>

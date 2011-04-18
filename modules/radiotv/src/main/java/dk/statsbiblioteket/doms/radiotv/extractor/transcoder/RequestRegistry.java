@@ -54,20 +54,20 @@ public class RequestRegistry {
         return instance;
     }
 
-    public void register(TranscodeRequest request) {
+    public synchronized void register(TranscodeRequest request) {
         log.info("Registering request " + createKey(request));
         map.put(createKey(request), request);
     }
 
-    public boolean isKnown(TranscodeRequest request) {
+    public synchronized boolean isKnown(TranscodeRequest request) {
         return map.containsKey(createKey(request));
     }
 
-    public TranscodeRequest get(TranscodeRequest basicRequest) {
+    public synchronized TranscodeRequest get(TranscodeRequest basicRequest) {
         return map.get(createKey(basicRequest));
     }
 
-    public void remove(TranscodeRequest request) {
+    public synchronized void remove(TranscodeRequest request) {
         log.info("Deregestering request " + createKey(request));
         map.remove(createKey(request));
     }

@@ -140,7 +140,7 @@ public class Util {
         synchronized (request) {
             if (request.getThePool() != null && request.getLockObject() != null) {
                 try {
-                    log.info("Unlocking request '" + request.getPid() + "' from '" + request.getLockObject() + "'");
+                    log.info("Unlocking request '" + request.getPid() +"#"+ request.getServiceType() + "' from '" + request.getLockObject() + "'");
                     request.getThePool().returnObject(request.getLockObject());
                     request.setLockObject(null);
                     request.setThePool(null);

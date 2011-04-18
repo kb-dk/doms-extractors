@@ -19,6 +19,7 @@ do
     if [ $extension != "wav" ]; then
        wget -O - $BES"/rest/bes/getsnapshotstatus?programpid="$pid 
     fi
+    sleep 0.1s
 done
 
 
