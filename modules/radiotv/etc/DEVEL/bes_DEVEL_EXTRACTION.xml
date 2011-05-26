@@ -77,5 +77,14 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/> 
     <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->
         <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.threadWait" value="300000"/>
+
+
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv" value="-10" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv" value="10" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart" value="-40" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="40" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
     
+
 </Context>

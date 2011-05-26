@@ -73,5 +73,16 @@ public class Constants {
     public static final String SNAPSHOT_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor";
     public static final String OUTPUT_BUFFER_THREADWAIT_TIMEOUT = "dk.statsbiblioteket.doms.radiotv.extractor.threadWait";
 
+    /**
+     * Constants relating to offsets
+     */
+    public static final String START_OFFSET_DIGITV = "dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv";
+    public static final String END_OFFSET_DIGITV = "dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv";
+    public static final String START_OFFSET_BART = "dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart";
+    public static final String END_OFFSET_BART = "dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart";
+    public static final String START_OFFSET_RADIO = "dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio";
+    public static final String END_OFFSET_RADIO = "dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio";
+
+
 
 }

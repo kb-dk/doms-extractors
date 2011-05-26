@@ -42,6 +42,8 @@ public class MuxFlashClipper extends ProcessorChainElement {
      }
 
     private void seamlessClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        Long additionalStartOffset = Long.parseLong(config.getInitParameter(Constants.START_OFFSET_DIGITV))*ClipTypeEnum.MUX.getBitrate();
+        Long additionalEndOffset = Long.parseLong(config.getInitParameter(Constants.END_OFFSET_DIGITV))*ClipTypeEnum.MUX.getBitrate();
         Long blocksize = 1880L;
         Long offsetBytes = 0L;
         Long totalLengthBytes = 0L;
@@ -56,27 +58,37 @@ public class MuxFlashClipper extends ProcessorChainElement {
             fileList += " " + clip.getFilepath() + " ";
             if (iclip == 0) {
                 programNumber = clip.getProgramId();
-                offsetBytes = clip.getStartOffsetBytes();
-                if (offsetBytes == null) offsetBytes = 0L;
+                offsetBytes = clip.getStartOffsetBytes() + additionalStartOffset;
+                if (offsetBytes == null || offsetBytes < 0) offsetBytes = 0L;
                 if (clipLength != null && clipSize == 1) {
                     totalLengthBytes = clipLength;   //Program contained within file
                      processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs="+blocksize + " skip=" + offsetBytes/blocksize
                             + " count=" + totalLengthBytes/blocksize + ") " ;
                 } else {         //Otherwise always go to end of file
-                    totalLengthBytes = fileLength - offsetBytes;
+                    totalLengthBytes = fileLength - offsetBytes + additionalEndOffset;
                     processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs="+blocksize + " skip=" + offsetBytes/blocksize + ") " ;
                 }
 
             } else if (iclip == clipSize - 1 && clipSize != 1) {   //last clip in multiclip program
+                String skipString = "";
+                if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) {
+                    log.warn("Found non-zero offset outside first clip for '" + request.getPid() + "'\n" + request.getShard());
+                    skipString = " skip=" + clip.getStartOffsetBytes()/blocksize + " ";
+                }
                 if (clipLength != null) {
-                    totalLengthBytes += clip.getClipLength();
+                    totalLengthBytes += clip.getClipLength() + additionalEndOffset;
                 } else {
                     totalLengthBytes += fileLength;
                 }
-                processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + " count=" + clip.getClipLength()/blocksize + ") ";
+                processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString +  " count=" + clip.getClipLength()/blocksize + ") ";
             } else {   //A file in the middle of a program so take the whole file
+                String skipString = "";
+                if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) {
+                    log.warn("Found non-zero offset outside first clip for '" + request.getPid() + "'\n" + request.getShard());
+                    skipString = " skip=" + clip.getStartOffsetBytes()/blocksize + " ";
+                }
                 totalLengthBytes += fileLength;
-                processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs=" + blocksize + ") ";
+                processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString + ") ";
             }
         }
         boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;

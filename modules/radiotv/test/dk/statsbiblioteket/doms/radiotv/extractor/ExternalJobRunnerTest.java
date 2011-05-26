@@ -27,6 +27,8 @@ import java.io.IOException;
 
 public class ExternalJobRunnerTest {
     public static void main(String[] args) throws IOException, ExternalProcessTimedOutException, InterruptedException {
+        Integer ii = null;
+        int j = ii;
         for (int i = 0; i<100000; i++) {
             ExternalJobRunner runner = new ExternalJobRunner("true");
             runner.getError();
