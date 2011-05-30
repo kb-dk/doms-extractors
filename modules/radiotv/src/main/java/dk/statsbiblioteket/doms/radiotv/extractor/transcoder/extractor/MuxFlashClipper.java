@@ -34,38 +34,34 @@ public class MuxFlashClipper extends ProcessorChainElement {
 
     private static Logger log = Logger.getLogger(MuxFlashClipper.class);
 
-    private static final String algorithm = "vlc";
-
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
              this.seamlessClip(request, config);
      }
 
     private void seamlessClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        Long additionalStartOffset = Long.parseLong(config.getInitParameter(Constants.START_OFFSET_DIGITV))*ClipTypeEnum.MUX.getBitrate();
-        Long additionalEndOffset = Long.parseLong(config.getInitParameter(Constants.END_OFFSET_DIGITV))*ClipTypeEnum.MUX.getBitrate();
+        Long additionalStartOffset = Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_DIGITV))*ClipTypeEnum.MUX.getBitrate();
+        Long additionalEndOffset =  Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_DIGITV))*ClipTypeEnum.MUX.getBitrate();
+        log.debug("Additonal Start Offset for '" + request.getPid() + "' :" + additionalStartOffset + "bytes");
+        log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffset + "bytes");        
         Long blocksize = 1880L;
         Long offsetBytes = 0L;
-        Long totalLengthBytes = 0L;
-        String fileList = "";
         String processSubstitutionFileList = "";
         final int clipSize = request.getClips().size();
         int programNumber = 0;
         for (int iclip = 0; iclip < clipSize; iclip++ ) {
             TranscodeRequest.FileClip clip = request.getClips().get(iclip);
-            final long fileLength = new File(clip.getFilepath()).length();  //This line has the side-effect of automounting the media file
+            //final long fileLength = new File(clip.getFilepath()).length();  //This line has the side-effect of automounting the media file
             Long clipLength = clip.getClipLength();
-            fileList += " " + clip.getFilepath() + " ";
             if (iclip == 0) {
                 programNumber = clip.getProgramId();
                 offsetBytes = clip.getStartOffsetBytes() + additionalStartOffset;
                 if (offsetBytes == null || offsetBytes < 0) offsetBytes = 0L;
                 if (clipLength != null && clipSize == 1) {
-                    totalLengthBytes = clipLength;   //Program contained within file
-                     processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs="+blocksize + " skip=" + offsetBytes/blocksize
+                    Long totalLengthBytes = clipLength - additionalStartOffset + additionalEndOffset;   //Program contained within file
+                    processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs="+blocksize + " skip=" + offsetBytes/blocksize
                             + " count=" + totalLengthBytes/blocksize + ") " ;
                 } else {         //Otherwise always go to end of file
-                    totalLengthBytes = fileLength - offsetBytes + additionalEndOffset;
                     processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs="+blocksize + " skip=" + offsetBytes/blocksize + ") " ;
                 }
 
@@ -73,21 +69,19 @@ public class MuxFlashClipper extends ProcessorChainElement {
                 String skipString = "";
                 if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) {
                     log.warn("Found non-zero offset outside first clip for '" + request.getPid() + "'\n" + request.getShard());
-                    skipString = " skip=" + clip.getStartOffsetBytes()/blocksize + " ";
+                    skipString = " skip=" + (additionalStartOffset + clip.getStartOffsetBytes())/blocksize + " ";
                 }
                 if (clipLength != null) {
-                    totalLengthBytes += clip.getClipLength() + additionalEndOffset;
+                    clipLength += additionalEndOffset;
                 } else {
-                    totalLengthBytes += fileLength;
                 }
-                processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString +  " count=" + clip.getClipLength()/blocksize + ") ";
+                processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString +  " count=" + clipLength/blocksize + ") ";
             } else {   //A file in the middle of a program so take the whole file
                 String skipString = "";
                 if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) {
                     log.warn("Found non-zero offset outside first clip for '" + request.getPid() + "'\n" + request.getShard());
                     skipString = " skip=" + clip.getStartOffsetBytes()/blocksize + " ";
                 }
-                totalLengthBytes += fileLength;
                 processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString + ") ";
             }
         }
@@ -95,20 +89,6 @@ public class MuxFlashClipper extends ProcessorChainElement {
 
 
         String clipperCommand;
-        if (algorithm.equals("full_vlc")) {
-            clipperCommand = "cat " + fileList + " | dd bs=" + blocksize
-                    + " skip=" + offsetBytes/blocksize + " count=" + totalLengthBytes/blocksize
-                    + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                    + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
-                    + ":transcode{acodec=mp3,vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{profile=baseline,preset=superfast},soverlay,deinterlace,audio-sync,"
-                    + "ab=" + Util.getAudioBitrate(config)
-                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",samplerate=44100,threads=0}"
-                    + ":std{access=file,mux=ffmpeg{mux=flv}"
-                    + ",dst='" + OutputFileUtil.getFlashVideoOutputFile(request, config).getAbsolutePath() +"'}\""
-                    + ",select=\"program=" + programNumber + "\"' ";
-        }
-        else {
             if (!pidSubtitles) {
                 clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                     + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
@@ -130,7 +110,6 @@ public class MuxFlashClipper extends ProcessorChainElement {
                         "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
                         + "000 -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config);
             }
-        }
         //symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
         try {
             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);

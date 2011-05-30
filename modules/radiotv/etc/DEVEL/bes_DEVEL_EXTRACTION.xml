@@ -78,13 +78,21 @@
     <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->
         <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.threadWait" value="300000"/>
 
-
+    <!--  These are a guess at good parameter values
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv" value="-10" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv" value="10" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart" value="-40" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="40" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
-    
+     -->
+
+    <!-- Zero values are useful for testing purposes -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv" value="0" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv" value="0" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart" value="0" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="0" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="0" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="0" />
 
 </Context>

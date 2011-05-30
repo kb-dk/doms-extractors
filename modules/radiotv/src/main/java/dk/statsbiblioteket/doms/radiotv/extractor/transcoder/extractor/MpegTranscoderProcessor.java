@@ -43,17 +43,23 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
 
 
     private void mpegClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        Long additionalStartOffset = Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_BART))*request.getClipType().getBitrate();
+        Long additionalEndOffset =  Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_BART))*request.getClipType().getBitrate();
+        log.debug("Additonal Start Offset for '" + request.getPid() + "' :" + additionalStartOffset + "bytes");
+        log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffset + "bytes");
         long blocksize = 1880L;
         final int clipSize = request.getClips().size();
         String command;
         if (clipSize > 1) {
-            command = getMultiClipCommand(request, config);
+            command = getMultiClipCommand(request, config, additionalStartOffset, additionalEndOffset);
         } else {
             TranscodeRequest.FileClip clip = request.getClips().get(0);
             String start = "";
-            if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) start = "skip=" + clip.getStartOffsetBytes()/blocksize;
+            if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) {
+                start = "skip=" + Math.max((additionalStartOffset + clip.getStartOffsetBytes())/blocksize, 0L);
+            }
             String length = "";
-            if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + clip.getClipLength()/blocksize;
+            if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + (additionalEndOffset + clip.getClipLength())/blocksize;
             command = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length + "| "
                     + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
         }
@@ -78,29 +84,34 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
         }
     }
 
-    private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {
-        String files = "";
-        long start = 0L;
-        long length = 0L;
+    private String getMultiClipCommand(TranscodeRequest request, ServletConfig config, Long additionalStartOffset, Long additionalEndOffset) {
+        String files = "cat ";
         long blocksize = 1880L;
         List<TranscodeRequest.FileClip> clips = request.getClips();
         for (int i=0; i<clips.size(); i++) {
             TranscodeRequest.FileClip clip = clips.get(i);
-            files += " " + clip.getFilepath() + " ";
+            files += " <(dd if="+clip.getFilepath() + " bs=" + blocksize;
+            if (clip.getStartOffsetBytes() != null) {
+                if (i != 0) {
+                    files += " skip=" + clip.getStartOffsetBytes()/blocksize;
+                } else {
+                    files += " skip=" + Math.max(0, (additionalStartOffset + clip.getStartOffsetBytes())/blocksize);
+                }
+            }
             if (clip.getClipLength() != null) {
-                length += clip.getClipLength()/blocksize;
-            } else if (clip.getStartOffsetBytes() != null) {
-                length += ((new File(clip.getFilepath())).length() - clip.getStartOffsetBytes())/blocksize;
-            } else {
-                length += (new File(clip.getFilepath())).length()/blocksize;
+                if (i != clips.size() -1 && i != 0) {
+                    files += " count=" + clip.getClipLength()/blocksize;
+                } else if (i == 0) {
+                    //Don't specify count at all. Just go to end of file.
+                    //log.warn("Unusual to have cliplength set in first clip of multiclip program\n" + request.getShard() );
+                    //files += " count=" + (-additionalStartOffset + clip.getClipLength())/blocksize;
+                } else {
+                    files += " count=" + (additionalEndOffset + clip.getClipLength())/blocksize;
+                }
             }
-            if (i == 0 && clip.getStartOffsetBytes() != null) {
-                start = clip.getStartOffsetBytes()/blocksize;
-            }
+            files += ") ";
         }
-        String command = "cat " + files
-                + " |dd bs=" + blocksize + " skip=" + start + " count=" + length + "| "
-                + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
+        String command = files + " | "  + FlashTranscoderProcessor.getFfmpegCommandLine(request, config);
         return command;
     }
 
