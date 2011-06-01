@@ -34,6 +34,11 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
 
     private static Logger log = Logger.getLogger(WavTranscoderProcessor.class);
 
+    /**
+     * Note that these sox parameters are very dependent on which version of sox is being run
+     */
+    public static final String SOX_OPTIONS = " -t raw -s -w -c2 ";
+
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         String command;
@@ -69,27 +74,47 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
     }
 
     private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {
-        String files = "";
-        long start = 0L;
-        long length = 0L;
+        String command = "cat ";
         List<TranscodeRequest.FileClip> clips = request.getClips();
         long bitrate = request.getClipType().getBitrate();
+        Long additionalStartOffsetSeconds = Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_RADIO));
+        Long additionalEndOffsetSeconds =  Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_RADIO));
+        log.debug("Additonal Start Offset for '" + request.getPid() + "' :" + additionalStartOffsetSeconds + "seconds");
+        log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffsetSeconds + "seconds");
         for (int i=0; i<clips.size(); i++) {
             TranscodeRequest.FileClip clip = clips.get(i);
-            files += " " + clip.getFilepath() + " ";
-            if (clip.getClipLength() != null) {
-                length += clip.getClipLength()/bitrate;
-            } else if (clip.getStartOffsetBytes() != null) {
-                length += (((new File(clip.getFilepath())).length() - clip.getStartOffsetBytes()))/bitrate;
-            } else {
-                length += (new File(clip.getFilepath())).length()/bitrate;
+            command += " <(sox " + clip.getFilepath() + SOX_OPTIONS + " - ";
+            if ((clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0) || clip.getClipLength() != null) {
+                String trimFilter = " trim ";
+                if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0) {
+                    long startOffsetSeconds = clip.getStartOffsetBytes()/bitrate;
+                    if (i == 0) {
+                        startOffsetSeconds = Math.max(0, startOffsetSeconds + additionalStartOffsetSeconds);
+                    }
+                    trimFilter += startOffsetSeconds + ".0 ";
+                } else {
+                    trimFilter += " 0.0 ";
+                }
+                if (clip.getClipLength() != null) {
+                    long clipLengthSeconds = clip.getClipLength()/bitrate;
+                    if ( i==0 ) {
+                        clipLengthSeconds = clipLengthSeconds - additionalStartOffsetSeconds;
+                    }
+                    if ( i == clips.size() -1 ) {
+                        clipLengthSeconds += additionalEndOffsetSeconds;
+                    }
+                    trimFilter += clipLengthSeconds + ".0 ";
+                }
+                command += trimFilter;
             }
-            if (i == 0 && clip.getStartOffsetBytes() != null) {
-                start = clip.getStartOffsetBytes()/bitrate;
-            }
+            command += " ) ";
         }
-        String command = "sox " + files + " -t wav - trim " + start + ".0 " + length + ".0 |" + getLameCommand(request, config); 
+        command += "| ffmpeg -f s16le -i - "
+                + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000 "
+                + getOutputFile(request, config).getAbsolutePath();
         return command;
     }
+
+
 
 }
