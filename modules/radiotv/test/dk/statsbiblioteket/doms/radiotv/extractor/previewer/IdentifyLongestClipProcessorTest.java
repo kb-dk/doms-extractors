@@ -40,7 +40,7 @@ public class IdentifyLongestClipProcessorTest extends TestCase {
             "    <file_url>http://bitfinder.statsbiblioteket.dk/bart/mux1.1295359200-2011-01-18-15.00.00_1295362800-2011-01-18-16.00.00_dvb1-1.ts</file_url>\n" +
             "    <channel_id>213</channel_id>\n" +
             "    <program_start_offset>1410</program_start_offset>\n" +
-            "    <program_clip_length>2190</program_clip_length>\n" +
+            "    <program_clip_length>2180</program_clip_length>\n" +
             "    <file_name>mux1.1295359200-2011-01-18-15.00.00_1295362800-2011-01-18-16.00.00_dvb1-1.ts</file_name>\n" +
             "\n" +
             "    <format_uri>info:pronom/x-fmt/386</format_uri>\n" +

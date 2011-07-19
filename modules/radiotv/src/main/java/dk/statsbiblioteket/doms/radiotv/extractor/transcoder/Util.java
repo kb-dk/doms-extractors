@@ -165,20 +165,50 @@ public class Util {
 
     public static String getRelativePath(File parent, File child) throws ProcessorException {
         try {
-            String parentS = parent.getCanonicalPath();
-            String childS = child.getCanonicalPath();
-            if (!childS.startsWith(parentS)) {
-                throw new ProcessorException(parentS + " is not a parent of " + childS);
-            }
-            String result = childS.replaceFirst(parentS, "");
-            while (result.startsWith(File.separator)) {
-                result = result.replaceFirst(File.separator, "");
-            }
-            return result;
+            return getRelativeFile(child, parent);
         } catch (IOException e) {
             throw new ProcessorException(e);
         }
     }
+    /**
+     * Returns the path of one File relative to another.
+     *
+     * @param target the target directory
+     * @param base the base directory
+     * @return target's path relative to the base directory
+     * @throws IOException if an error occurs while resolving the files' canonical names
+     */
+     public static String getRelativeFile(File target, File base) throws IOException
+     {
+       String[] baseComponents = base.getCanonicalPath().split(Pattern.quote(File.separator));
+       String[] targetComponents = target.getCanonicalPath().split(Pattern.quote(File.separator));
+
+       // skip common components
+       int index = 0;
+       for (; index < targetComponents.length && index < baseComponents.length; ++index)
+       {
+         if (!targetComponents[index].equals(baseComponents[index]))
+         break;
+       }
+
+       StringBuilder result = new StringBuilder();
+       if (index != baseComponents.length)
+       {
+         // backtrack to base directory
+         for (int i = index; i < baseComponents.length; ++i)
+           result.append(".." + File.separator);
+       }
+       for (; index < targetComponents.length; ++index)
+         result.append(targetComponents[index] + File.separator);
+       if (!target.getPath().endsWith("/") && !target.getPath().endsWith("\\"))
+       {
+         // remove final path separator
+         result.delete(result.length() - File.separator.length(), result.length());
+       }
+       return result.toString();
+     }
+
+
 
 
     public static int getQueuePosition(TranscodeRequest request, ServletConfig config) {

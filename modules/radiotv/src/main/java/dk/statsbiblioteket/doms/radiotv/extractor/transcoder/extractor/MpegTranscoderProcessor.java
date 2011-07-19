@@ -104,7 +104,7 @@ public class MpegTranscoderProcessor extends ProcessorChainElement {
                 } else if (i == 0) {
                     //Don't specify count at all. Just go to end of file.
                     //log.warn("Unusual to have cliplength set in first clip of multiclip program\n" + request.getShard() );
-                    //files += " count=" + (-additionalStartOffset + clip.getClipLength())/blocksize;
+                    files += " count=" + (-additionalStartOffset + clip.getClipLength())/blocksize;
                 } else {
                     files += " count=" + (additionalEndOffset + clip.getClipLength())/blocksize;
                 }
