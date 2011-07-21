@@ -55,7 +55,11 @@ public class MuxFlashClipper extends ProcessorChainElement {
             Long clipLength = clip.getClipLength();
             if (iclip == 0) {
                 programNumber = clip.getProgramId();
-                offsetBytes = clip.getStartOffsetBytes() + additionalStartOffset;
+                if (clip.getStartOffsetBytes() == null) {
+                    offsetBytes = additionalStartOffset;
+                } else {
+                    offsetBytes = clip.getStartOffsetBytes() + additionalStartOffset;
+                }
                 if (offsetBytes == null || offsetBytes < 0) offsetBytes = 0L;
                 if (clipLength != null && clipSize == 1) {
                     Long totalLengthBytes = clipLength - additionalStartOffset + additionalEndOffset;   //Program contained within file
