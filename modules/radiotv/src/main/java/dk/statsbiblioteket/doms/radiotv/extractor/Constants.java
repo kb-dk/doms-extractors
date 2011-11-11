@@ -36,9 +36,6 @@ public class Constants {
     public static final String VIDEO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate";
     public static final String AUDIO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate";
     public static final String WOWZA_URL = "dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl";
-    public static final String DOMS_USER = "dk.statsbiblioteket.doms.radiotv.extractor.domsUsername";
-    public static final String DOMS_PASSWORD = "dk.statsbiblioteket.doms.radiotv.extractor.domsPassword";
-    public static final String DOMS_LOCATION = "dk.statsbiblioteket.doms.radiotv.extractor.domsLocation";
     public static final String MAX_ACTIVE_PROCESSING = "dk.statsbiblioteket.doms.radiotv.extractor.maxActive";
     public static final String RELEASE_AFTER_DEMUX = "dk.statsbiblioteket.doms.radiotv.extractor.releaseAfterDemux";
 
@@ -82,6 +79,14 @@ public class Constants {
     public static final String END_OFFSET_BART = "dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart";
     public static final String START_OFFSET_RADIO = "dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio";
     public static final String END_OFFSET_RADIO = "dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio";
+
+    /**
+     *  Constants relating to DOMS
+     */
+    public static final String DOMS_LOCATION = "dk.statsbiblioteket.doms.radiotv.extractor.domsLocation";
+    public static final String DOMS_USERNAME = "dk.statsbiblioteket.doms.radiotv.extractor.domsUsername";
+    public static final String DOMS_PASSWORD = "dk.statsbiblioteket.doms.radiotv.extractor.domsPassword";
+    //public static final String PREVIEW_THUMBNAIL_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewThumbnailDirectory";
 
 
 

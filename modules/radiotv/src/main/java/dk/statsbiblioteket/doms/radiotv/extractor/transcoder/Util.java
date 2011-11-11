@@ -217,11 +217,16 @@ public class Util {
 
 
     public static String getInitParameter(ServletConfig config, String paramName) {
+    	String result;
         if (config.getServletContext() != null && config.getServletContext().getInitParameter(paramName) != null) {
-            return config.getServletContext().getInitParameter(paramName);
+            result = config.getServletContext().getInitParameter(paramName);
         } else {
-            return config.getInitParameter(paramName);
+            result = config.getInitParameter(paramName);
         }
+        if (result == null) {
+        	log.warn("Parameter " + paramName + " was not defined!");
+        }
+        return result;
     }
 
     public static String getAudioBitrate(ServletConfig config) {

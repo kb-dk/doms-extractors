@@ -29,27 +29,30 @@ import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ShardFetcherProcessorTest extends TestCase {
 
+    ServletConfig config = new ServletConfig(){
+        public String getServletName() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+        public ServletContext getServletContext() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+        public String getInitParameter(String s) {
+            if (s.equals(Constants.DOMS_USERNAME)) return "fedoraAdmin";
+            if (s.equals(Constants.DOMS_PASSWORD)) return "fedoraAdminPass";
+            if (s.equals(Constants.DOMS_LOCATION)) return "http://alhena:7880/fedora";
+            throw new RuntimeException("Key not defined:'" + s + "'");
+        }
+        public Enumeration<String> getInitParameterNames() {
+            return null;  //To change body of implemented methods use File | Settings | File Templates.
+        }
+    };
+
     public void testProcessThis() throws MalformedURLException, ProcessorException {
-        ServletConfig config = new ServletConfig(){
-            public String getServletName() {
-                return null;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-            public ServletContext getServletContext() {
-                return null;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-            public String getInitParameter(String s) {
-                if (s.equals(Constants.DOMS_USER)) return "fedoraAdmin";
-                if (s.equals(Constants.DOMS_PASSWORD)) return "fedoraAdminPass";
-                if (s.equals(Constants.DOMS_LOCATION)) return "http://alhena:7880/fedora";
-                throw new RuntimeException("Key not defined:'" + s + "'");
-            }
-            public Enumeration<String> getInitParameterNames() {
-                return null;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-        };
         TranscodeRequest request = new TranscodeRequest("ef8ea1b2-aaa8-412a-a247-af682bb57d25");
         ShardFetcherProcessor processor = new ShardFetcherProcessor();
         processor.processThis(request, config);
@@ -57,5 +60,17 @@ public class ShardFetcherProcessorTest extends TestCase {
         assertTrue(request.getShard().contains("channel_id"));
     }
 
+
+    public void testProcessThisII() throws ProcessorException {
+    	TranscodeRequest request = new TranscodeRequest("5fc9543d-908e-40d2-b48d-e9824ed83e4e");
+    	ShardFetcherProcessor shardFetcher = new ShardFetcherProcessor();
+		shardFetcher.processThis(request, config);
+		Pattern p = Pattern.compile("(.|\n)*<file_url>(.*)</file_url>(.|\n)*");
+		Matcher m = p.matcher(request.getShard());
+		assertTrue("Expected to match pattern: " + p.pattern(), m.matches());
+		String shardFileUrl = m.group(2);
+		String expectedResult = "http://bitfinder.statsbiblioteket.dk/bart/mux1.1287547200-2010-10-20-06.00.00_1287550800-2010-10-20-07.00.00_dvb1-1.ts"; 
+		assertEquals(expectedResult, shardFileUrl);
+    }
 
 }

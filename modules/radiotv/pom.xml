@@ -1,5 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+    	<groupId>dk.statsbiblioteket.sbprojects</groupId>
+    	<artifactId>sbprojects-parent</artifactId>
+    	<version>2</version>
+  	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>DOMS_project</groupId>
     <artifactId>BroadcastExtractionService</artifactId>
@@ -10,21 +15,17 @@
         datastorage
     </description>
     <repositories>
-        <repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/2/</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <id>maven-repository.dev.java.net</id>
-            <name>Java.net Maven 1 Repository (legacy)</name>
-            <url>http://download.java.net/maven/1</url>
-            <layout>legacy</layout>
-        </repository>
-        <repository>
-            <id>repo1.maven.org</id>
-            <url>http://repo1.maven.org/maven2/</url>
+		<!-- repository>
+          <id>sbforge-nexus</id>
+          <url>https://sbforge.org/nexus/content/groups/public</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+        </repository -->
+		<repository>
+          <id>sbprojects-nexus</id>
+          <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
     <dependencies>
@@ -101,6 +102,11 @@
             <artifactId>spring-webflow</artifactId>
             <version>2.3.0.RELEASE</version>
         </dependency>        
+		<dependency>
+			<groupId>dk.statsbiblioteket.doms.central</groupId>
+			<artifactId>centralWebservice-interface</artifactId>
+			<version>0.0.23</version>
+		</dependency>
     </dependencies>
     <build>
         <plugins>

@@ -35,6 +35,7 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
     @Override
     public void init() throws ServletException {
         super.init();
+        initializeDomsClient();
         Util.getTempDir(this.getServletConfig()).mkdirs();
         try {
             cleanup();
@@ -43,6 +44,13 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
         }
         log.info("initialized BES service");        
     }
+
+	private void initializeDomsClient() {
+		String domsWSAPIEndpointUrlString = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_LOCATION);
+		String userName = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_USERNAME);
+		String password = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_PASSWORD);
+		DomsClient.initializeSingleton(domsWSAPIEndpointUrlString, userName, password);
+	}
 
     @Override
     public void destroy() {

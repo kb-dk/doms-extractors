@@ -74,7 +74,7 @@ public class ExtractorApplication {
                 return "200";
             } else if (s.equals(Constants.AUDIO_BITRATE)) {
                 return "96";
-            } else if (s.equals(Constants.DOMS_USER)) {
+            } else if (s.equals(Constants.DOMS_USERNAME)) {
                 return "fedoraAdmin";
             } else if (s.equals(Constants.DOMS_PASSWORD)) {
                 return "fedoraAdminPass";

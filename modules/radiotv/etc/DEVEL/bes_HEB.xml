@@ -1,37 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context  docBase="/home/larm/war/bes_DEVEL.war">
+<Context docBase="/home/larm/heb/bes/deploy_folder/war/bes_HEB.war">
 
-     <Parameter name="log4jConfigLocation" value="../../../etc/log4j.DEVEL.xml"
+    <Parameter name="log4jConfigLocation" value="../../conf/log4j.HEB.xml"
              override="false"/>
-    <Parameter name="log4jExposeWebAppRoot" value="false" override="false" />
     
-    <!--
-    Directory where the full streamable files are to be deployed. This directory should streamable from wowza
-    doms and domslive plugin
-    -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.finaldir" value="/home/larm/streamingContent"/>
+	<Parameter name="log4jExposeWebAppRoot" value="false" override="false" />
 
     <!--
-    Directory where thumbnails are placed. This directory should be available as static webcontent from some
-    webserver.
+    Directory where the full streamable files are to be deployed
     -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory" value="/home/larm/imageDirectory"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.finaldir" value="/home/larm/heb/bes/data/streamingContent"/>
 
     <!--
-    Directory where preview videos are placed. This directory should be streamable from wowza vod plugin.
+    Directory where thumbnails are placed
     -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory" value="/home/larm/previewDirectory"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotDirectory" value="/home/larm/heb/bes/data/imageDirectory"/>
+
+    <!--
+    Directory where preview videos are placed
+    -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory" value="/home/larm/heb/bes/data/previewDirectory"/>
 
 
-    <!-- A small temporary directory where lock files can be stored. This should be distinct for each instance of bes if
-    there are multiple instances on the same machine/container.
+    <!-- A small temporary directory where lock files can be stored
     -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.tempdir" value="/home/larm/temp/besDEVEL" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.tempdir" value="/home/larm/heb/bes/data/tmp" />
 
     <!--
         URL where streamable files are streamed from
         -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl" value="rtmp://iapetus.statsbiblioteket.dk:1935/kultur" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl" value="rtmp://iapetus.statsbiblioteket.dk:1935/doms" />
+
 
     <!--
         URL where preview files are streamed from
@@ -43,6 +42,8 @@
     should be an apache.
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotWebserver" value="http://iapetus:9311/images/" />
+
+
 
      <!-- Control multithreading: How many simultaneous processes to allow
         -->
@@ -58,7 +59,6 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc" value="profile=High,preset=superfast,level=3.0" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewLength"  value="30"/>
-
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotNumber"   value="5"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotLength"  value="10"/>
@@ -83,8 +83,4 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="40" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
-
-
-
-
 </Context>
