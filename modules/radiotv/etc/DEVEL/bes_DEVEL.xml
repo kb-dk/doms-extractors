@@ -56,6 +56,7 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate" value="96"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight" value="288"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc" value="profile=High,preset=superfast,level=3.0" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.soxWavParam" value="-t raw -s -b 16 -c2" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewLength"  value="30"/>
 

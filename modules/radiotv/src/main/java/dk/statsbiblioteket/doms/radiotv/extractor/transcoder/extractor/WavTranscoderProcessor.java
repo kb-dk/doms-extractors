@@ -24,6 +24,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -33,11 +34,6 @@ import java.io.File;
 public class WavTranscoderProcessor extends ProcessorChainElement {
 
     private static Logger log = Logger.getLogger(WavTranscoderProcessor.class);
-
-    /**
-     * Note that these sox parameters are very dependent on which version of sox is being run
-     */
-    public static final String SOX_OPTIONS = " -t raw -s -w -c2 ";
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -83,7 +79,8 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
         log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffsetSeconds + "seconds");
         for (int i=0; i<clips.size(); i++) {
             TranscodeRequest.FileClip clip = clips.get(i);
-            command += " <(sox " + clip.getFilepath() + SOX_OPTIONS + " - ";
+            String soxTranscodeParameters = Util.getInitParameter(config, Constants.SOX_TRANSCODE_PARAM);
+            command += " <(sox " + clip.getFilepath() + " " + soxTranscodeParameters + " - ";
             if ((clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0) || clip.getClipLength() != null) {
                 String trimFilter = " trim ";
                 if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0) {
