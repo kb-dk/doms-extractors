@@ -4,10 +4,10 @@ DOMS=http://alhena:7880/fedora
 USER=fedoraReadOnlyAdmin
 PASS=fedoraReadOnlyPass
 
-BES_SERVER_1=http://iapetus:9311/bes_DEVEL_EXTRACTION_1
-BES_SERVER_2=http://iapetus:9311/bes_DEVEL_EXTRACTION_2
-BES_SERVER_3=http://iapetus:9311/bes_DEVEL_EXTRACTION_3
-BES_SERVER_4=http://iapetus:9311/bes_DEVEL_EXTRACTION_4
+BES_SERVER_1=http://iapetus:9311/bes_DEVEL_EXTRACTION
+BES_SERVER_2=http://iapetus:9311/bes_DEVEL_EXTRACTION
+BES_SERVER_3=http://iapetus:9311/bes_DEVEL_EXTRACTION
+BES_SERVER_4=http://iapetus:9311/bes_DEVEL_EXTRACTION
 
 # Transcode programs
 METHOD="getobjectstatus"
