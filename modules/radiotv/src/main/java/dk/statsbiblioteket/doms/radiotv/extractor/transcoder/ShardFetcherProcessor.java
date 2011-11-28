@@ -46,9 +46,46 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+    	/*
+    	// New version of interface. Use when DOMS is ready in PROD
     	String pid = request.getPid();
     	String shardResult = DomsClient.getSingletonDomsClient().getShard(pid);
     	request.setShard(shardResult);
         log.debug("Downloaded shard\n" + request.getShard());
+        */
+    	
+    	// Old interface. Deprecated, when new version of DOMS goes to PROD
+        URL url = Util.getDomsUrl(request.getPid(), config);
+        log.info("Getting shard from '" + url + "'");
+        URLConnection conn = null;
+        try {
+            conn = url.openConnection();
+            String userPassword = Util.getInitParameter(config, Constants.DOMS_USERNAME)+":"+Util.getInitParameter(config, Constants.DOMS_PASSWORD);
+            log.debug("Username used for DOMS: " + userPassword);
+            String encoding = (new BASE64Encoder()).encode(userPassword.getBytes());
+            conn.setRequestProperty("Authorization", "Basic " + encoding);
+            InputStream is = conn.getInputStream();
+            try {
+                Writer writer = new StringWriter();
+                char[] buffer = new char[1024];
+                Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                int n;
+                while ((n = reader.read(buffer)) != -1) {
+                    writer.write(buffer, 0, n);
+                }
+                request.setShard(writer.toString());
+                log.debug("Downloaded shard\n" + request.getShard());
+            } finally {
+                is.close();
+            }
+        } catch (IOException e) {
+            throw new ProcessorException(e);
+        } finally {
+            try {
+                conn.getInputStream().close();
+            } catch (IOException e) {
+                log.info("This is probably not important:", e);
+            }
+        }
     }
 }
