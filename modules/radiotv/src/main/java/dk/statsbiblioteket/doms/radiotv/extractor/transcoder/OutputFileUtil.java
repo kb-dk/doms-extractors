@@ -46,11 +46,13 @@ public class OutputFileUtil {
      */
     public static File getOutputDir(TranscodeRequest request, ServletConfig config) {
         File rootDir = getBaseOutputDir(request, config);
+        log.trace("Output directory is relative to '" + rootDir + "'");
         String relativePath = "";
         String pid = request.getPid();
         for (int pos = 0; pos < depth; pos++) {
             relativePath += pid.charAt(pos) + "/";
         }
+        log.trace("Relative path is '" + relativePath + "'");
         return new File(rootDir, relativePath);
     }
 
@@ -147,6 +149,7 @@ public class OutputFileUtil {
             }
         };
         File outputDir = getOutputDir(request, config);
+        log.trace("Looking for output in directory '" + outputDir + "'");
         return outputDir.listFiles(filter)[0];
     }
 
