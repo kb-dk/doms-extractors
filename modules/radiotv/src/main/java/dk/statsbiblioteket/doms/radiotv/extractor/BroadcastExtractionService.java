@@ -67,7 +67,7 @@ public class
     public ExtractionStatus forceTranscode(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
         logIncomingRequest("forced transcoding", programPid, title, channel, startTime);
         SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
-        if (status.getStatus() == ObjectStatusEnum.DONE) {
+        if (status != null && status.getStatus() == ObjectStatusEnum.DONE) {
             TranscodeRequest request = new TranscodeRequest(programPid);
             request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
             File outputFile = OutputFileUtil.getExistingMediaOutputFile(request, config);
