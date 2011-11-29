@@ -72,8 +72,9 @@ public class
             request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
             File outputFile = OutputFileUtil.getExistingMediaOutputFile(request, config);
             boolean deleted = outputFile.delete();
+            log.info("Deleting '" + outputFile.getAbsolutePath() + "'");
             if (deleted) {
-                log.info("Deleted '" + outputFile.getAbsolutePath() + "'");
+                log.debug("Deleted '" + outputFile.getAbsolutePath() + "'");
             } else {
                 log.warn("Failed to delete '" + outputFile.getAbsolutePath() + "'");
             }
@@ -191,7 +192,27 @@ public class
             return status;
         }
     }
-    
+
+    @GET @Path("/forcepreview")
+    @Produces(MediaType.APPLICATION_XML)
+    public PreviewerStatus forcePreview(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
+        logIncomingRequest("Force preview", programPid, title, channel, startTime);
+        PreviewerStatus status = PreviewerStatusExtractor.getStatus(programPid, config);
+        if (status != null && status.getStatus() == ObjectStatusEnum.DONE) {
+            String uuid = Util.getUuid(programPid);
+            TranscodeRequest request = new TranscodeRequest(uuid);
+            request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
+            File file = OutputFileUtil.getExistingMediaOutputFile(request, config);
+            log.info("Deleting '" + file.getAbsolutePath() + "'");
+            if (file.delete()) {
+                log.debug("Deleted '" + file.getAbsolutePath() + "'");
+            } else {
+                log.warn("Failed to delete '" + file.getAbsolutePath() + "'");
+            }
+        }
+        return getPreviewStatus(programPid, title, channel, startTime);
+    }
+
 
     private ExtractionStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
         ExtractionStatus status = ExtractionStatusExtractor.getStatus(programPid, config);
