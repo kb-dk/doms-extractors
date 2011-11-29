@@ -77,9 +77,11 @@ public class MuxFlashClipper extends ProcessorChainElement {
                 }
                 if (clipLength != null) {
                     clipLength += additionalEndOffset;
+                    processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString +  " count=" + clipLength/blocksize + ") ";
                 } else {
+                    processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString  + ") ";
                 }
-                processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString +  " count=" + clipLength/blocksize + ") ";
+                //processSubstitutionFileList +=" <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString +  " count=" + clipLength/blocksize + ") ";
             } else {   //A file in the middle of a program so take the whole file
                 String skipString = "";
                 if (clip.getStartOffsetBytes() != null && clip.getStartOffsetBytes() != 0L) {
