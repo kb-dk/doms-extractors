@@ -132,6 +132,34 @@ public class
         return result;
     }
 
+    @GET @Path("/forcesnapshot")
+    @Produces(MediaType.APPLICATION_XML)
+    public List<SnapshotStatus> forceSnapshot(@QueryParam("programpid") List<String> pids) throws ProcessorException, UnsupportedEncodingException {
+       List<SnapshotStatus> result = new ArrayList<SnapshotStatus>();
+        for (String pid: pids) {
+            result.add(forceSnapshot(pid));
+        }
+        return result;
+    }
+
+    private SnapshotStatus forceSnapshot(String pid) throws ProcessorException, UnsupportedEncodingException {
+        log.info("Received forcing snapshot request for '" + pid + "'");
+        SnapshotStatus status = SnapshotStatusExtractor.getStatus(pid, config);
+        if (status != null && status.getStatus() == ObjectStatusEnum.DONE) {
+            TranscodeRequest request = new TranscodeRequest(Util.getUuid(pid));
+            request.setServiceType(ServiceTypeEnum.THUMBNAIL_GENERATION);
+            File[] files = OutputFileUtil.getAllSnapshotFiles(config, request);
+            for (File file: files) {
+                log.info("Deleting '" + file.getAbsolutePath() + "'");
+                if (file.delete()) {
+                    log.debug("Deleted '" + file.getAbsolutePath() + "'");
+                }
+            }
+        }
+        return getSnapshotStatus(pid);
+    }
+
+
     @GET @Path("/getpreviewstatus")
     @Produces(MediaType.APPLICATION_XML)
     public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
