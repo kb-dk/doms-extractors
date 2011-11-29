@@ -22,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,7 +40,9 @@ import java.util.List;
  *
  */
 @Path("/bes")
-public class BroadcastExtractionService {
+public class
+
+        BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
 
@@ -58,6 +61,26 @@ public class BroadcastExtractionService {
             return getRealObjectStatus(programPid);
         }
     }
+
+    @GET @Path("/forcetranscode")
+    @Produces(MediaType.APPLICATION_XML)
+    public ExtractionStatus forceTranscode(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
+        logIncomingRequest("forced transcoding", programPid, title, channel, startTime);
+        SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
+        if (status.getStatus() == ObjectStatusEnum.DONE) {
+            TranscodeRequest request = new TranscodeRequest(programPid);
+            request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+            File outputFile = OutputFileUtil.getExistingMediaOutputFile(request, config);
+            boolean deleted = outputFile.delete();
+            if (deleted) {
+                log.info("Deleted '" + outputFile.getAbsolutePath() + "'");
+            } else {
+                log.warn("Failed to delete '" + outputFile.getAbsolutePath() + "'");
+            }
+        }
+        return getObjectStatus(programPid, title,  channel, startTime);
+    }
+
 
     private static void logIncomingRequest(String requestType, String programPid, String title, String channel, long startTime) {
         log.info("Received " + requestType + " request for program '" + programPid + "'");
