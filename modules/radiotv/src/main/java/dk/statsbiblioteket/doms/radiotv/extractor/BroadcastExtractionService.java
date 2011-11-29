@@ -68,7 +68,7 @@ public class
         logIncomingRequest("forced transcoding", programPid, title, channel, startTime);
         ExtractionStatus status = ExtractionStatusExtractor.getStatus(programPid, config);
         if (status != null && status.getStatus() == ObjectStatusEnum.DONE) {
-            TranscodeRequest request = new TranscodeRequest(programPid);
+            TranscodeRequest request = new TranscodeRequest(Util.getUuid(programPid));
             request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
             File outputFile = OutputFileUtil.getExistingMediaOutputFile(request, config);
             boolean deleted = outputFile.delete();
