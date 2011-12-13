@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
 import java.io.File;
-import java.io.FileFilter;
 
 public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletContainer {
 

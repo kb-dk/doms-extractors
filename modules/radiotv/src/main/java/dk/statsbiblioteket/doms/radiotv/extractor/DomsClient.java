@@ -1,4 +1,4 @@
-package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
+package dk.statsbiblioteket.doms.radiotv.extractor;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,14 +8,12 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
 import org.apache.log4j.Logger;
-import org.junit.Before;
 
 import dk.statsbiblioteket.doms.central.CentralWebservice;
 import dk.statsbiblioteket.doms.central.CentralWebserviceService;
 import dk.statsbiblioteket.doms.central.InvalidCredentialsException;
 import dk.statsbiblioteket.doms.central.InvalidResourceException;
 import dk.statsbiblioteket.doms.central.MethodFailedException;
-import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 
 public class DomsClient {
 
@@ -28,7 +26,7 @@ public class DomsClient {
     /**
      * Reference to the active DOMS webservice client instance.
      */
-    private CentralWebservice domsAPI;
+    private static CentralWebservice domsAPI;
 
     private static DomsClient singletonDomsClient;
     
@@ -79,4 +77,7 @@ public class DomsClient {
 		}
     }
 
+    public static CentralWebservice getDomsAPI() {
+        return domsAPI;
+    }
 }
