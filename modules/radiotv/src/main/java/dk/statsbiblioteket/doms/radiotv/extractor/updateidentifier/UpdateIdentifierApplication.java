@@ -38,6 +38,7 @@ public class UpdateIdentifierApplication {
      */
     private static final String LOCKFILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.lockfiledir";
     private static final String TIMESTAMP_FILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.timestampfiledir";
+    private static final String OUTPUT_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.outputdir";
     private static final String DOMS_ENDPOINT = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domsendpoint";
     private static final String DOMS_USERNAME = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domsusername";
     private static final String DOMS_PASSWORD = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domspassword";
@@ -51,6 +52,7 @@ public class UpdateIdentifierApplication {
     private static File lockFileFile;
     private static File timestampFileFile;
     private static long since;
+    private static String now;
     private static List<RecordDescription> domsRecords;
 
 
@@ -109,6 +111,7 @@ public class UpdateIdentifierApplication {
                 checkKey(DOMS_ENDPOINT);
                 checkKey(DOMS_USERNAME);
                 checkKey(DOMS_PASSWORD);
+                checkKey(OUTPUT_DIR);
             }
         },
 
@@ -175,8 +178,8 @@ public class UpdateIdentifierApplication {
         WRITE_NEW_STARTTIME {
             @Override
             public void doThisOperation() throws UpdateIdentifierException {
-                String now = "" + (new Date()).getTime();
-                logger.info("Deleting '" + timestampFileFile + "'");
+                now = "" + (new Date()).getTime();
+                logger.debug("Deleting '" + timestampFileFile + "'");
                 timestampFileFile.delete();
                 if (timestampFileFile.exists()) {
                     throw new UpdateIdentifierException("Did not successfully delete '" + timestampFileFile + "'");
@@ -213,7 +216,7 @@ public class UpdateIdentifierApplication {
                 try {
                     logger.info("Querying DOMS for records modified since " + new Date(since));
                     domsRecords =
-                            domsAPI.getIDsModified(since, "doms:RadioTV_Collection", "BES", "A", 0, -1);
+                            domsAPI.getIDsModified(since, "doms:RadioTV_Collection", "BES", "Published", 0, 1000000000);
                     logger.info(domsRecords.size() + " results returned");
                 } catch (Exception e) {
                     throw new UpdateIdentifierException(e);
@@ -224,12 +227,39 @@ public class UpdateIdentifierApplication {
         WRITE_RESULTS {
             @Override
             public void doThisOperation() throws UpdateIdentifierException {
-                 for (RecordDescription record: domsRecords) {
-                     String recordS = "Found updated pid = '" + record.getPid()
-                             + " Entry CM = " + record.getEntryContentModelPid()
-                             + " Date = " + (new Date(record.getDate()));
-                     logger.info(recordS);
-                 }
+                File outputDir = new File(props.getProperty(OUTPUT_DIR));
+                if (outputDir.exists() && !outputDir.isDirectory()) {
+                    throw new UpdateIdentifierException("File '" + outputDir.getAbsolutePath() + "' is not a directory");
+                }
+                if (!outputDir.exists() && !outputDir.mkdirs()) {
+                    throw new UpdateIdentifierException("Could not create directory '" + outputDir.getAbsolutePath() + "'");
+                }
+                File outputFile = new File(outputDir, "update_identifier_" + since + "_" + now + ".txt");
+                BufferedWriter writer;
+                try {
+                    writer = new BufferedWriter(new FileWriter(outputFile));
+                } catch (IOException e) {
+                    throw new UpdateIdentifierException(e);
+                }
+                try {
+                    for (RecordDescription record: domsRecords) {
+                        String recordS = "Found updated pid = '" + record.getPid()
+                                + "' Entry CM = '" + record.getEntryContentModelPid()
+                                + "' Date = " + (new Date(record.getDate()));
+                        logger.debug(recordS);
+                            writer.append(record.getPid());
+                            writer.append("\n");
+                    }
+                } catch (IOException e) {
+                    throw new UpdateIdentifierException(e);
+                } finally {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        logger.error(e);
+                    }
+                }
+
             }
         },
 
@@ -272,8 +302,6 @@ public class UpdateIdentifierApplication {
          */
         public abstract void doThisOperation() throws UpdateIdentifierException ;
 
-        static Long startTime;
-        static Long endTime;
         static Properties props;
     }
 
@@ -301,12 +329,11 @@ public class UpdateIdentifierApplication {
         read.setNextStep(write);
         write.setNextStep(call);
         call.setNextStep(writeResults);
-        writeResults.setNextStep(cleanup);
         try {
             start.doOperation();
         } finally {
             try {
-                processingStep.CLEANUP.doThisOperation();
+                cleanup.doThisOperation();
             } catch (Exception e) {
                 logger.error(e);
             }
