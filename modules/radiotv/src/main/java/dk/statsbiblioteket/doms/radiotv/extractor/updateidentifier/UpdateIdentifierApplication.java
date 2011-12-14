@@ -47,7 +47,7 @@ public class UpdateIdentifierApplication {
 
 
 
-    private static final String LOCKFILE = "update_identifier_lockfile";
+    private static final String LOCKFILE = "lockfile";
     private static final String TIMESTAMP_FILE = "update_identifier_timestamp";
     private static File lockFileFile;
     private static File timestampFileFile;
@@ -132,6 +132,10 @@ public class UpdateIdentifierApplication {
                     }
                 }
                 lockFileFile = new File(lockDir, LOCKFILE);
+                if (lockFileFile.exists()) {
+                    logger.warn("Found lockfile '" + lockFileFile.getAbsolutePath() + "'. Previous run is not yet finished. Exiting.");
+                    System.exit(-1);
+                }
                 logger.info("Creating lockfile '" + lockFileFile.getAbsolutePath() + "'");
                 try {
                     lockFileFile.createNewFile();
