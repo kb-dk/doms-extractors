@@ -1,8 +1,10 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier;
 
+import com.sun.deploy.util.UpdateCheck;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.URL;
 import java.util.Properties;
 
 /**
@@ -21,12 +23,17 @@ public class BroadcastExtractor {
     /**
      * The environment variable pointing to the directory containing the properties file.
      */
-    private static final String CONFIG_DIR =  "dk.statsbiblioteket.radiotv.extractor.updateidentifier.configdir";
+    private static final String CONFIG_DIR = UpdateIdentifierApplication.CONFIG_DIR;
 
      /**
      * Immediately below here is the list of parameters which must be defined in update_identfier.properties
      */
-    private static final String LOCKFILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.lockfiledir";
+    private static final String LOCKFILE_DIR = UpdateIdentifierApplication.LOCKFILE_DIR;
+    private static final String PIDFILE_DIR = UpdateIdentifierApplication.OUTPUT_DIR;
+    private static final String BES_ENDPOINTS = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.besendpoints";
+    private static final String BES_PAUSE_MILLISECONDS = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.bespause_milliseconds";
+
+
 
     /**
      * Use the same lockfile as UpdateIdentifier so that only one of them can run at a time
@@ -44,6 +51,7 @@ public class BroadcastExtractor {
     }
 
      private static File lockFileFile;
+    private static File[] pidFiles;
 
 
      /**
@@ -85,9 +93,11 @@ public class BroadcastExtractor {
 
         VERIFY_PROPERTIES {
             @Override
-            public void doThisOperation() {
+            public void doThisOperation() throws BroadcastExtractorException {
                 checkKey(LOCKFILE_DIR);
-
+                checkKey(PIDFILE_DIR);
+                checkKey(BES_ENDPOINTS);
+                checkKey(BES_PAUSE_MILLISECONDS);
             }
         },
 
@@ -122,17 +132,63 @@ public class BroadcastExtractor {
             }
         },
 
-         FIND_PIDFILES{
+         FIND_PIDFILES {
              @Override
              public void doThisOperation() throws BroadcastExtractorException {
-                 //To change body of implemented methods use File | Settings | File Templates.
+                 File pidDir = new File(props.getProperty(PIDFILE_DIR));
+                 if (!pidDir.exists() && !pidDir.mkdirs()) {
+                      throw new BroadcastExtractorException("Could not create directory '" + pidDir.getAbsolutePath() + "'");
+                 }
+                 if (!pidDir.isDirectory()) {
+                     throw new BroadcastExtractorException("Not a directory '" + pidDir.getAbsolutePath() + "'");
+                 }
+                 pidFiles = pidDir.listFiles(new FileFilter() {
+                     @Override
+                     public boolean accept(File pathname) {
+                          return pathname.isFile();
+                     }
+                 });
              }
          },
 
-         CALL_BES{
+         CALL_BES {
              @Override
              public void doThisOperation() throws BroadcastExtractorException {
-                 //To change body of implemented methods use File | Settings | File Templates.
+                 String[] besEndpoints = props.getProperty(BES_ENDPOINTS).split(",");
+                 int nEndpoints = besEndpoints.length;
+                 int currentEndpoint = 0;
+                 long sleepTime = Long.parseLong(props.getProperty(BES_PAUSE_MILLISECONDS));
+                 String additionalUrlComponent = "/forcetranscode?propgrampid=";
+                 for (File pidFile: pidFiles) {
+                     BufferedReader reader;
+                     try {
+                         reader = new BufferedReader(new FileReader(pidFile));
+                     } catch (FileNotFoundException e) {
+                         throw new BroadcastExtractorException(e);
+                     }
+                     String pid;
+                     try {
+                         while ((pid = reader.readLine()) != null) {
+                             logger.debug("Found pid '" + pid + "'");
+                             if (pid.startsWith("uuid:")) {
+                                 String endPoint = besEndpoints[currentEndpoint];
+                                 String besUrl = endPoint + additionalUrlComponent + pid;
+                                 logger.debug("Opening '" + besUrl + "'");
+                                 URL url = new URL(besUrl);
+                                 Object content = url.getContent();
+                                 logger.debug(content);
+                                 try {
+                                     Thread.sleep(sleepTime);
+                                 } catch (InterruptedException e) {
+                                     throw new BroadcastExtractorException(e);
+                                 }
+                                 currentEndpoint = (currentEndpoint + 1) % nEndpoints;
+                             }
+                         }
+                     } catch (IOException e) {
+                         throw new BroadcastExtractorException(e);
+                     }
+                 }
              }
          },
 
@@ -145,9 +201,9 @@ public class BroadcastExtractor {
         };
 
 
-         private static void checkKey(String key) {
+         private static void checkKey(String key) throws BroadcastExtractorException {
             if (!props.containsKey(key)) {
-                throw new RuntimeException("Properties does not contain '" + key + "'");
+                throw new BroadcastExtractorException("Properties does not contain '" + key + "'");
             }
         }
 
@@ -180,15 +236,26 @@ public class BroadcastExtractor {
         static Properties props;
     }
 
-
-
-
-
-
-
-
-
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws BroadcastExtractorException {
+        processingStep start = processingStep.START_PROCESSING;
+        processingStep load = processingStep.LOAD_PROPERTIES;
+        processingStep verify = processingStep.VERIFY_PROPERTIES;
+        processingStep lock = processingStep.CREATE_LOCKFILE;
+        processingStep find = processingStep.FIND_PIDFILES;
+        processingStep call = processingStep.CALL_BES;
+        start.setNextStep(load);
+        load.setNextStep(verify);
+        verify.setNextStep(lock);
+        lock.setNextStep(find);
+        find.setNextStep(call);
+        try {
+            start.doOperation();
+        } finally {
+            try {
+                processingStep.CLEANUP.doOperation();
+            } catch (Exception e) {
+                logger.error(e);
+            }
+        }
     }
 }

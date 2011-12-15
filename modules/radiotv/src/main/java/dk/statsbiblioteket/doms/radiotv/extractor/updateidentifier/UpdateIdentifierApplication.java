@@ -7,10 +7,7 @@ import dk.statsbiblioteket.doms.central.RecordDescription;
 import dk.statsbiblioteket.doms.radiotv.extractor.DomsClient;
 import org.apache.log4j.Logger;
 
-import javax.xml.transform.sax.SAXTransformerFactory;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -30,15 +27,15 @@ public class UpdateIdentifierApplication {
     /**
      * The environment variable pointing to the directory containing the properties file.
      */
-    private static final String CONFIG_DIR =  "dk.statsbiblioteket.radiotv.extractor.updateidentifier.configdir";
+    static final String CONFIG_DIR =  "dk.statsbiblioteket.radiotv.extractor.updateidentifier.configdir";
 
 
     /**
      * Immediately below here is the list of parameters which must be defined in update_identfier.properties
      */
-    private static final String LOCKFILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.lockfiledir";
+    static final String LOCKFILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.lockfiledir";
     private static final String TIMESTAMP_FILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.timestampfiledir";
-    private static final String OUTPUT_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.outputdir";
+    static final String OUTPUT_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.hotdir";
     private static final String DOMS_ENDPOINT = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domsendpoint";
     private static final String DOMS_USERNAME = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domsusername";
     private static final String DOMS_PASSWORD = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domspassword";
