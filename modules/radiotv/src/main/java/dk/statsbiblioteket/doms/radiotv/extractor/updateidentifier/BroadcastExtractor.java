@@ -1,9 +1,9 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier;
 
-import com.sun.deploy.util.UpdateCheck;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.util.Properties;
 
@@ -30,6 +30,8 @@ public class BroadcastExtractor {
      */
     private static final String LOCKFILE_DIR = UpdateIdentifierApplication.LOCKFILE_DIR;
     private static final String PIDFILE_DIR = UpdateIdentifierApplication.OUTPUT_DIR;
+    static final String COLD_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.colddir";
+    static final String WARM_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.warmdir";
     private static final String BES_ENDPOINTS = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.besendpoints";
     private static final String BES_PAUSE_MILLISECONDS = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.bespause_milliseconds";
 
@@ -108,15 +110,7 @@ public class BroadcastExtractor {
             @Override
             public void doThisOperation() throws BroadcastExtractorException {
                 File lockDir = new File(props.getProperty(LOCKFILE_DIR));
-                if (lockDir.exists()) {
-                    if (!lockDir.isDirectory()) {
-                        throw new BroadcastExtractorException(lockDir.getAbsolutePath() + " exists but is not a directory");
-                    }
-                } else {
-                    if (!lockDir.mkdirs()) {
-                        throw new BroadcastExtractorException("Could not create directory '" + lockDir.getAbsolutePath() + "'");
-                    }
-                }
+                mkdirs(lockDir);
                 lockFileFile = new File(lockDir, LOCKFILE);
                 if (lockFileFile.exists()) {
                     logger.warn("Found lockfile '" + lockFileFile.getAbsolutePath() + "'. Previous run is not yet finished. Exiting.");
@@ -136,12 +130,7 @@ public class BroadcastExtractor {
              @Override
              public void doThisOperation() throws BroadcastExtractorException {
                  File pidDir = new File(props.getProperty(PIDFILE_DIR));
-                 if (!pidDir.exists() && !pidDir.mkdirs()) {
-                      throw new BroadcastExtractorException("Could not create directory '" + pidDir.getAbsolutePath() + "'");
-                 }
-                 if (!pidDir.isDirectory()) {
-                     throw new BroadcastExtractorException("Not a directory '" + pidDir.getAbsolutePath() + "'");
-                 }
+                 mkdirs(pidDir);
                  pidFiles = pidDir.listFiles(new FileFilter() {
                      @Override
                      public boolean accept(File pathname) {
@@ -155,28 +144,29 @@ public class BroadcastExtractor {
              @Override
              public void doThisOperation() throws BroadcastExtractorException {
                  String[] besEndpoints = props.getProperty(BES_ENDPOINTS).split(",");
+                 File coldDir = new File(props.getProperty(COLD_DIR));
+                 mkdirs(coldDir);
+                 File warmDir = new File(props.getProperty(WARM_DIR));
+                 mkdirs(warmDir);
                  int nEndpoints = besEndpoints.length;
                  int currentEndpoint = 0;
                  long sleepTime = Long.parseLong(props.getProperty(BES_PAUSE_MILLISECONDS));
-                 String additionalUrlComponent = "/forcetranscode?propgrampid=";
+                 String additionalUrlComponent = "/forcetranscode?programpid=";
                  for (File pidFile: pidFiles) {
-                     BufferedReader reader;
                      try {
+                         BufferedReader reader;
                          reader = new BufferedReader(new FileReader(pidFile));
-                     } catch (FileNotFoundException e) {
-                         throw new BroadcastExtractorException(e);
-                     }
-                     String pid;
-                     try {
+                         String pid;
                          while ((pid = reader.readLine()) != null) {
                              logger.debug("Found pid '" + pid + "'");
                              if (pid.startsWith("uuid:")) {
                                  String endPoint = besEndpoints[currentEndpoint];
                                  String besUrl = endPoint + additionalUrlComponent + pid;
                                  logger.debug("Opening '" + besUrl + "'");
-                                 URL url = new URL(besUrl);
+                                 URI uri = URI.create(besUrl);
+                                 URL url = uri.toURL();
+                                 url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile().replace("//","/"));
                                  Object content = url.getContent();
-                                 logger.debug(content);
                                  try {
                                      Thread.sleep(sleepTime);
                                  } catch (InterruptedException e) {
@@ -184,8 +174,10 @@ public class BroadcastExtractor {
                                  }
                                  currentEndpoint = (currentEndpoint + 1) % nEndpoints;
                              }
+                             pidFile.renameTo(new File(coldDir, pidFile.getName()));
                          }
                      } catch (IOException e) {
+                         pidFile.renameTo(new File(warmDir, pidFile.getName()));
                          throw new BroadcastExtractorException(e);
                      }
                  }
@@ -199,6 +191,18 @@ public class BroadcastExtractor {
                 lockFileFile.delete();
             }
         };
+
+         private static void mkdirs(File lockDir) throws BroadcastExtractorException {
+             if (lockDir.exists()) {
+                 if (!lockDir.isDirectory()) {
+                     throw new BroadcastExtractorException(lockDir.getAbsolutePath() + " exists but is not a directory");
+                 }
+             } else {
+                 if (!lockDir.mkdirs()) {
+                     throw new BroadcastExtractorException("Could not create directory '" + lockDir.getAbsolutePath() + "'");
+                 }
+             }
+         }
 
 
          private static void checkKey(String key) throws BroadcastExtractorException {

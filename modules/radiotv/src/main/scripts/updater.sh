@@ -1,4 +1,4 @@
 #!/bin/bash
 CLASSPATH=${HOME}/services/webapps/bes_CSR/WEB-INF/lib/BroadcastExtractionService*.jar
-java -cp ${CLASSPATH} -Ddk.statsbiblioteket.radiotv.extractor.updateidentifier.configdir=bes/config -Dlog4j.config=bes/config/log4.updater.xml dk.statsbiblioteket.doms.radiotv.updateidentifier.UpdateIdentifierApplication
+java -cp ${CLASSPATH} -Ddk.statsbiblioteket.radiotv.extractor.updateidentifier.configdir=${HOME}/bes/config -Dlog4j.configuration=file://${HOME}/bes/config/log4j.updater.xml dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier.UpdateIdentifierApplication
 
