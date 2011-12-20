@@ -4,9 +4,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.Util;
 import org.apache.log4j.Logger;
 
 import dk.statsbiblioteket.doms.central.CentralWebservice;
@@ -31,10 +33,10 @@ public class DomsClient {
     private static DomsClient singletonDomsClient;
     
     protected DomsClient(String domsWSAPIEndpointUrlString, String userName, String password) {
-    	log.debug("Creating DOMS Client");
-    	log.debug("domsWSAPIEndpointUrlString, " + domsWSAPIEndpointUrlString);
-    	log.debug("userName: " + userName);
-    	log.debug("password: " + password);
+    	log.info("Creating DOMS Client");
+    	log.info("domsWSAPIEndpointUrlString, " + domsWSAPIEndpointUrlString);
+    	log.info("userName: " + userName);
+    	log.info("password: ****");
     	URL domsWSAPIEndpoint;
 		try {
 			domsWSAPIEndpoint = new URL(domsWSAPIEndpointUrlString);
@@ -48,12 +50,24 @@ public class DomsClient {
     }
 
     public static synchronized void initializeSingleton(String domsWSAPIEndpointUrlString, String userName, String password) {
-    	log.debug("Initializing DOMS client");
 		if (singletonDomsClient == null) {
+            log.info("Initializing DOMS client");
 			singletonDomsClient = new DomsClient(domsWSAPIEndpointUrlString, userName, password);
-		}
+		} else {
+            log.debug("DOMS client already initialised");
+        }
     }
-    
+
+    public static synchronized CentralWebservice getDOMSApiInstance(ServletConfig config) {
+        if (domsAPI == null) {
+            String endPoint = Util.getInitParameter(config, Constants.DOMS_ENDPOINT);
+            String username = Util.getInitParameter(config, Constants.DOMS_USERNAME);
+            String password = Util.getInitParameter(config, Constants.DOMS_PASSWORD);
+            initializeSingleton(endPoint, username, password);
+        }
+        return domsAPI;
+    }
+
     public static synchronized DomsClient getSingletonDomsClient() {
 		if (singletonDomsClient == null) {
 			throw new RuntimeException("Singleton not initialized before attempted use.");

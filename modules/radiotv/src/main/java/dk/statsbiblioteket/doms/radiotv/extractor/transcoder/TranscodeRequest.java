@@ -59,6 +59,34 @@ public class TranscodeRequest {
     private String dvbsubPid;
 
     private FileClip longestClip;
+    private ShardStructure structure;
+
+     private Long programStartTime;
+        private Long programEndTime;
+
+        public Long getProgramStartTime() {
+            return programStartTime;
+        }
+
+        public void setProgramStartTime(Long programStartTime) {
+            this.programStartTime = programStartTime;
+        }
+
+        public Long getProgramEndTime() {
+            return programEndTime;
+        }
+
+        public void setProgramEndTime(Long programEndTime) {
+            this.programEndTime = programEndTime;
+        }
+
+    public ShardStructure getStructure() {
+        return structure;
+    }
+
+    public void setStructure(ShardStructure structure) {
+        this.structure = structure;
+    }
 
     public FileClip getLongestClip() {
         return longestClip;
@@ -283,6 +311,26 @@ public class TranscodeRequest {
         private Integer programId; //non-null only for mux'es
         private Long startOffsetBytes;
         private Long clipLength;
+
+        private Long fileStartTime;
+        private Long fileEndTime;
+
+
+        public Long getFileStartTime() {
+            return fileStartTime;
+        }
+
+        public void setFileStartTime(Long fileStartTime) {
+            this.fileStartTime = fileStartTime;
+        }
+
+        public Long getFileEndTime() {
+            return fileEndTime;
+        }
+
+        public void setFileEndTime(Long fileEndTime) {
+            this.fileEndTime = fileEndTime;
+        }
 
         public FileClip(String filepath) {
             this.filepath = filepath;

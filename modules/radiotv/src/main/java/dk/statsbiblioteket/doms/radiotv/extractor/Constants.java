@@ -86,6 +86,7 @@ public class Constants {
      *  Constants relating to DOMS
      */
     public static final String DOMS_LOCATION = "dk.statsbiblioteket.doms.radiotv.extractor.domsLocation";
+    public static final String DOMS_ENDPOINT = "dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint";
     public static final String DOMS_USERNAME = "dk.statsbiblioteket.doms.radiotv.extractor.domsUsername";
     public static final String DOMS_PASSWORD = "dk.statsbiblioteket.doms.radiotv.extractor.domsPassword";
     //public static final String PREVIEW_THUMBNAIL_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewThumbnailDirectory";
