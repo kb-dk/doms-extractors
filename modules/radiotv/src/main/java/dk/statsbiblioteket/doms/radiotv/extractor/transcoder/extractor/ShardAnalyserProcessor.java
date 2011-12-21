@@ -51,12 +51,12 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
 
         List<TranscodeRequest.FileClip> clips = request.getClips();
         TranscodeRequest.FileClip clip1 = null;
-        TranscodeRequest.FileClip clip2;
+        TranscodeRequest.FileClip clip2 = null;
         for (TranscodeRequest.FileClip clip: clips) {
             findStartStopTimes(clip, request);
-            clip2 = clip1;
-            clip1 = clip;
-            if (clip2 != null) {
+            clip1 = clip2;
+            clip2 = clip;
+            if (clip1 != null) {
                 final long holeLength = clip2.getFileStartTime() - clip1.getFileEndTime();
                 log.debug("Hole length = " + clip2.getFileStartTime() + " - " + clip1.getFileEndTime() + " = " + holeLength);
                 final long overlapLength = 0 - holeLength;
