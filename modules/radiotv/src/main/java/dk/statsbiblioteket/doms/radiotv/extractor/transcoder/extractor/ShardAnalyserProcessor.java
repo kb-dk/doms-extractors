@@ -108,8 +108,14 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
                 clip.setFileStartTime(Long.parseLong(muxMatcher.group(1))*1000L);
                 clip.setFileEndTime(Long.parseLong(muxMatcher.group(2))*1000L);
             } else if (bartMatcher.matches()) {
-                clip.setFileStartTime(bartDateFormat.parse(bartMatcher.group(1)).getTime());
-                clip.setFileEndTime(bartDateFormat.parse(bartMatcher.group(2)).getTime());
+                final String startTimeElement = bartMatcher.group(1);
+                final long startTime = bartDateFormat.parse(startTimeElement).getTime();
+                log.debug("Setting file start time to '" + startTime + "' (" + startTimeElement + ")");
+                clip.setFileStartTime(startTime);
+                final String endTimeElement = bartMatcher.group(2);
+                final long endTime = bartDateFormat.parse(endTimeElement).getTime();
+                log.debug("Setting file end time to '" + endTime + "' (" + endTimeElement + ")");
+                clip.setFileEndTime(endTime);
             } else {
                 throw new ProcessorException("Could not parse filename '" + fileName + "'");
             }
@@ -137,7 +143,7 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
         final long endGap = request.getProgramEndTime() - last.getFileEndTime();
         if (endGap > gapToleranceSeconds*1000L) {
             ShardStructure.MissingEnd end = new ShardStructure.MissingEnd();
-            end.setMissingSeconds((int) endGap/1000);
+            end.setMissingSeconds((int) endGap / 1000);
             request.getStructure().setMissingEnd(end);
         }
     }
