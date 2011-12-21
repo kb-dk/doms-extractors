@@ -129,6 +129,7 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
         int nclips = clips.size();
         TranscodeRequest.FileClip first = clips.get(0);
         final long startGap = first.getFileStartTime() - request.getProgramStartTime();
+        log.debug("Start gap = " + first.getFileStartTime() + " - " + request.getProgramStartTime() +  " = " + startGap);
         if (startGap > gapToleranceSeconds*1000L) {
             ShardStructure.MissingStart start = new ShardStructure.MissingStart();
             start.setMissingSeconds((int) startGap/1000);
