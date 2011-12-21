@@ -58,6 +58,7 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
             clip1 = clip;
             if (clip2 != null) {
                 final long holeLength = clip2.getFileStartTime() - clip1.getFileEndTime();
+                log.debug("Hole length = " + clip2.getFileStartTime() + " - " + clip1.getFileEndTime() + " = " + holeLength);
                 final long overlapLength = 0 - holeLength;
                 if (holeLength > gapToleranceSeconds*1000L) {
                      ShardStructure.Hole hole = new ShardStructure.Hole();
