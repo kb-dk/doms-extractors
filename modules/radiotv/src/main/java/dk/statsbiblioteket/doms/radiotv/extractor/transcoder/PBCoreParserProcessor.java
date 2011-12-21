@@ -30,7 +30,7 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
     private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
 
-    SimpleDateFormat domsDateFormat = new SimpleDateFormat("yyyy-MM-ddTHH:mm:SSZ");
+    SimpleDateFormat domsDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSZ");
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {

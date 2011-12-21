@@ -138,7 +138,7 @@ public class ExtractorApplication {
                     service = ServiceTypeEnum.PREVIEW_GENERATION;
                 } else if (arg.equals("t")) {
                     service = ServiceTypeEnum.THUMBNAIL_GENERATION;
-                } else if (arg.equals("q")) {
+                } else if (arg.equals("a")) {
                     service = ServiceTypeEnum.SHARD_ANALYSIS;
                 }
             } else {
