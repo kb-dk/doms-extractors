@@ -14,7 +14,7 @@
 
         <!-- Error log for serious problems -->
         <appender name="error_log" class="org.apache.log4j.RollingFileAppender">
-                <param name="file" value="~/bes/logs/analyser.error.log"></param>
+                <param name="file" value="/home/larm/bes/logs/analyser.error.log"></param>
                 <param name="MaxBackupIndex" value="20" />
                 <layout class="org.apache.log4j.PatternLayout">
                         <!-- <param name="ConversionPattern" value="%-5p [%d{yyyy-MM-dd HH.mm:ss}]
@@ -30,7 +30,7 @@
 
         <!-- a debug logger. minimum logging level set as needed -->
  <appender name="debug_log" class="org.apache.log4j.RollingFileAppender">
-                <param name="file" value="~/bes/logs/analyser.debug.log"></param>
+                <param name="file" value="/home/larm/bes/logs/analyser.debug.log"></param>
                 <param name="MaxBackupIndex" value="20" />
                 <layout class="org.apache.log4j.PatternLayout">
                         <param name="ConversionPattern" value="%-5p [%d{yyyy-MM-dd HH.mm:ss}] %C{1}.%M(%L): %m%n" />
@@ -42,7 +42,7 @@
         </appender>
 
         <root>
-                <priority value="DEBUG" />
+                <priority value="INFO" />
                 <appender-ref ref="console" />
         <appender-ref ref="debug_log" />
         <appender-ref ref="error_log" />
