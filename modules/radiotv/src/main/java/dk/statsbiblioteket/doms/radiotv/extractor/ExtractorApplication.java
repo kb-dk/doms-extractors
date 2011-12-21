@@ -25,6 +25,7 @@ import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalyserProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalysisOutputProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewGeneratorDispatcherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotGeneratorDispatcherProcessor;
@@ -107,6 +108,8 @@ public class ExtractorApplication {
                 return "30";
             } else if (s.equals(Constants.DOMS_ENDPOINT)) {
                 return "http://alhena:7880/centralWebservice-service/central/";
+            } else if (s.equals(Constants.ANALYSIS_DIRECTORY)) {
+                return "/home/larm/analysis";
             }
 
 
@@ -245,8 +248,10 @@ public class ExtractorApplication {
         ProcessorChainElement parser = new ShardParserProcessor();
         ProcessorChainElement pbcorer = new PBCoreParserProcessor();
         ProcessorChainElement analyser = new ShardAnalyserProcessor();
+        ProcessorChainElement outputter = new ShardAnalysisOutputProcessor();
         parser.setChildElement(pbcorer);
         pbcorer.setChildElement(analyser);
+        pbcorer.setChildElement(outputter);
         ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);

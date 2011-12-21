@@ -77,6 +77,9 @@ public class OutputFileUtil {
             case PREVIEW_THUMBNAIL_GENERATION:
                 rootDir = Util.getInitParameter(config, Constants.SNAPSHOT_DIRECTORY);
                 break;
+            case SHARD_ANALYSIS:
+                rootDir = Util.getInitParameter(config, Constants.ANALYSIS_DIRECTORY);
+                break;
         }
         return new File(rootDir);
     }

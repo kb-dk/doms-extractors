@@ -91,6 +91,12 @@ public class Constants {
     public static final String DOMS_PASSWORD = "dk.statsbiblioteket.doms.radiotv.extractor.domsPassword";
     //public static final String PREVIEW_THUMBNAIL_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.previewThumbnailDirectory";
 
+    /**
+     * Constants relating to shard analysis
+     *
+     */
+    public static final String ANALYSIS_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.analysisDirectory";
+
 
 
 }
