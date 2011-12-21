@@ -105,8 +105,8 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
         Matcher bartMatcher = bartPattern.matcher(fileName);
         try {
             if (muxMatcher.matches()) {
-                clip.setFileStartTime(Long.parseLong(muxMatcher.group(1)));
-                clip.setFileEndTime(Long.parseLong(muxMatcher.group(2)));
+                clip.setFileStartTime(Long.parseLong(muxMatcher.group(1))*1000L);
+                clip.setFileEndTime(Long.parseLong(muxMatcher.group(2))*1000L);
             } else if (bartMatcher.matches()) {
                 clip.setFileStartTime(bartDateFormat.parse(bartMatcher.group(1)).getTime());
                 clip.setFileEndTime(bartDateFormat.parse(bartMatcher.group(2)).getTime());
