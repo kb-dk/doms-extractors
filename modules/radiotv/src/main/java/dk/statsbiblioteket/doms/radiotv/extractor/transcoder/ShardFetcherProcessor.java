@@ -22,6 +22,7 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
 import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+import dk.statsbiblioteket.doms.radiotv.extractor.DomsClient;
 import org.apache.log4j.Logger;
 import sun.misc.BASE64Encoder;
 
@@ -46,14 +47,14 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-    	/*
+
     	// New version of interface. Use when DOMS is ready in PROD
     	String pid = request.getPid();
     	String shardResult = DomsClient.getSingletonDomsClient().getShard(pid);
     	request.setShard(shardResult);
         log.debug("Downloaded shard\n" + request.getShard());
-        */
-    	
+
+    	/*
     	// Old interface. Deprecated, when new version of DOMS goes to PROD
         URL url = Util.getDomsUrl(request.getPid(), config);
         log.info("Getting shard from '" + url + "'");
@@ -87,5 +88,6 @@ public class ShardFetcherProcessor extends ProcessorChainElement {
                 log.info("This is probably not important:", e);
             }
         }
+        */
     }
 }
