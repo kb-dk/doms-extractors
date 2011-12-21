@@ -4,6 +4,7 @@ import dk.statsbiblioteket.doms.central.CentralWebservice;
 import dk.statsbiblioteket.doms.central.Relation;
 import dk.statsbiblioteket.doms.radiotv.extractor.DomsClient;
 import dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier.BroadcastExtractor;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.xml.parsers.DocumentBuilder;
@@ -12,6 +13,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,6 +24,9 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class PBCoreParserProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(PBCoreParserProcessor.class);
+
     private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
 
@@ -37,6 +42,7 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
                 if (relation.getPredicate().equals("http://doms.statsbiblioteket.dk/relations/default/0/1/#hasShard")) {
                     String programPid = relation.getSubject();
                     pbcore = domsAPI.getDatastreamContents(programPid, "PBCORE");
+                    log.debug(pbcore);
                 }
             }
         } catch (Exception e) {
@@ -63,5 +69,7 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         }
         request.setProgramStartTime(programStartTime);
         request.setProgramEndTime(programEndTime);
+        log.debug("Identified start time '" + programStartTime);
+        log.debug("Identified end time '" + programEndTime);
     }
 }

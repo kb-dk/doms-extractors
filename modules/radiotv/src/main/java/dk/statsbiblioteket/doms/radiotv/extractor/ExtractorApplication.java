@@ -42,7 +42,7 @@ public class ExtractorApplication {
 
     private static Logger log = Logger.getLogger(ExtractorApplication.class);
 
-    private static ServletConfig config = new ServletConfig() {
+    public static ServletConfig config = new ServletConfig() {
         @Override
         public String getServletName() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
@@ -104,6 +104,8 @@ public class ExtractorApplication {
                 return "jpeg";
             } else if (s.equals(Constants.PREVIEW_LENGTH)) {
                 return "30";
+            } else if (s.equals(Constants.DOMS_ENDPOINT)) {
+                return "http://alhena:7880/centralWebservice-service/central/";
             }
 
 
@@ -136,6 +138,8 @@ public class ExtractorApplication {
                     service = ServiceTypeEnum.PREVIEW_GENERATION;
                 } else if (arg.equals("t")) {
                     service = ServiceTypeEnum.THUMBNAIL_GENERATION;
+                } else if (arg.equals("q")) {
+                    service = ServiceTypeEnum.SHARD_ANALYSIS;
                 }
             } else {
                 log.info("Starting process for '" + arg + "'");
@@ -150,6 +154,9 @@ public class ExtractorApplication {
                         break;
                     case THUMBNAIL_GENERATION:
                         queueThumbnails(arg, request);
+                        break;
+                    case SHARD_ANALYSIS:
+                        queueAnalysis(arg, request);
                         break;
                 }
             }
@@ -231,4 +238,27 @@ public class ExtractorApplication {
         ProcessorChainThread thread = ProcessorChainThread.getRecursiveProcessorChainThread(transcoder, request, config);
         ProcessorChainThreadPool.addProcessorChainThread(thread);
     }
+
+    private static void queueAnalysis(String arg, TranscodeRequest request) throws IOException {
+        ProcessorChainElement parser = new ShardParserProcessor();
+        ProcessorChainElement pbcorer = new PBCoreParserProcessor();
+        parser.setChildElement(pbcorer);
+        ProcessorChainThread thread = null;
+        if (arg.endsWith(".xml")) {
+            File file = new File(arg);
+            request.setShard(Files.loadString(file));
+            request.setPid(file.getName().replace(".xml",""));
+            request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
+            log.debug("Set content: '" + request.getShard() + "'");
+            thread = ProcessorChainThread.getIterativeProcessorChainThread(parser, request, config);
+        } else {
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            fetcher.setChildElement(parser);
+            request.setPid(arg);
+            thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
+        }
+        ProcessorChainThreadPool.addProcessorChainThread(thread);
+    }
+
 }
