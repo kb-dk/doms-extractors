@@ -58,12 +58,28 @@ public class ShardStructure {
 
 
     public static class MissingStart {
+       private int missingSeconds;
 
+        public int getMissingSeconds() {
+            return missingSeconds;
+        }
+
+        public void setMissingSeconds(int missingSeconds) {
+            this.missingSeconds = missingSeconds;
+        }
     }
 
 
     public static class MissingEnd {
+          private int missingSeconds;
 
+        public int getMissingSeconds() {
+            return missingSeconds;
+        }
+
+        public void setMissingSeconds(int missingSeconds) {
+            this.missingSeconds = missingSeconds;
+        }
     }
 
     public static class Hole {

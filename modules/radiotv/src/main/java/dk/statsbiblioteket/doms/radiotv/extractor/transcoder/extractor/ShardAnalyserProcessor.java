@@ -29,6 +29,8 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
         ShardStructure structure = new ShardStructure();
         request.setStructure(structure);
         findHolesAndOverlaps(request, config);
+        findMissingStart(request, config);
+        findMissingEnd(request, config);
         if (request.getStructure().isNonTrivial()) {
             log.debug(request.getStructure());
         }
@@ -61,15 +63,17 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
                      ShardStructure.Hole hole = new ShardStructure.Hole();
                      hole.setFilePath1(clip1.getFilepath());
                      hole.setFilePath2(clip2.getFilepath());
-                     hole.setHoleLength(holeLength);
+                     hole.setHoleLength(holeLength/1000);
                      request.getStructure().addHole(hole);
                  }  else
                      if (overlapLength > gapToleranceSeconds*1000L) {
                          ShardStructure.Overlap overlap = new ShardStructure.Overlap();
+                         overlap.setFilePath1(clip1.getFilepath());
+                         overlap.setFilePath2(clip2.getFilepath());
                          int overlapType = 0;
+                         overlap.setOverlapLength(overlapLength/1000);
                          if (request.getProgramStartTime()<clip2.getFileStartTime() && request.getProgramEndTime()>clip1.getFileEndTime()) {
                              overlapType = 0;
-                             overlap.setOverlapLength(overlapLength);
                          } else if (request.getProgramStartTime()<clip2.getFileStartTime() && request.getProgramEndTime()<clip1.getFileEndTime() ) {
                              overlapType = 1;
                          } else if (request.getProgramStartTime()>clip2.getFileStartTime() && request.getProgramEndTime()<clip1.getFileEndTime()) {
@@ -114,6 +118,28 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
         }
     }
 
+    private void findMissingStart(TranscodeRequest request, ServletConfig config) {
+        List<TranscodeRequest.FileClip> clips = request.getClips();
+        int nclips = clips.size();
+        TranscodeRequest.FileClip first = clips.get(0);
+        final long startGap = first.getFileStartTime() - request.getProgramStartTime();
+        if (startGap > gapToleranceSeconds*1000L) {
+            ShardStructure.MissingStart start = new ShardStructure.MissingStart();
+            start.setMissingSeconds((int) startGap/1000);
+            request.getStructure().setMissingStart(start);
+        }
+    }
 
+    private void findMissingEnd(TranscodeRequest request, ServletConfig config) {
+        List<TranscodeRequest.FileClip> clips = request.getClips();
+        int nclips = clips.size();
+        TranscodeRequest.FileClip last = clips.get(nclips - 1);
+        final long endGap = request.getProgramEndTime() - last.getFileEndTime();
+        if (endGap > gapToleranceSeconds*1000L) {
+            ShardStructure.MissingEnd end = new ShardStructure.MissingEnd();
+            end.setMissingSeconds((int) endGap/1000);
+            request.getStructure().setMissingEnd(end);
+        }
+    }
 
 }
