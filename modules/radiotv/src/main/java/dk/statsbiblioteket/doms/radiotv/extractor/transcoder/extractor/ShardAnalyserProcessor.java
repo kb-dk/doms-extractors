@@ -5,6 +5,7 @@ import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ShardStructure;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
 import dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier.BroadcastExtractor;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import java.io.File;
@@ -18,6 +19,8 @@ import java.util.regex.Pattern;
  */
 public class ShardAnalyserProcessor extends ProcessorChainElement{
 
+    private static Logger log = Logger.getLogger(ShardAnalyserProcessor.class);
+
     int gapToleranceSeconds = 2;
 
 
@@ -26,6 +29,9 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
         ShardStructure structure = new ShardStructure();
         request.setStructure(structure);
         findHolesAndOverlaps(request, config);
+        if (request.getStructure().isNonTrivial()) {
+            log.debug(request.getStructure());
+        }
     }
 
     /**
@@ -37,29 +43,42 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
          *  type2                                  [-----]
          *  type3                                        [----------------]
          */
-    SimpleDateFormat domsDateTime = new SimpleDateFormat("yyyy-MM-ddTHH:mm:ssZ")      ;
+    SimpleDateFormat domsDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")      ;
 
     private void findHolesAndOverlaps(TranscodeRequest request, ServletConfig config) throws ProcessorException {
 
         List<TranscodeRequest.FileClip> clips = request.getClips();
         TranscodeRequest.FileClip clip1 = null;
-        TranscodeRequest.FileClip clip2 = null;
+        TranscodeRequest.FileClip clip2;
         for (TranscodeRequest.FileClip clip: clips) {
             findStartStopTimes(clip, request);
             clip2 = clip1;
             clip1 = clip;
             if (clip2 != null) {
-                 if ((clip2.getFileStartTime()-clip1.getFileEndTime()) > gapToleranceSeconds*1000L) {
+                final long holeLength = clip2.getFileStartTime() - clip1.getFileEndTime();
+                final long overlapLength = 0 - holeLength;
+                if (holeLength > gapToleranceSeconds*1000L) {
                      ShardStructure.Hole hole = new ShardStructure.Hole();
                      hole.setFilePath1(clip1.getFilepath());
                      hole.setFilePath2(clip2.getFilepath());
-                     hole.setHoleLength(clip2.getFileStartTime()-clip1.getFileEndTime());
+                     hole.setHoleLength(holeLength);
                      request.getStructure().addHole(hole);
                  }  else
-                     if ((clip1.getFileEndTime()-clip2.getFileStartTime()) > gapToleranceSeconds*1000L) {
+                     if (overlapLength > gapToleranceSeconds*1000L) {
                          ShardStructure.Overlap overlap = new ShardStructure.Overlap();
-                         int overlapType;
-
+                         int overlapType = 0;
+                         if (request.getProgramStartTime()<clip2.getFileStartTime() && request.getProgramEndTime()>clip1.getFileEndTime()) {
+                             overlapType = 0;
+                             overlap.setOverlapLength(overlapLength);
+                         } else if (request.getProgramStartTime()<clip2.getFileStartTime() && request.getProgramEndTime()<clip1.getFileEndTime() ) {
+                             overlapType = 1;
+                         } else if (request.getProgramStartTime()>clip2.getFileStartTime() && request.getProgramEndTime()<clip1.getFileEndTime()) {
+                             overlapType = 2;
+                         } else if (request.getProgramStartTime()>clip2.getFileStartTime() && request.getProgramEndTime()>clip1.getFileEndTime()) {
+                             overlapType = 3;
+                         }
+                         overlap.setOverlapType(overlapType);
+                         request.getStructure().addOverlap(overlap);
                      }
             }
         }

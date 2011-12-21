@@ -56,7 +56,7 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
             String programStartString = (String) xpathFactory.newXPath().evaluate("//dateAvailableStart", pbcoreDocument, XPathConstants.STRING);
             String programEndString = (String) xpathFactory.newXPath().evaluate("//dateAvailableEnd", pbcoreDocument, XPathConstants.STRING);
             log.debug("Found start time '" + programStartString + "'");
-            log.debug("Found en time '" + programEndString + "'");
+            log.debug("Found end time '" + programEndString + "'");
             programStartTime = domsDateFormat.parse(programStartString).getTime();
             programEndTime = domsDateFormat.parse(programEndString).getTime();
         } catch (Exception e) {
@@ -66,8 +66,8 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         request.setProgramEndTime(programEndTime);
         Date startDate = new Date(); startDate.setTime(programStartTime);
         Date endDate = new Date(); endDate.setTime(programEndTime);
-        log.debug("Identified start time '" + programStartTime + "(" + startDate + ")");
-        log.debug("Identified end time '" + programEndTime + "(" + endDate + ")");
+        log.debug("Identified start time '" + programStartTime + "' (" + startDate + ")");
+        log.debug("Identified end time '" + programEndTime + "' (" + endDate + ")");
     }
 
     private String getPBCore(TranscodeRequest request, String pbcore, CentralWebservice domsAPI) throws ProcessorException {

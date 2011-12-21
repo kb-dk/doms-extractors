@@ -24,6 +24,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalyserProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewGeneratorDispatcherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotGeneratorDispatcherProcessor;
@@ -243,8 +244,10 @@ public class ExtractorApplication {
     private static void queueAnalysis(String arg, TranscodeRequest request) throws IOException {
         ProcessorChainElement parser = new ShardParserProcessor();
         ProcessorChainElement pbcorer = new PBCoreParserProcessor();
+        ProcessorChainElement analyser = new ShardAnalyserProcessor();
         parser.setChildElement(pbcorer);
-        ProcessorChainThread thread = null;
+        pbcorer.setChildElement(analyser);
+        ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);
             request.setShard(Files.loadString(file));

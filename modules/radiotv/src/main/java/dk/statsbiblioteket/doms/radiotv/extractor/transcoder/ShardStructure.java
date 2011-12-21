@@ -67,7 +67,7 @@ public class ShardStructure {
     }
 
     public static class Hole {
-         private String filePath1;
+        private String filePath1;
         private String filePath2;
         private long holeLength;
 
@@ -94,6 +94,15 @@ public class ShardStructure {
         public void setFilePath2(String filePath2) {
             this.filePath2 = filePath2;
         }
+
+        @Override
+        public String toString() {
+            return "Hole{" +
+                    "filePath1='" + filePath1 + '\'' +
+                    ", filePath2='" + filePath2 + '\'' +
+                    ", holeLength=" + holeLength +
+                    '}';
+        }
     }
 
 
@@ -101,6 +110,15 @@ public class ShardStructure {
         private String filePath1;
         private String filePath2;
         private int overlapType;
+        private long overlapLength;
+
+        public long getOverlapLength() {
+            return overlapLength;
+        }
+
+        public void setOverlapLength(long overlapLength) {
+            this.overlapLength = overlapLength;
+        }
 
         public String getFilePath1() {
             return filePath1;
@@ -136,7 +154,25 @@ public class ShardStructure {
         public void setFilePath2(String filePath2) {
             this.filePath2 = filePath2;
         }
+
+        @Override
+        public String toString() {
+            return "Overlap{" +
+                    "filePath1='" + filePath1 + '\'' +
+                    ", filePath2='" + filePath2 + '\'' +
+                    ", overlapType=" + overlapType +
+                    ", overlapLength=" + overlapLength +
+                    '}';
+        }
     }
 
-
+    @Override
+    public String toString() {
+        return "ShardStructure{" +
+                "missingStart=" + missingStart +
+                ", missingEnd=" + missingEnd +
+                ", holes=" + holes +
+                ", overlaps=" + overlaps +
+                '}';
+    }
 }
