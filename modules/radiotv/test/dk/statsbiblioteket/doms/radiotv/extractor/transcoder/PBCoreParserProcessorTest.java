@@ -40,5 +40,17 @@ public class PBCoreParserProcessorTest extends TestCase {
         TranscodeRequest request = new TranscodeRequest("foobar");
         processor.parsePBCore(request, pbcore);
     }
-
+      public void testXPathsNamespace() throws ProcessorException {
+        PBCoreParserProcessor processor = new PBCoreParserProcessor();
+        String pbcore = "<namespace:PBCoreDescriptionDocument xmlns:namespace=\"http://www.pbcore.org/PBCore/PBCoreNamespace.html\">" +
+                "<namespace:pbcoreInstantiation>" +
+                " <namespace:pbcoreDateAvailable>" +
+                "<namespace:dateAvailableStart>2008-05-12T09:00:00+0200</namespace:dateAvailableStart>" +
+                "<namespace:dateAvailableEnd>2008-05-12T09:07:00+0200</namespace:dateAvailableEnd>" +
+                 " </namespace:pbcoreDateAvailable>" +
+                "</namespace:pbcoreInstantiation>" +
+                "</namespace:PBCoreDescriptionDocument>";
+        TranscodeRequest request = new TranscodeRequest("foobar");
+        processor.parsePBCore(request, pbcore);
+    }
 }

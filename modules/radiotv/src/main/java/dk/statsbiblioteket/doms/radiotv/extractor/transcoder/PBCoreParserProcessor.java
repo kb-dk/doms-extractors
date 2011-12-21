@@ -7,13 +7,17 @@ import dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier.BroadcastExtr
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -29,6 +33,28 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
 
     private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
+    private String pbcoreNamespace = "http://www.pbcore.org/PBCore/PBCoreNamespace.html";
+
+    public static class PBCoreNamespaceResolver implements NamespaceContext {
+
+        @Override
+        public String getNamespaceURI(String prefix) {
+            if (prefix.equals("pbcore")) return  "http://www.pbcore.org/PBCore/PBCoreNamespace.html";
+            else   return XMLConstants.NULL_NS_URI;
+        }
+
+        @Override
+        public String getPrefix(String namespaceURI) {
+            throw new RuntimeException("Not yet implemented");
+
+        }
+
+        @Override
+        public Iterator getPrefixes(String namespaceURI) {
+            throw new RuntimeException("Not yet implemented");
+
+        }
+    }
 
     SimpleDateFormat domsDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSZ");
 
@@ -42,6 +68,7 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
 
     void parsePBCore(TranscodeRequest request, String pbcore) throws ProcessorException {
         org.w3c.dom.Document pbcoreDocument = null;
+        dbf.setNamespaceAware(true);
         try {
             DocumentBuilder builder = dbf.newDocumentBuilder();
             ByteArrayInputStream is = new ByteArrayInputStream(pbcore.getBytes());
@@ -53,8 +80,10 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         Long programStartTime;
         Long programEndTime;
         try {
-            String programStartString = (String) xpathFactory.newXPath().evaluate("//dateAvailableStart", pbcoreDocument, XPathConstants.STRING);
-            String programEndString = (String) xpathFactory.newXPath().evaluate("//dateAvailableEnd", pbcoreDocument, XPathConstants.STRING);
+            final XPath xPath = xpathFactory.newXPath();
+            xPath.setNamespaceContext(new PBCoreNamespaceResolver());
+            String programStartString = (String) xPath.evaluate("//pbcore:dateAvailableStart", pbcoreDocument, XPathConstants.STRING);
+            String programEndString = (String) xPath.evaluate("//pbcore:dateAvailableEnd", pbcoreDocument, XPathConstants.STRING);
             log.debug("Found start time '" + programStartString + "'");
             log.debug("Found end time '" + programEndString + "'");
             programStartTime = domsDateFormat.parse(programStartString).getTime();
