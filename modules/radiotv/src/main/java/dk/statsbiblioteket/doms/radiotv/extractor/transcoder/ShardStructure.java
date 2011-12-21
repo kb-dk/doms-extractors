@@ -67,6 +67,13 @@ public class ShardStructure {
         public void setMissingSeconds(int missingSeconds) {
             this.missingSeconds = missingSeconds;
         }
+
+        @Override
+        public String toString() {
+            return "MissingStart{" +
+                    "missingSeconds=" + missingSeconds +
+                    '}';
+        }
     }
 
 
@@ -79,6 +86,13 @@ public class ShardStructure {
 
         public void setMissingSeconds(int missingSeconds) {
             this.missingSeconds = missingSeconds;
+        }
+
+        @Override
+        public String toString() {
+            return "MissingEnd{" +
+                    "missingSeconds=" + missingSeconds +
+                    '}';
         }
     }
 
