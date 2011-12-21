@@ -36,6 +36,41 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         String pbcore = null;
         CentralWebservice domsAPI = DomsClient.getDOMSApiInstance(config);
+        pbcore = getPBCore(request, pbcore, domsAPI);
+        parsePBCore(request, pbcore);
+    }
+
+    void parsePBCore(TranscodeRequest request, String pbcore) throws ProcessorException {
+        org.w3c.dom.Document pbcoreDocument = null;
+        try {
+            DocumentBuilder builder = dbf.newDocumentBuilder();
+            ByteArrayInputStream is = new ByteArrayInputStream(pbcore.getBytes());
+            pbcoreDocument = builder.parse(is);
+        } catch (Exception e) {
+            throw new ProcessorException(e);
+        }
+        XPathFactory xpathFactory = XPathFactory.newInstance();
+        Long programStartTime;
+        Long programEndTime;
+        try {
+            String programStartString = (String) xpathFactory.newXPath().evaluate("//dateAvailableStart", pbcoreDocument, XPathConstants.STRING);
+            String programEndString = (String) xpathFactory.newXPath().evaluate("//dateAvailableEnd", pbcoreDocument, XPathConstants.STRING);
+            log.debug("Found start time '" + programStartString + "'");
+            log.debug("Found en time '" + programEndString + "'");
+            programStartTime = domsDateFormat.parse(programStartString).getTime();
+            programEndTime = domsDateFormat.parse(programEndString).getTime();
+        } catch (Exception e) {
+            throw new ProcessorException(e);
+        }
+        request.setProgramStartTime(programStartTime);
+        request.setProgramEndTime(programEndTime);
+        Date startDate = new Date(); startDate.setTime(programStartTime);
+        Date endDate = new Date(); endDate.setTime(programEndTime);
+        log.debug("Identified start time '" + programStartTime + "(" + startDate + ")");
+        log.debug("Identified end time '" + programEndTime + "(" + endDate + ")");
+    }
+
+    private String getPBCore(TranscodeRequest request, String pbcore, CentralWebservice domsAPI) throws ProcessorException {
         try {
             final String domsPid = "uuid:" + request.getPid();
             List<Relation> relations = domsAPI.getInverseRelations(domsPid);
@@ -55,28 +90,6 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         } catch (Exception e) {
             throw new ProcessorException(e);
         }
-        org.w3c.dom.Document pbcoreDocument = null;
-        try {
-            DocumentBuilder builder = dbf.newDocumentBuilder();
-            ByteArrayInputStream is = new ByteArrayInputStream(pbcore.getBytes());
-            pbcoreDocument = builder.parse(is);
-        } catch (Exception e) {
-            throw new ProcessorException(e);
-        }
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-        Long programStartTime;
-        Long programEndTime;
-        try {
-            String programStartString = (String) xpathFactory.newXPath().evaluate("dateAvailableStart", pbcoreDocument, XPathConstants.STRING);
-            String programEndString = (String) xpathFactory.newXPath().evaluate("dateAvailableEnd", pbcoreDocument, XPathConstants.STRING);
-            programStartTime = domsDateFormat.parse(programStartString).getTime();
-            programEndTime = domsDateFormat.parse(programEndString).getTime();
-        } catch (Exception e) {
-            throw new ProcessorException(e);
-        }
-        request.setProgramStartTime(programStartTime);
-        request.setProgramEndTime(programEndTime);
-        log.debug("Identified start time '" + programStartTime);
-        log.debug("Identified end time '" + programEndTime);
+        return pbcore;
     }
 }
