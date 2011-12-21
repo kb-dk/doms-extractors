@@ -97,7 +97,7 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
      *
      */
     Pattern muxPattern = Pattern.compile("mux.*[.]([0-9]*)-.*_([0-9]*)-.*_.*");
-    Pattern bartPattern = Pattern.compile(".*([0-9]{14})_([0-9]{14}_.*)");
+    Pattern bartPattern = Pattern.compile(".*([0-9]{14})_([0-9]{14})_.*");
     SimpleDateFormat bartDateFormat = new SimpleDateFormat("yyyyMMddHHmmSS");
     private void findStartStopTimes(TranscodeRequest.FileClip clip, TranscodeRequest request) throws ProcessorException {
         String fileName = (new File(clip.getFilepath())).getName();
