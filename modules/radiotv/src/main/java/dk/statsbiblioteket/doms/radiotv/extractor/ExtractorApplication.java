@@ -251,7 +251,7 @@ public class ExtractorApplication {
         ProcessorChainElement outputter = new ShardAnalysisOutputProcessor();
         parser.setChildElement(pbcorer);
         pbcorer.setChildElement(analyser);
-        pbcorer.setChildElement(outputter);
+        analyser.setChildElement(outputter);
         ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);

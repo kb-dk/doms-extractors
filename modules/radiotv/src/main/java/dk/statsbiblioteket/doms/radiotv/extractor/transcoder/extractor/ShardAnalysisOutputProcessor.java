@@ -37,7 +37,7 @@ public class ShardAnalysisOutputProcessor extends ProcessorChainElement {
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         if (request.getStructure().isNonTrivial()) {
-             File outputDir = OutputFileUtil.getOutputDir(request, config);
+            File outputDir = OutputFileUtil.getOutputDir(request, config);
             File outputFile = new File(outputDir, request.getPid()+".txt");
             FileWriter writer;
             try {
