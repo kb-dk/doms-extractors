@@ -259,7 +259,7 @@ public class ExtractorApplication {
         } else {
             ProcessorChainElement fetcher = new ShardFetcherProcessor();
             fetcher.setChildElement(parser);
-            request.setPid(arg);
+            request.setPid(arg.replaceAll("uuid:",""));
             thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
         }
         ProcessorChainThreadPool.addProcessorChainThread(thread);
