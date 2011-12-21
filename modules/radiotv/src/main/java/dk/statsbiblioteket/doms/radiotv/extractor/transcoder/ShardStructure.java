@@ -19,7 +19,7 @@ public class ShardStructure {
     }
 
     public boolean isNonTrivial() {
-        return missingEnd != null || missingEnd != null || !holes.isEmpty() || !overlaps.isEmpty();
+        return missingEnd != null || missingStart != null || !holes.isEmpty() || !overlaps.isEmpty();
     }
 
     public MissingStart getMissingStart() {
