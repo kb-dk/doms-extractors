@@ -37,11 +37,18 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         String pbcore = null;
         CentralWebservice domsAPI = DomsClient.getDOMSApiInstance(config);
         try {
-            List<Relation> relations = domsAPI.getInverseRelations(request.getPid());
+            final String domsPid = "uuid:" + request.getPid();
+            List<Relation> relations = domsAPI.getInverseRelations(domsPid);
+            if (relations == null || relations.isEmpty()) {
+                throw new ProcessorException("Found no inverse relations for '" + domsPid + "'");
+            }
             for (Relation relation: relations) {
                 if (relation.getPredicate().equals("http://doms.statsbiblioteket.dk/relations/default/0/1/#hasShard")) {
                     String programPid = relation.getSubject();
                     pbcore = domsAPI.getDatastreamContents(programPid, "PBCORE");
+                    if (pbcore == null) {
+                        throw new ProcessorException("Returned null PBCORE data for '" + programPid + "'");
+                    }
                     log.debug(pbcore);
                 }
             }
