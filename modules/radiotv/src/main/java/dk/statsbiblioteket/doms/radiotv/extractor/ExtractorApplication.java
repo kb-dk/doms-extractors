@@ -75,9 +75,9 @@ public class ExtractorApplication {
             } else if (s.equals(Constants.AUDIO_BITRATE)) {
                 return "96";
             } else if (s.equals(Constants.DOMS_USERNAME)) {
-                return "fedoraAdmin";
+                return "fedoraReadOnlyAdmin";
             } else if (s.equals(Constants.DOMS_PASSWORD)) {
-                return "fedoraAdminPass";
+                return "fedoraReadOnlyPass";
             } else if (s.equals(Constants.DOMS_LOCATION)) {
                 return "http://alhena:7880/fedora";
             } else if (s.equals(Constants.MAX_ACTIVE_PROCESSING)) {

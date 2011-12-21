@@ -15,8 +15,8 @@ ssh larm@iapetus rm -r bes
 ssh larm@iapetus mkdir bes
 ssh larm@iapetus mkdir bes/bin
 ssh larm@iapetus mkdir bes/config
-scp src/main/scripts/extractor.sh larm@iapetus:bes/bin
-scp src/main/scripts/updater.sh larm@iapetus:bes/bin
+scp src/main/scripts/*.sh larm@iapetus:bes/bin
+#scp src/main/scripts/updater.sh larm@iapetus:bes/bin
 scp src/main/resources/* larm@iapetus:bes/config
 scp -r etc/DEVEL/updater larm@iapetus:bes/updater
 ssh larm@iapetus chmod 755 bes/bin/*
