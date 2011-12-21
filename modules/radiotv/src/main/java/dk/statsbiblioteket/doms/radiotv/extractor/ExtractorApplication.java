@@ -127,6 +127,7 @@ public class ExtractorApplication {
      */
     public static void main(String[] args) throws IOException, ProcessorException {
         log.info("Starting extraction");
+        DomsClient.getDOMSApiInstance(config);
         ServiceTypeEnum service = null;
         for (String arg: args) {
             arg = arg.trim();
