@@ -1,17 +1,43 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This class represents the structure of a shard as determined by the shard analyser
  */
+@XmlRootElement
 public class ShardStructure {
 
+
     private MissingStart missingStart;
+
+
     private MissingEnd missingEnd;
+
+
     private List<Hole> holes;
     private List<Overlap> overlaps;
+    private String shard;
+
+    public String getShard() {
+        return shard;
+    }
+
+    public void setShard(String shard) {
+        this.shard = shard;
+    }
 
     public ShardStructure() {
         holes = new ArrayList<Hole>();
@@ -22,6 +48,7 @@ public class ShardStructure {
         return missingEnd != null || missingStart != null || !holes.isEmpty() || !overlaps.isEmpty();
     }
 
+    @XmlElement
     public MissingStart getMissingStart() {
         return missingStart;
     }
@@ -30,14 +57,19 @@ public class ShardStructure {
         this.missingStart = missingStart;
     }
 
+      @XmlElementWrapper
+    @XmlElement(name = "hole")
     public List<Hole> getHoles() {
         return holes;
     }
 
+    @XmlElementWrapper
+    @XmlElement(name = "overlap")
     public List<Overlap> getOverlaps() {
         return overlaps;
     }
 
+    @XmlElement
     public MissingEnd getMissingEnd() {
         return missingEnd;
     }
@@ -54,7 +86,6 @@ public class ShardStructure {
     public void addOverlap(Overlap overlap) {
         overlaps.add(overlap);
     }
-
 
 
     public static class MissingStart {
@@ -75,7 +106,6 @@ public class ShardStructure {
                     '}';
         }
     }
-
 
     public static class MissingEnd {
           private int missingSeconds;
@@ -134,7 +164,6 @@ public class ShardStructure {
                     '}';
         }
     }
-
 
     public static class Overlap {
         private String filePath1;
@@ -196,6 +225,7 @@ public class ShardStructure {
         }
     }
 
+
     @Override
     public String toString() {
         return "ShardStructure{" +
@@ -203,6 +233,26 @@ public class ShardStructure {
                 ", missingEnd=" + missingEnd +
                 ", holes=" + holes +
                 ", overlaps=" + overlaps +
+                ",\n shard='" + shard + '\'' + "\n" +
                 '}';
     }
+
+    private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    /**
+     * get an XML representation of this object
+     * @return
+     */
+    public Document getXml() throws ProcessorException, ParserConfigurationException {
+        DocumentBuilder builder = dbf.newDocumentBuilder();
+        Document doc = builder.newDocument();
+        Node n1 = doc.createElement("shard_structure");
+        doc.appendChild(n1);
+        if (missingStart != null) {
+            Node missingStartNode = doc.createElement("missing_start");
+            missingStartNode.setTextContent(missingStart.getMissingSeconds()+"");
+            n1.appendChild(missingStartNode);
+        }
+        return doc;
+    }
+
 }
