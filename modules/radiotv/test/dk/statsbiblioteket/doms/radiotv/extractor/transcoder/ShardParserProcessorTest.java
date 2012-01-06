@@ -30,7 +30,7 @@ import java.util.Enumeration;
 
 public class ShardParserProcessorTest extends TestCase {
 
-    private String xml1 = "<shard_metadata><file>\n" +
+    public static String xml1 = "<shard_metadata><file>\n" +
             "\n" +
             "     <file_url>http://bitfinder.statsbiblioteket.dk/bart/mux1.1258135200-2009-11-13-19.00.00_1258138800-2009-11-13-20.00.00_dvb1-2.ts</file_url>\n" +
             "     <channel_id>102</channel_id>\n" +
@@ -49,7 +49,7 @@ public class ShardParserProcessorTest extends TestCase {
             "     <format_uri>info:pronom/x-fmt/386</format_uri>\n" +
             "     </file></shard_metadata>";
 
-    private String xml2 = ""+
+    public String xml2 = ""+
     "<shard_metadata>" +
      " <file>        " +
       "  <file_url>http://bitfinder.statsbiblioteket.dk/bart/mux2.1270940400-2010-04-11-01.00.00_1270944000-2010-04-11-02.00.00_dvb1-2.ts</file_url>      " +

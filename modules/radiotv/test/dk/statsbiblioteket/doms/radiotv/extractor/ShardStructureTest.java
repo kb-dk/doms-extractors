@@ -10,7 +10,10 @@ import org.w3c.dom.ls.LSSerializer;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -38,16 +41,28 @@ public class ShardStructureTest extends TestCase {
     }
 
 
-    public void testMarshall() throws JAXBException {
-         ShardStructure structure = new ShardStructure();
+    public void testMarshall() throws JAXBException, IOException {
+        ShardStructure structure = new ShardStructure();
         ShardStructure.MissingStart ms = new ShardStructure.MissingStart();
         ms.setMissingSeconds(101);
         structure.setMissingStart(ms);
+        ShardStructure.Hole hole = new ShardStructure.Hole();
+        hole.setFilePath1("file1");
+        hole.setFilePath2("file2");
+        hole.setHoleLength(1010L);
+        structure.addHole(hole);
         JAXBContext context = JAXBContext.newInstance(ShardStructure.class);
         Marshaller m = context.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		m.marshal(structure, System.out);
-        Writer w = new PrintWriter(System.out);
+        context.generateSchema(new SchemaOutputResolver() {
+            @Override
+            public Result createOutput(String namespaceUri, String suggestedFileName) throws IOException {
+                Result result = new StreamResult(System.out);
+                result.setSystemId("");
+                return result;
+            }
+        });
     }
 
 }

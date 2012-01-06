@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * This class represents the structure of a shard as determined by the shard analyser
  */
-@XmlRootElement
+@XmlRootElement(name = "shard_structure")
 public class ShardStructure {
 
 
@@ -29,8 +29,11 @@ public class ShardStructure {
 
     private List<Hole> holes;
     private List<Overlap> overlaps;
+
+    @XmlTransient
     private String shard;
 
+    @XmlTransient
     public String getShard() {
         return shard;
     }
@@ -48,7 +51,7 @@ public class ShardStructure {
         return missingEnd != null || missingStart != null || !holes.isEmpty() || !overlaps.isEmpty();
     }
 
-    @XmlElement
+    @XmlElement(required = false)
     public MissingStart getMissingStart() {
         return missingStart;
     }
@@ -57,19 +60,19 @@ public class ShardStructure {
         this.missingStart = missingStart;
     }
 
-      @XmlElementWrapper
+    @XmlElementWrapper(required = true)
     @XmlElement(name = "hole")
     public List<Hole> getHoles() {
         return holes;
     }
 
-    @XmlElementWrapper
+    @XmlElementWrapper(required = true)
     @XmlElement(name = "overlap")
     public List<Overlap> getOverlaps() {
         return overlaps;
     }
 
-    @XmlElement
+    @XmlElement(required = false)
     public MissingEnd getMissingEnd() {
         return missingEnd;
     }

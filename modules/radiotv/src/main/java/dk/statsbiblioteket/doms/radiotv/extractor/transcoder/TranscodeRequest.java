@@ -231,6 +231,14 @@ public class TranscodeRequest {
         return pid;
     }
 
+    public String getUuid() {
+        if (pid.startsWith("uuid:")) {
+            return pid;
+        } else {
+            return "uuid:" + pid;
+        }
+    }
+
     public void setPid(String pid) {
         this.pid = pid;
     }
