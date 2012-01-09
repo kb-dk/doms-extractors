@@ -23,8 +23,9 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
-import com.sun.javaws.exceptions.ExitException;
 import junit.framework.TestCase;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.xml.bind.*;
 import javax.xml.transform.Result;
@@ -112,7 +113,7 @@ private static class ExitTrappedException extends SecurityException { }
 
 
 
-
+    @Test
     public void testRemarshall() throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(ShardMetadata.class);
         Unmarshaller um = context.createUnmarshaller();
@@ -130,6 +131,7 @@ private static class ExitTrappedException extends SecurityException { }
 		m.marshal(sm, System.out);
     }
 
+    //@Ignore
     public void testGetSchema() throws JAXBException, IOException {
            //forbidSystemExitCall();
            JAXBContext context = JAXBContext.newInstance(ShardMetadata.class);

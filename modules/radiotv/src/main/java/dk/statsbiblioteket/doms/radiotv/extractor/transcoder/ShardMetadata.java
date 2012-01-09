@@ -23,6 +23,8 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -55,17 +57,34 @@ public class ShardMetadata {
         this.shardStructure = shardStructure;
     }
 
-    @XmlType(propOrder = {"file_url", "channel_id", "program_start_offset", "program_clip_length", "file_name", "format_uri"})
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(propOrder = {"file_url",
+            "channel_id",
+            "program_start_offset",
+            "program_clip_length"
+            , "file_name",
+            "format_uri"})
     public static class ShardFile{
-        private String file_url;
-        private Long program_start_offset;
-        private Long program_clip_length;
-        private String file_name;
-        private String format_uri;
-
-        private int channel_id;
 
         @XmlElement(required = true)
+        private String file_url;
+
+        @XmlElement(required = false)
+        private Long program_start_offset;
+
+        @XmlElement(required = false)
+        private Long program_clip_length;
+
+        @XmlElement(required = true)
+        private String file_name;
+
+        @XmlElement(required = true)
+        private String format_uri;
+
+        @XmlElement(required = false)
+        private Integer channel_id;
+
+
         public String getFile_url() {
             return file_url;
         }
@@ -74,16 +93,16 @@ public class ShardMetadata {
             this.file_url = file_url;
         }
 
-        @XmlElement(required = false)
-        public int getChannel_id() {
+
+        public Integer getChannel_id() {
             return channel_id;
         }
 
-        public void setChannel_id(int channel_id) {
+        public void setChannel_id(Integer channel_id) {
             this.channel_id = channel_id;
         }
 
-        @XmlElement(required = false)
+
         public Long getProgram_start_offset() {
             return program_start_offset;
         }
@@ -92,7 +111,7 @@ public class ShardMetadata {
             this.program_start_offset = program_start_offset;
         }
 
-        @XmlElement(required = false)
+
         public Long getProgram_clip_length() {
             return program_clip_length;
         }
@@ -101,7 +120,7 @@ public class ShardMetadata {
             this.program_clip_length = program_clip_length;
         }
 
-        @XmlElement(required = true)
+
         public String getFile_name() {
             return file_name;
         }
@@ -110,7 +129,7 @@ public class ShardMetadata {
             this.file_name = file_name;
         }
 
-        @XmlElement(required = true)
+
         public String getFormat_uri() {
             return format_uri;
         }
