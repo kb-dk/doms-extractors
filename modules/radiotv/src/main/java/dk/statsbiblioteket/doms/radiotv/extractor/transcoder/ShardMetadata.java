@@ -26,6 +26,7 @@ package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
 @XmlRootElement(name= "shard_metadata")
@@ -54,6 +55,7 @@ public class ShardMetadata {
         this.shardStructure = shardStructure;
     }
 
+    @XmlType(propOrder = {"file_url", "channel_id", "program_start_offset", "program_clip_length", "file_name", "format_uri"})
     public static class ShardFile{
         private String file_url;
         private Long program_start_offset;

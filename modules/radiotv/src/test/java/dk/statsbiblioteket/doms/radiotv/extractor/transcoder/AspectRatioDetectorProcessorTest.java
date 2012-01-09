@@ -1,7 +1,7 @@
-/* $Id$
- * $Revision$
- * $Date$
- * $Author$
+/* $Id: AspectRatioDetectorProcessorTest.java 1720 2011-03-08 12:21:37Z csrster $
+ * $Revision: 1720 $
+ * $Date: 2011-03-08 13:21:37 +0100 (Tue, 08 Mar 2011) $
+ * $Author: csrster $
  *
  * The Netarchive Suite - Software to harvest and preserve websites
  * Copyright 2004-2009 Det Kongelige Bibliotek and Statsbiblioteket, Denmark

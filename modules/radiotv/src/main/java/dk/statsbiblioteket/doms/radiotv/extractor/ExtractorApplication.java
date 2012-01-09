@@ -21,11 +21,14 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
+import com.sun.grizzly.tcp.Processor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalyserProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalysisOutputProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardEnricherProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardFixerProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewGeneratorDispatcherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotGeneratorDispatcherProcessor;
@@ -77,9 +80,9 @@ public class ExtractorApplication {
             } else if (s.equals(Constants.AUDIO_BITRATE)) {
                 return "96";
             } else if (s.equals(Constants.DOMS_USERNAME)) {
-                return "fedoraReadOnlyAdmin";
+                return "fedoraAdmin";
             } else if (s.equals(Constants.DOMS_PASSWORD)) {
-                return "fedoraReadOnlyPass";
+                return "fedoraAdminPass";
             } else if (s.equals(Constants.DOMS_LOCATION)) {
                 return "http://alhena:7880/fedora";
             } else if (s.equals(Constants.MAX_ACTIVE_PROCESSING)) {
@@ -249,9 +252,13 @@ public class ExtractorApplication {
         ProcessorChainElement pbcorer = new PBCoreParserProcessor();
         ProcessorChainElement analyser = new ShardAnalyserProcessor();
         ProcessorChainElement outputter = new ShardAnalysisOutputProcessor();
+        ProcessorChainElement fixer = new ShardFixerProcessor();
+        ProcessorChainElement enricher = new ShardEnricherProcessor();
         parser.setChildElement(pbcorer);
         pbcorer.setChildElement(analyser);
         analyser.setChildElement(outputter);
+        outputter.setChildElement(fixer);
+        fixer.setChildElement(enricher);
         ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);

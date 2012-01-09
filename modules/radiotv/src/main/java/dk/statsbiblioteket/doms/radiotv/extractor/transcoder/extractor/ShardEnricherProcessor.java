@@ -29,13 +29,18 @@ import dk.statsbiblioteket.doms.central.InvalidResourceException;
 import dk.statsbiblioteket.doms.central.MethodFailedException;
 import dk.statsbiblioteket.doms.radiotv.extractor.DomsClient;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.xml.bind.*;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ShardEnricherProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(ShardEnricherProcessor.class);
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -77,10 +82,20 @@ public class ShardEnricherProcessor extends ProcessorChainElement {
             throw new ProcessorException(e);
         }
         CentralWebservice domsAPI = DomsClient.getDOMSApiInstance(config);
+        final String uuid = request.getUuid();
+        List<String> pids = new ArrayList<String>();
+        pids.add(uuid);
         try {
-            domsAPI.modifyDatastream(request.getUuid(), "SHARD_METADATA", writer.getBuffer().toString(), "Added output from shard analysis" );
+            domsAPI.markInProgressObject(pids, "Enriching shard content with result of shard analysis");
+            domsAPI.modifyDatastream(uuid, "SHARD_METADATA", writer.getBuffer().toString(), "Added output from shard analysis");
         } catch (Exception e) {
             throw new ProcessorException(e);
+        } finally {
+            try {
+                domsAPI.markPublishedObject(pids, "Finished enriching conetnt with result of shard analysis");
+            } catch (Exception e) {
+                log.error("Error republishing DOMS object '" + uuid + "'", e);
+            }
         }
     }
 }

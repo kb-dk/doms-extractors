@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-    	<groupId>dk.statsbiblioteket.sbprojects</groupId>
-    	<artifactId>sbprojects-parent</artifactId>
-    	<version>2</version>
-  	</parent>
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>DOMS_project</groupId>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>dk.statsbiblioteket.sbprojects</groupId>
+        <artifactId>sbprojects-parent</artifactId>
+        <version>2</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>DOMS_project</groupId>
     <artifactId>BroadcastExtractionService</artifactId>
     <version>1.4.4</version>
     <packaging>war</packaging>
@@ -15,17 +15,17 @@
         datastorage
     </description>
     <repositories>
-		<!-- repository>
-          <id>sbforge-nexus</id>
-          <url>https://sbforge.org/nexus/content/groups/public</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
-        </repository -->
-		<repository>
-          <id>sbprojects-nexus</id>
-          <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
+        <!-- repository>
+         <id>sbforge-nexus</id>
+         <url>https://sbforge.org/nexus/content/groups/public</url>
+         <releases><enabled>true</enabled></releases>
+         <snapshots><enabled>true</enabled></snapshots>
+       </repository -->
+        <repository>
+            <id>sbprojects-nexus</id>
+            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
     <dependencies>
@@ -33,12 +33,12 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <version>1.2.16</version>
-        </dependency>        
+        </dependency>
         <dependency>
-          <groupId>dk.statsbiblioteket.sbutil</groupId>
-          <artifactId>sbutil</artifactId>
-          <version>0.5.1</version>
-        </dependency>        
+            <groupId>dk.statsbiblioteket.sbutil</groupId>
+            <artifactId>sbutil</artifactId>
+            <version>0.5.5</version>
+        </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
@@ -73,11 +73,11 @@
             <scope>provided</scope>
         </dependency> -->
         <dependency>
-           <groupId>javax.servlet</groupId>
-           <artifactId>servlet-api</artifactId>
-           <version>2.5</version>
-           <scope>provided</scope>
-         </dependency>        
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
@@ -101,12 +101,17 @@
             <groupId>org.springframework.webflow</groupId>
             <artifactId>spring-webflow</artifactId>
             <version>2.3.0.RELEASE</version>
-        </dependency>        
-		<dependency>
-			<groupId>dk.statsbiblioteket.doms.central</groupId>
-			<artifactId>centralWebservice-interface</artifactId>
-			<version>0.0.23</version>
-		</dependency>
+        </dependency>
+        <dependency>
+            <groupId>dk.statsbiblioteket.doms.central</groupId>
+            <artifactId>centralWebservice-interface</artifactId>
+            <version>0.0.23</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>2.1.7</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -127,13 +132,13 @@
                     <archiveClasses>true</archiveClasses>
                     <archive>
                         <manifest>
-                            <addClasspath>true</addClasspath>                            
+                            <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
                     <webXml>web/WEB-INF/web.xml</webXml>
                     <!--<containerConfigXML>etc/context.xml</containerConfigXML>-->
                 </configuration>
             </plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 </project>

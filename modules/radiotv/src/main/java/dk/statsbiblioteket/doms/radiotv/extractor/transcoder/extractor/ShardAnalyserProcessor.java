@@ -60,17 +60,19 @@ public class ShardAnalyserProcessor extends ProcessorChainElement{
                 final long holeLength = clip2.getFileStartTime() - clip1.getFileEndTime();
                 log.debug("Hole length = " + clip2.getFileStartTime() + " - " + clip1.getFileEndTime() + " = " + holeLength);
                 final long overlapLength = 0 - holeLength;
+                String filename1 = (new File(clip1.getFilepath())).getName();
+                String filename2 = (new File(clip2.getFilepath())).getName();
                 if (holeLength > gapToleranceSeconds*1000L) {
                      ShardStructure.Hole hole = new ShardStructure.Hole();
-                     hole.setFilePath1(clip1.getFilepath());
-                     hole.setFilePath2(clip2.getFilepath());
+                     hole.setFilePath1(filename1);
+                     hole.setFilePath2(filename2);
                      hole.setHoleLength(holeLength/1000);
                      request.getStructure().addHole(hole);
                  }  else
                      if (overlapLength > gapToleranceSeconds*1000L) {
                          ShardStructure.Overlap overlap = new ShardStructure.Overlap();
-                         overlap.setFilePath1(clip1.getFilepath());
-                         overlap.setFilePath2(clip2.getFilepath());
+                         overlap.setFilePath1(filename1);
+                         overlap.setFilePath2(filename2);
                          int overlapType = 0;
                          overlap.setOverlapLength(overlapLength/1000);
                          if (request.getProgramStartTime()<clip2.getFileStartTime() && request.getProgramEndTime()>clip1.getFileEndTime()) {

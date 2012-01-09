@@ -81,7 +81,9 @@ public class DomsClient {
 				
 				//throw new IllegalArgumentException("The pid is expected to start with \"uuid:\"");
 			//}
-			return domsAPI.getDatastreamContents("uuid:" + pid, datastream);
+            final String pid1 = "uuid:" + pid;
+            log.debug("Fetching '" + pid + "'/" + datastream );
+            return domsAPI.getDatastreamContents(pid1, datastream);
 		} catch (InvalidCredentialsException e) {
 			throw new RuntimeException("Wrong credentials in property file.", e);
 		} catch (InvalidResourceException e) {
