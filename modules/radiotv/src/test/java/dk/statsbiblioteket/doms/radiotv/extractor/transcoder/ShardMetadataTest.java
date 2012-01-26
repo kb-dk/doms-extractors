@@ -48,7 +48,7 @@ public class ShardMetadataTest extends TestCase {
         ArrayList<ShardMetadata.ShardFile> sfs = new ArrayList<ShardMetadata.ShardFile>();
         sfs.add(sf1);
         sm.setShardFiles(sfs);
-         JAXBContext context = JAXBContext.newInstance(ShardMetadata.class);
+        JAXBContext context = JAXBContext.newInstance(ShardMetadata.class);
         Marshaller m = context.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		m.marshal(sm, System.out);

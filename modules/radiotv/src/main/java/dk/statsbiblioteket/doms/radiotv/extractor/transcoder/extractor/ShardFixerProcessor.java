@@ -1,10 +1,12 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ClipTypeEnum;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ShardStructure;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.Util;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -17,27 +19,27 @@ import java.io.File;
  */
 public class ShardFixerProcessor extends ProcessorChainElement {
 
-    private static final int MAX_HOLE_SIZE = 120;
 
     private static Logger log = Logger.getLogger(ShardFixerProcessor.class);
 
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        int maxHoleSize = Integer.parseInt(Util.getInitParameter(config, Constants.MAXIMUM_HOLE_SIZE_SECONDS));
         final ShardStructure structure = request.getStructure();
         if (structure.isNonTrivial()) {
             if (structure.getMissingEnd() != null) {
-                  throw new ProcessorException("Could not transcode '" + request.getPid() + "': missing end");
+                log.warn("Transcoding '" + request.getPid() + " despite missing end.");
             }
             if (structure.getMissingStart() != null) {
-                throw new ProcessorException("Could not transcode '" + request.getPid() + "': missing start");
+                 log.warn("Transcoding '" + request.getPid() + " despite missing start.");
             }
             if (!(structure.getHoles() == null) && !structure.getHoles().isEmpty()) {
                 for ( ShardStructure.Hole hole: structure.getHoles()) {
-                    if (hole.getHoleLength() > MAX_HOLE_SIZE) {
-                        throw new ProcessorException("Could not transcode '" + request.getPid() +
-                                "': hole of length '" + hole.getHoleLength() + "' seconds is greater than maximum " +
-                                "tolerated value '" + MAX_HOLE_SIZE + "'");
+                    if (hole.getHoleLength() > maxHoleSize) {
+                        log.warn("Transcoding '" + request.getPid() +
+                                "' despite hole of length '" + hole.getHoleLength() + "' seconds, which is greater than maximum " +
+                                "tolerated value '" + maxHoleSize + "'");
                     }
                 }
             }

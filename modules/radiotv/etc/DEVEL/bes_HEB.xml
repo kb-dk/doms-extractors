@@ -85,4 +85,7 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="40" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
+
+     <!-- The maximum allowable hole in a program such that we still transcode it -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
 </Context>

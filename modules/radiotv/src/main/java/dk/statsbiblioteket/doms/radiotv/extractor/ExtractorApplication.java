@@ -37,8 +37,11 @@ import dk.statsbiblioteket.util.Files;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.xml.bind.JAXBException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
@@ -46,8 +49,9 @@ import org.apache.log4j.Logger;
 public class ExtractorApplication {
 
     private static Logger log = Logger.getLogger(ExtractorApplication.class);
+     public static ServletConfig config =null;
 
-    public static ServletConfig config = new ServletConfig() {
+   /* public static ServletConfig config = new ServletConfig() {
         @Override
         public String getServletName() {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
@@ -113,6 +117,10 @@ public class ExtractorApplication {
                 return "http://alhena:7880/centralWebservice-service/central/";
             } else if (s.equals(Constants.ANALYSIS_DIRECTORY)) {
                 return "/home/larm/analysis";
+            } else if (s.equals(Constants.START_OFFSET_DIGITV)){
+                return "-20";
+            } else if (s.equals(Constants.END_OFFSET_DIGITV)) {
+                return "20";
             }
 
 
@@ -124,7 +132,7 @@ public class ExtractorApplication {
             return null;  //To change body of implemented methods use File | Settings | File Templates.
         }
     };
-
+*/
 
     /**
      * Command line argument to test extraction of programs
@@ -132,7 +140,11 @@ public class ExtractorApplication {
      * args[1...n] a list of uuid's of programs to fetch or .xml files containing shard data
      *
      */
-    public static void main(String[] args) throws IOException, ProcessorException {
+    public static void main(String[] args) throws IOException, ProcessorException, JAXBException {
+        String configFile = System.getProperty("config");
+        log.info("Reading config from " + configFile);
+        InputStream is = new FileInputStream(configFile);
+        config = new FileBasedServletConfig(is);
         log.info("Starting extraction");
         DomsClient.getDOMSApiInstance(config);
         ServiceTypeEnum service = null;

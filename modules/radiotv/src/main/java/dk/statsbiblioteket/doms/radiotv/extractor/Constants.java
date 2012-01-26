@@ -96,7 +96,7 @@ public class Constants {
      *
      */
     public static final String ANALYSIS_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.analysisDirectory";
-
+    public static final String MAXIMUM_HOLE_SIZE_SECONDS = "dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize";
 
 
 }

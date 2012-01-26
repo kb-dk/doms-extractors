@@ -3,10 +3,10 @@
 
     <Parameter name="log4jConfigLocation" value="../../../etc/log4j.CSR.xml"
              override="false"/>
-    
+
 <Parameter name="log4jExposeWebAppRoot" value="false" override="false" />
 
-    
+
 
          <Parameter name="log4jConfigLocation" value="../../../etc/log4j.CSR.xml"
              override="false"/>
@@ -56,6 +56,7 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="4" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint" value="http://alhena:7880/centralWebservice-service/central/" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraAdmin" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraAdminPass" />
 
@@ -85,6 +86,18 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/>
     <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.threadWait" value="300000"/>
+    <!-- The maximum allowable hole in a program such that we still transcode it -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
+
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv" value="-10" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv" value="10" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart" value="-40" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="40" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
 
 
+    <!-- Parameters ordinarily defined in web.xml -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" value="k.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl" value="http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?"/>
 </Context>

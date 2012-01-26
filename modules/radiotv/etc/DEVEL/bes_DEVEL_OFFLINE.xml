@@ -49,6 +49,7 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="4" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint" value="http://alhena:7880/centralWebservice-service/central/" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraReadOnlyAdmin" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraReadOnlyPass" />
 
@@ -86,5 +87,7 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
     
+     <!-- The maximum allowable hole in a program such that we still transcode it -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
 
 </Context>

@@ -1,10 +1,15 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
+import com.sun.grizzly.http.ProcessorTask;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatus;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatusExtractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalyserProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalysisOutputProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardEnricherProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardFixerProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewGeneratorDispatcherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.PreviewerStatus;
@@ -14,7 +19,9 @@ import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.Snapsho
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatus;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatusExtractor;
 import org.apache.log4j.Logger;
+import org.springframework.aop.interceptor.SimpleTraceInterceptor;
 
+import javax.annotation.processing.Processor;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -40,9 +47,7 @@ import java.util.List;
  *
  */
 @Path("/bes")
-public class
-
-        BroadcastExtractionService {
+public class BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
 
@@ -58,7 +63,7 @@ public class
             log.warn("Returning dummy status for program '" + programPid + "'");
             return getDummyObjectStatus(programPid);
         } else {
-            return getRealObjectStatus(programPid);
+            return getRealObjectStatusIteratively(programPid);
         }
     }
 
@@ -96,7 +101,7 @@ public class
     }
 
     /**@GET @Path("/getsnapshotstatus")
-    @Produces(MediaType.APPLICATION_XML) */
+     @Produces(MediaType.APPLICATION_XML) */
     public SnapshotStatus getSnapshotStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
         log.info("Received snapshot request for '" + programPid + "'");
         SnapshotStatus status = SnapshotStatusExtractor.getStatus(programPid, config);
@@ -126,7 +131,7 @@ public class
     @GET @Path("/getsnapshotstatus")
     @Produces(MediaType.APPLICATION_XML)
     public List<SnapshotStatus> getSnapshotStatus(@QueryParam("programpid") List<String> pids) throws ProcessorException, UnsupportedEncodingException {
-       List<SnapshotStatus> result = new ArrayList<SnapshotStatus>();
+        List<SnapshotStatus> result = new ArrayList<SnapshotStatus>();
         for (String pid: pids) {
             result.add(getSnapshotStatus(pid));
         }
@@ -136,7 +141,7 @@ public class
     @GET @Path("/forcesnapshot")
     @Produces(MediaType.APPLICATION_XML)
     public List<SnapshotStatus> forceSnapshot(@QueryParam("programpid") List<String> pids) throws ProcessorException, UnsupportedEncodingException {
-       List<SnapshotStatus> result = new ArrayList<SnapshotStatus>();
+        List<SnapshotStatus> result = new ArrayList<SnapshotStatus>();
         for (String pid: pids) {
             result.add(forceSnapshot(pid));
         }
@@ -164,7 +169,7 @@ public class
     @GET @Path("/getpreviewstatus")
     @Produces(MediaType.APPLICATION_XML)
     public PreviewerStatus getPreviewStatus(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException, UnsupportedEncodingException {
-        logIncomingRequest("preview", programPid, title, channel, startTime);               
+        logIncomingRequest("preview", programPid, title, channel, startTime);
         PreviewerStatus status = PreviewerStatusExtractor.getStatus(programPid, config);
         if (status != null) {
             return status;
@@ -214,6 +219,34 @@ public class
     }
 
 
+    @GET @Path("/analyse")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String analyseShard(@QueryParam("programpid") String programPid, @QueryParam("title") String title, @QueryParam("channel") String channel, @QueryParam("date") long startTime) throws ProcessorException {
+        logIncomingRequest("Shard Analysis",programPid, title, channel, startTime);
+        String uuid = null;
+        try {
+            uuid = Util.getUuid(programPid);
+        } catch (UnsupportedEncodingException e) {
+            throw new ProcessorException(e);
+        }
+        TranscodeRequest request = new TranscodeRequest(uuid);
+        request.setServiceType(ServiceTypeEnum.SHARD_ANALYSIS);
+        RequestRegistry.getInstance().register(request);
+        ProcessorChainElement fetcher = new ShardFetcherProcessor();
+        ProcessorChainElement parser = new ShardParserProcessor();
+        ProcessorChainElement pbcorer = new PBCoreParserProcessor();
+        ProcessorChainElement analyser = new ShardAnalyserProcessor();
+        ProcessorChainElement enricher = new ShardEnricherProcessor();
+        fetcher.setChildElement(parser);
+        parser.setChildElement(pbcorer);
+        pbcorer.setChildElement(analyser);
+        analyser.setChildElement(enricher);
+        ProcessorChainThread thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
+        ProcessorChainThreadPool.addProcessorChainThread(thread);
+        return "Queued Shard Analysis of '" + uuid + "'";
+    }
+
+
     private ExtractionStatus getRealObjectStatus(String programPid) throws ProcessorException, UnsupportedEncodingException {
         ExtractionStatus status = ExtractionStatusExtractor.getStatus(programPid, config);
         if (status != null) {
@@ -243,6 +276,45 @@ public class
         status.setStatus(ObjectStatusEnum.STARTING);
         return status;
     }
+
+    private ExtractionStatus getRealObjectStatusIteratively(String programPid) throws ProcessorException, UnsupportedEncodingException {
+         ExtractionStatus status = ExtractionStatusExtractor.getStatus(programPid, config);
+        if (status != null) {
+            return status;
+        } else {
+            String uuid = Util.getUuid(programPid);
+            TranscodeRequest request = new TranscodeRequest(uuid);
+            request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+            OutputFileUtil.getAndCreateOutputDir(request, config);
+            RequestRegistry.getInstance().register(request);
+            ProcessorChainElement fetcher = new ShardFetcherProcessor();
+            ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement pbcorer = new PBCoreParserProcessor();
+            ProcessorChainElement analyser = new ShardAnalyserProcessor();
+            ProcessorChainElement enricher = new ShardEnricherProcessor();
+            ProcessorChainElement fixer = new ShardFixerProcessor();
+            ProcessorChainElement pider = new PidExtractorProcessor();
+            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
+            ProcessorChainElement estimator = new FlashEstimatorProcessor();
+            ProcessorChainElement transcoder = new FlashTranscoderProcessor();
+            fetcher.setChildElement(parser);
+            parser.setChildElement(pbcorer);
+            pbcorer.setChildElement(analyser);
+            analyser.setChildElement(enricher);
+            enricher.setChildElement(fixer);
+            fixer.setChildElement(pider);
+            pider.setChildElement(aspecter);
+            aspecter.setChildElement(estimator);
+            estimator.setChildElement(transcoder);
+            ProcessorChainThread thread = ProcessorChainThread.getIterativeProcessorChainThread(fetcher, request, config);
+            ProcessorChainThreadPool.addProcessorChainThread(thread);
+
+        }
+        status = new ExtractionStatus();
+        status.setStatus(ObjectStatusEnum.STARTING);
+        return status;
+    }
+
 
     /**
      * This is a dummy method which reads initParams (for testing purposes)
@@ -281,6 +353,6 @@ public class
     }
 
 
-    
+
 
 }

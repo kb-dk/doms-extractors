@@ -45,10 +45,10 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
     }
 
 	private void initializeDomsClient() {
-		if (true) {
+		if (false) {
 			throw new RuntimeException("DOMS not ready to use new interface yet!");
 		}
-		String domsWSAPIEndpointUrlString = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_LOCATION);
+		String domsWSAPIEndpointUrlString = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_ENDPOINT);
 		String userName = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_USERNAME);
 		String password = Util.getInitParameter(this.getServletConfig(), Constants.DOMS_PASSWORD);
 		DomsClient.initializeSingleton(domsWSAPIEndpointUrlString, userName, password);

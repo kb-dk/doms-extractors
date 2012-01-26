@@ -48,9 +48,13 @@
         -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="4" />
 
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/centralWebservice-service/central/" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraReadOnlyAdmin" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraReadOnlyPass" />
+    <!-- DOMS fedora url -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
+    <!-- DOMS webservice endpoint -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint" value="http://alhena:7880/centralWebservice-service/central/" />
+    <!-- Read/write password to DOMS, required from BES v1.6.0 onwards -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraAdmin" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraAdminPass" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate"  value="400"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate" value="96"/>
@@ -86,6 +90,7 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
 
 
-
+      <!-- The maximum allowable hole in a program (in seconds) such that we still transcode it -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
 
 </Context>
