@@ -84,6 +84,8 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
                 } catch (ParseException e) {
                     log.error("Unexpected date/time format in Gallup record: '" + match + "' does not match '" + gallupDateFormat + "'" );
                 }
+            } else {
+                log.error("Could not find start time: '" + gallupStartPattern + "' in '" + gallupOriginal + "'");
             }
             Matcher endMatcher = gallupEndPattern.matcher(gallupOriginal);
             if (endMatcher.matches()) {
