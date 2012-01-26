@@ -73,6 +73,7 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         String gallupOriginal = getGallup_Original(request,domsAPI);
         parsePBCore(request, pbcore);
         if (gallupOriginal != null) {
+            gallupOriginal = gallupOriginal.replaceAll("&apos;","");
             Matcher startMatcher = gallupStartPattern.matcher(gallupOriginal);
             if (startMatcher.matches()) {
                 String match = startMatcher.group(1);
