@@ -15,10 +15,13 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -56,14 +59,43 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         }
     }
 
-    SimpleDateFormat domsDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:SSZ");
+    SimpleDateFormat domsDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    Pattern gallupStartPattern = Pattern.compile("startDate=(.*),");
+    Pattern gallupEndPattern = Pattern.compile("endDate=(.*),");
+    SimpleDateFormat gallupDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         String pbcore = null;
         CentralWebservice domsAPI = DomsClient.getDOMSApiInstance(config);
         pbcore = getPBCore(request, pbcore, domsAPI);
+        String gallupOriginal = getGallup_Original(request,domsAPI);
         parsePBCore(request, pbcore);
+        if (gallupOriginal != null) {
+            Matcher startMatcher = gallupStartPattern.matcher(gallupOriginal);
+            if (startMatcher.matches()) {
+                String match = startMatcher.group(1);
+                log.debug("Found TVMeter start time :" + match);
+                try {
+                    Date startDate = gallupDateFormat.parse(match);
+                    request.setProgramStartTime(startDate.getTime());
+                } catch (ParseException e) {
+                    log.error("Unexpected date/time format in Gallup record: '" + match + "' does not match '" + gallupDateFormat + "'" );
+                }
+            }
+            Matcher endMatcher = gallupEndPattern.matcher(gallupOriginal);
+            if (endMatcher.matches()) {
+                String match = endMatcher.group(1);
+                log.debug("Found TVMeter end time :" + match);
+                try {
+                    Date endDate = gallupDateFormat.parse(match);
+                    request.setProgramEndTime(endDate.getTime());
+                } catch (ParseException e) {
+                    log.error("Unexpected date/time format in Gallup record: '" + match + "' does not match '" + gallupDateFormat + "'" );
+                }
+            }
+        }
     }
 
     void parsePBCore(TranscodeRequest request, String pbcore) throws ProcessorException {
@@ -121,4 +153,29 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
         }
         return pbcore;
     }
+
+    private String getGallup_Original (TranscodeRequest request, CentralWebservice domsAPI) throws ProcessorException {
+        String pbcore = null;
+        try {
+            final String domsPid = "uuid:" + request.getPid();
+            List<Relation> relations = domsAPI.getInverseRelations(domsPid);
+            if (relations == null || relations.isEmpty()) {
+                throw new ProcessorException("Found no inverse relations for '" + domsPid + "'");
+            }
+            for (Relation relation: relations) {
+                if (relation.getPredicate().equals("http://doms.statsbiblioteket.dk/relations/default/0/1/#hasShard")) {
+                    String programPid = relation.getSubject();
+                    pbcore = domsAPI.getDatastreamContents(programPid, "GALLUP_ORIGINAL");
+                    if (pbcore == null) {
+                        log.debug("Returned null GALLUP_ORIGINAL data for '" + programPid + "'");
+                    }
+                    log.debug(pbcore);
+                }
+            }
+        } catch (Exception e) {
+            throw new ProcessorException(e);
+        }
+        return pbcore;
+    }
+
 }
