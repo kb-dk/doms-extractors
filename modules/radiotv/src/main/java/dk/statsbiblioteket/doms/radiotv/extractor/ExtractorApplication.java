@@ -270,7 +270,7 @@ public class ExtractorApplication {
         pbcorer.setChildElement(analyser);
         analyser.setChildElement(outputter);
         outputter.setChildElement(fixer);
-        fixer.setChildElement(enricher);
+        //fixer.setChildElement(enricher);
         ProcessorChainThread thread;
         if (arg.endsWith(".xml")) {
             File file = new File(arg);
