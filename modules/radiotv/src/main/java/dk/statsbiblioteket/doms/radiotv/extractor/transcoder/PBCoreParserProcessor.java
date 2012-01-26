@@ -60,8 +60,8 @@ public class PBCoreParserProcessor extends ProcessorChainElement {
     }
 
     SimpleDateFormat domsDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-    Pattern gallupStartPattern = Pattern.compile(".*startDate=(.*),");
-    Pattern gallupEndPattern = Pattern.compile(".*endDate=(.*),");
+    Pattern gallupStartPattern = Pattern.compile(".*startDate=(.*)??,", Pattern.DOTALL);
+    Pattern gallupEndPattern = Pattern.compile(".*endDate=(.*)??,", Pattern.DOTALL);
     SimpleDateFormat gallupDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 
 
