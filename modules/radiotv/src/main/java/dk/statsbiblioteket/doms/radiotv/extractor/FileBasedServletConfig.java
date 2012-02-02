@@ -1,6 +1,6 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
-import dk.statsbiblioteket.doms.radiotv.extractor.servlet.ContextType;
+import dk.statsbiblioteket.doms.radiotv.extractor.servlet.Context;
 import dk.statsbiblioteket.doms.radiotv.extractor.servlet.ParameterType;
 
 import javax.servlet.ServletConfig;
@@ -21,12 +21,12 @@ import java.util.Enumeration;
  */
 public class FileBasedServletConfig implements ServletConfig {
 
-    ContextType servletContext;
+    Context servletContext;
 
     public FileBasedServletConfig(InputStream is) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(ContextType.class);
+        JAXBContext context = JAXBContext.newInstance(Context.class);
         Unmarshaller unmarshaller = context.createUnmarshaller();
-        servletContext = (ContextType) unmarshaller.unmarshal(new InputStreamReader(is));
+        servletContext = (Context) unmarshaller.unmarshal(new InputStreamReader(is));
 
     }
 
