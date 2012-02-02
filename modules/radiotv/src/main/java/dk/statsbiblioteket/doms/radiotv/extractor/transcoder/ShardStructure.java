@@ -103,6 +103,23 @@ public class ShardStructure {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MissingStart that = (MissingStart) o;
+
+            if (missingSeconds != that.missingSeconds) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return missingSeconds;
+        }
+
+        @Override
         public String toString() {
             return "MissingStart{" +
                     "missingSeconds=" + missingSeconds +
@@ -119,6 +136,23 @@ public class ShardStructure {
 
         public void setMissingSeconds(int missingSeconds) {
             this.missingSeconds = missingSeconds;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MissingEnd that = (MissingEnd) o;
+
+            if (missingSeconds != that.missingSeconds) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return missingSeconds;
         }
 
         @Override
@@ -156,6 +190,28 @@ public class ShardStructure {
 
         public void setFilePath2(String filePath2) {
             this.filePath2 = filePath2;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Hole hole = (Hole) o;
+
+            if (holeLength != hole.holeLength) return false;
+            if (!filePath1.equals(hole.filePath1)) return false;
+            if (!filePath2.equals(hole.filePath2)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = filePath1.hashCode();
+            result = 31 * result + filePath2.hashCode();
+            result = 31 * result + (int) (holeLength ^ (holeLength >>> 32));
+            return result;
         }
 
         @Override
@@ -218,6 +274,30 @@ public class ShardStructure {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Overlap overlap = (Overlap) o;
+
+            if (overlapLength != overlap.overlapLength) return false;
+            if (overlapType != overlap.overlapType) return false;
+            if (!filePath1.equals(overlap.filePath1)) return false;
+            if (!filePath2.equals(overlap.filePath2)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = filePath1.hashCode();
+            result = 31 * result + filePath2.hashCode();
+            result = 31 * result + overlapType;
+            result = 31 * result + (int) (overlapLength ^ (overlapLength >>> 32));
+            return result;
+        }
+
+        @Override
         public String toString() {
             return "Overlap{" +
                     "filePath1='" + filePath1 + '\'' +
@@ -258,4 +338,27 @@ public class ShardStructure {
         return doc;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ShardStructure that = (ShardStructure) o;
+
+        if (!holes.equals(that.holes)) return false;
+        if (missingEnd != null ? !missingEnd.equals(that.missingEnd) : that.missingEnd != null) return false;
+        if (missingStart != null ? !missingStart.equals(that.missingStart) : that.missingStart != null) return false;
+        if (!overlaps.equals(that.overlaps)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = missingStart != null ? missingStart.hashCode() : 0;
+        result = 31 * result + (missingEnd != null ? missingEnd.hashCode() : 0);
+        result = 31 * result + holes.hashCode();
+        result = 31 * result + overlaps.hashCode();
+        return result;
+    }
 }

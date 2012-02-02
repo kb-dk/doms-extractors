@@ -63,7 +63,15 @@ public class ShardEnricherProcessor extends ProcessorChainElement {
         } catch (JAXBException e) {
             throw new ProcessorException(e);
         }
-        shard.setShardStructure(request.getStructure());
+        ShardStructure newStructure = request.getStructure();
+        ShardStructure oldStructure = shard.getShardStructure();
+        if (newStructure.equals(oldStructure)) {
+            log.info("No change found to shard structure for '" + request.getPid() + "'");
+            return;
+        } else {
+            log.info("Updating shard structure for '" + request.getPid() + "' from '" + oldStructure + "' to '" + newStructure + "'");
+        }
+        shard.setShardStructure(newStructure);
         Marshaller m = null;
         try {
             m = context.createMarshaller();

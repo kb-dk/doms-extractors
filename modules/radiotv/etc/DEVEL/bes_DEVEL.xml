@@ -90,7 +90,8 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
 
 
-      <!-- The maximum allowable hole in a program (in seconds) such that we still transcode it -->
+      <!-- The maximum allowable hole in a program (in seconds). Shards with larger holes will generate a warning in the log
+       but will be transcoded anyway. -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
 
 </Context>
