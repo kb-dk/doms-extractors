@@ -179,7 +179,16 @@ public class UpdateIdentifierApplication {
         WRITE_NEW_STARTTIME {
             @Override
             public void doThisOperation() throws UpdateIdentifierException {
-                now = "" + (new Date()).getTime();
+                long nowL;
+                now = null;
+                int recordsReturned = domsRecords.size();
+                if (recordsReturned > 0) {
+                    nowL = domsRecords.get(recordsReturned -1).getDate();
+                    logger.debug("Setting timestamp for start of next run to " + new Date(nowL));
+                } else {
+                    logger.debug("No new records found, returning.");
+                    return;
+                }
                 logger.debug("Deleting '" + timestampFileFile + "'");
                 timestampFileFile.delete();
                 if (timestampFileFile.exists()) {
@@ -193,6 +202,7 @@ public class UpdateIdentifierApplication {
                 }
                 BufferedWriter bwriter = new BufferedWriter(writer);
                 try {
+                    now = "" + nowL;
                     bwriter.append(now);
                 } catch (IOException e) {
                     throw new UpdateIdentifierException(e);
