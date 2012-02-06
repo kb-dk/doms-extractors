@@ -337,9 +337,9 @@ public class UpdateIdentifierApplication {
         load.setNextStep(verify);
         verify.setNextStep(lock);
         lock.setNextStep(read);
-        read.setNextStep(write);
-        write.setNextStep(call);
-        call.setNextStep(writeResults);
+        read.setNextStep(call);
+        call.setNextStep(write);
+        write.setNextStep(writeResults);
         try {
             start.doOperation();
         } finally {
