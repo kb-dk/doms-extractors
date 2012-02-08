@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Properties;
 
 /**
@@ -166,7 +167,12 @@ public class BroadcastExtractor {
                                  URI uri = URI.create(besUrl);
                                  URL url = uri.toURL();
                                  url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile().replace("//","/"));
-                                 Object content = url.getContent();
+                                 URLConnection conn = url.openConnection();
+                                 try {
+                                     conn.getContent();
+                                 } finally {
+                                     conn.getInputStream().close();
+                                 }
                                  try {
                                      Thread.sleep(sleepTime);
                                  } catch (InterruptedException e) {
