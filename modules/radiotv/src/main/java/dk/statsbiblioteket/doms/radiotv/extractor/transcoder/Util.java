@@ -114,7 +114,7 @@ public class Util {
     }
 
     public static String getLockFileName(TranscodeRequest request) {
-        return request.getPid() + "." + request.getServiceType() + ".lck";
+        return request.getKeyForLockFilename() + ".lck";
     }
 
     public static ServiceTypeEnum getServiceTypeFromLockFile(File lockFile) {
@@ -126,7 +126,34 @@ public class Util {
         return lockFile.getName().split("\\.")[0];
     }
 
-    public static File[] getAllLockFiles(ServletConfig config) {
+    public static TranscodeRequest getRequestFromLockFile(String lockFilename) {
+    	//String lockFilename = "8a90f338-566a-0410-bc61-9ec4cb1a6b14_-400_300_Filename_prefix#DIGITV_BROADCAST_EXTRACTION.lck";
+    	String domsProgramPidPattern = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+    	String userAdditionalStartEndOffsetPattern = "[-]?[0-9]*";
+    	String serviceTypePattern = "DIGITV_BROADCAST_EXTRACTION";
+		String filenamePrefixPattern = "[^#]*";
+		Pattern p = Pattern.compile("("+domsProgramPidPattern + ")_"
+				+ "(" + userAdditionalStartEndOffsetPattern + ")_"
+				+ "(" + userAdditionalStartEndOffsetPattern + ")_"
+				+ "(" + filenamePrefixPattern + ")\\."
+				+ "(" + serviceTypePattern + ").lck");
+		Matcher m = p.matcher(lockFilename);
+		if (!m.matches()) {
+			log.error("Could not match lock filename: " + lockFilename);
+			throw new RuntimeException("Could not match lock filename.");
+		}
+		String domsProgramPid = m.group(1);
+		long userAdditionalStartOffset = Long.valueOf(m.group(2));
+		long userAdditionalEndOffset = Long.valueOf(m.group(3));
+		String filenamePrefix = m.group(4);
+		String serviceType = m.group(5); // unused
+    	TranscodeRequest request = new TranscodeRequest(domsProgramPid, userAdditionalStartOffset, userAdditionalEndOffset, filenamePrefix);
+    	//lockFilename.equals(request.getKeyForLockFilename()+".lck");
+    	return request;
+	}
+
+
+	public static File[] getAllLockFiles(ServletConfig config) {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -140,7 +167,7 @@ public class Util {
         synchronized (request) {
             if (request.getThePool() != null && request.getLockObject() != null) {
                 try {
-                    log.info("Unlocking request '" + request.getPid() +"#"+ request.getServiceType() + "' from '" + request.getLockObject() + "'");
+                    log.info("Unlocking request '" + request.getKey() + "' from '" + request.getLockObject() + "'");
                     request.getThePool().returnObject(request.getLockObject());
                     request.setLockObject(null);
                     request.setThePool(null);

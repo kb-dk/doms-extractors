@@ -68,13 +68,17 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
 
     private void cleanup() {
         log.info("Initiating cleanup of unfinished processes.");
+        cleanupDigitvExtractionWorkDir();
         File[] lockFiles = Util.getAllLockFiles(this.getServletConfig());
         for (File lockFile: lockFiles) {
             log.info("Cleaning up after '" + lockFile.getAbsolutePath() + "'");
             switch (Util.getServiceTypeFromLockFile(lockFile)) {
-                case BROADCAST_EXTRACTION:
-                    cleanupExtraction(lockFile);
-                    break;
+	            case BROADCAST_EXTRACTION:
+	                cleanupExtraction(lockFile);
+	                break;
+	            case DIGITV_BROADCAST_EXTRACTION:
+	                cleanupDigitvExtractionDelete(lockFile);
+	                break;
                 case PREVIEW_GENERATION:
                     cleanupPreview(lockFile);
                     break;
@@ -106,7 +110,25 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
         }
     }
 
-    private void cleanupPreview(File lockFile) {
+    private void cleanupDigitvExtractionWorkDir() {
+    	File workDir = new File(OutputFileUtil.getBaseOutputDir(ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION, this.getServletConfig()));
+    	for (File workFile : workDir.listFiles()) {
+			boolean deleted = workFile.delete();
+			if (deleted) {
+				log.info("Deleted work file: " + workFile.getAbsolutePath());
+			} else {
+	            log.error("Could not delete work file: '" + workFile.getAbsolutePath() + "'");
+			}
+		} 
+	}
+
+    private void cleanupDigitvExtractionDelete(File lockFile) {
+        if (!lockFile.delete()) {
+            log.error("Could not delete lock file: '" + lockFile.getAbsolutePath() + "'");
+        }
+	}
+
+	private void cleanupPreview(File lockFile) {
         TranscodeRequest request = new TranscodeRequest(Util.getPidFromLockFile(lockFile));
         request.setServiceType(ServiceTypeEnum.PREVIEW_GENERATION);
         try {

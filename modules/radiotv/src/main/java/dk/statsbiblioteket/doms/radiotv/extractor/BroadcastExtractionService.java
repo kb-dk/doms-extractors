@@ -1,13 +1,17 @@
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
-import com.sun.grizzly.http.ProcessorTask;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.DigitvEstimatorProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.DigitvExtractionStatus;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.DigitvFileMoverTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.DigitvTranscoderDispatcherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatus;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.DigitvExtractionStatusExtractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ExtractionStatusExtractor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashEstimatorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.FlashTranscoderProcessor;
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.DigitvJobLinkEmailProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalyserProcessor;
-import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardAnalysisOutputProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardEnricherProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor.ShardFixerProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.previewer.IdentifyLongestClipProcessor;
@@ -19,18 +23,20 @@ import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.Snapsho
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatus;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.SnapshotStatusExtractor;
 import org.apache.log4j.Logger;
-import org.springframework.aop.interceptor.SimpleTraceInterceptor;
-
-import javax.annotation.processing.Processor;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,7 +59,10 @@ public class BroadcastExtractionService {
 
     public final boolean dummyService=false;
 
-    @Context ServletConfig config;
+    @Context 
+    ServletConfig config;
+    @Context 
+    UriInfo uriInfo;
 
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
@@ -216,6 +225,57 @@ public class BroadcastExtractionService {
             }
         }
         return getPreviewStatus(programPid, title, channel, startTime);
+    }
+
+    @GET @Path("/digitv_transcode")
+    @Produces(MediaType.APPLICATION_XML)
+    public DigitvExtractionStatus startDigitvTranscoding(
+    		@QueryParam("programpid") String programPid, 
+    		@QueryParam("title") String title, 
+    		@QueryParam("channel") String channel, 
+    		@QueryParam("date") long startTime, 
+    		@QueryParam("additional_start_offset") long additionalStartOffset, 
+    		@QueryParam("additional_end_offset") long additionalEndOffset, 
+    		@QueryParam("filename_prefix") String filenamePrefix) throws ProcessorException, UnsupportedEncodingException { 
+    	logIncomingRequest("digitv_transcode", programPid, title, channel, startTime);
+    	String domsProgramPid = Util.getUuid(programPid);
+    	String filenamePrefixURLDecoded = URLDecoder.decode(filenamePrefix, "UTF-8");
+    	log.info("Transcode request set filename: " + filenamePrefixURLDecoded);
+    	log.info("Transcode request set user defined additional start offset: " + additionalStartOffset);
+    	log.info("Transcode request set user defined additional end offset: " + additionalEndOffset);
+    	log.info("Transcode request set service type: " + ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION);
+    	log.info("Transcode request set doms program pid: " + domsProgramPid);
+    	TranscodeRequest request = new TranscodeRequest(domsProgramPid, additionalStartOffset, additionalEndOffset, filenamePrefixURLDecoded);
+    	DigitvExtractionStatus status = DigitvExtractionStatusExtractor.getStatus(request, config);
+    	if (status != null) {
+    		return status;
+    	} else {
+    		log.info("Starting transcoding of program: " + programPid);
+    		RequestRegistry.getInstance().register(request);
+    		ProcessorChainElement sendJobEmail = new DigitvJobLinkEmailProcessor(uriInfo.getRequestUri().toString());
+    		ProcessorChainElement programPidExtracter = new ShardPidFromProgramPidFetcherProcessor();
+    		log.info("Found shardPid: " + request.getPid() + " from " + request.getDomsProgramPid()); 	
+    		ProcessorChainElement fetcher = new ShardFetcherProcessor();
+    		ProcessorChainElement parser = new ShardParserProcessor();
+    		ProcessorChainElement pider = new PidExtractorProcessor();
+    		ProcessorChainElement estimator = new DigitvEstimatorProcessor();
+    		ProcessorChainElement transcoder = new DigitvTranscoderDispatcherProcessor();
+    		ProcessorChainElement mover = new DigitvFileMoverTranscoderProcessor();
+    		sendJobEmail.setChildElement(programPidExtracter);
+    		programPidExtracter.setChildElement(fetcher);
+    		fetcher.setChildElement(parser);
+    		parser.setChildElement(pider);
+    		pider.setChildElement(estimator);
+    		estimator.setChildElement(transcoder);
+    		transcoder.setChildElement(mover);
+    		ProcessorChainThread thread = ProcessorChainThread.getIterativeProcessorChainThread(sendJobEmail, request, config);
+    		ProcessorChainThreadPool.addProcessorChainThread(thread);
+
+    	}
+    	status = new DigitvExtractionStatus();
+    	status.setStatus(ObjectStatusEnum.STARTING);
+
+        return status;
     }
 
 

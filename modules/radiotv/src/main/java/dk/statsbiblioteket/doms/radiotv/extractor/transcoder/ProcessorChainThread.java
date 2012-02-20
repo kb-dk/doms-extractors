@@ -54,7 +54,7 @@ public class ProcessorChainThread extends Thread {
 
     private ProcessorChainThread(ProcessorChainElement callElement, TranscodeRequest request, ServletConfig config, boolean isRecursive) {
         super("TranscodeProcessor");
-        log.info("Created processor chain for '" + request.getPid() + "'");
+        log.info("Created processor chain for shardpid '" + request.getPid() + "' or programpid '" + request.getDomsProgramPid() + "'");
         this.isRecursive = isRecursive;
         this.callElement = callElement;
         this.request = request;
@@ -65,7 +65,7 @@ public class ProcessorChainThread extends Thread {
 
     private ProcessorChainThread(ProcessorChainElement tailElement, TranscodeRequest request, ServletConfig config) {
         super("TranscodeProcessor");
-        log.info("Created Iterative processor chain for '" + request.getPid() + "'");
+        log.info("Created Iterative processor chain for '" + request.getPid() + "' or programpid '" + request.getDomsProgramPid() + "'");
         this.callElement = tailElement;
         this.request = request;
         this.config = config;
@@ -95,7 +95,7 @@ public class ProcessorChainThread extends Thread {
     @Override
     public void run() {
         super.run();
-        log.info("Starting processor chain for '" + request.getPid() + "'");
+        log.info("Starting processor chain for '" + request.getPid() + "' or programpid '" + request.getDomsProgramPid() + "'");
         File lockFile = null;
         try {
             try {
@@ -111,10 +111,10 @@ public class ProcessorChainThread extends Thread {
                 callElement.processIteratively(request, config);
             }
         } catch (ProcessorException e) {
-            log.error("Processing failed for '" + request.getPid() + "'", e);
+            log.error("Processing failed for '" + request.getPid() + "' or programpid '" + request.getDomsProgramPid() + "'", e);
             throw new RuntimeException(e);
         } catch (Exception e) {
-            log.error("Processing failed for '" + request.getPid() + "'", e);
+            log.error("Processing failed for '" + request.getPid() + "' or programpid '" + request.getDomsProgramPid() + "'", e);
             throw new RuntimeException(e);
         }
         finally {
@@ -123,7 +123,7 @@ public class ProcessorChainThread extends Thread {
             } catch (Exception e) {
                 log.error(e);
             }
-            log.info("Cleaning up after processing '" + request.getPid() + "'");
+            log.info("Cleaning up after processing '" + request.getPid() + "' or programpid '" + request.getDomsProgramPid() + "'");
             try {
                 RequestRegistry.getInstance().remove(request);
             } catch (Exception e) {

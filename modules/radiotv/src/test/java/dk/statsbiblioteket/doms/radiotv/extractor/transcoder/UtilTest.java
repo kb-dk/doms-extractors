@@ -5,6 +5,8 @@ import junit.framework.TestCase;
 import javax.sound.midi.VoiceStatus;
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,4 +32,9 @@ public class UtilTest extends TestCase {
         assertEquals((new File(parent.getCanonicalPath()+File.separator+path)).getCanonicalPath(), child.getCanonicalPath());
     }
 
+    public void testGetRequestFromLockFile() {
+    	String lockFilename = "8a90f338-566a-0410-bc61-9ec4cb1a6b14_-400_300_Filename_prefix.DIGITV_BROADCAST_EXTRACTION.lck";
+    	TranscodeRequest request = Util.getRequestFromLockFile(lockFilename);
+		assertEquals(request.getKeyForLockFilename()+".lck", lockFilename);
+    }
 }

@@ -55,28 +55,20 @@ public class RequestRegistry {
     }
 
     public synchronized void register(TranscodeRequest request) {
-        log.info("Registering request " + createKey(request));
-        map.put(createKey(request), request);
+        log.info("Registering request " + request.getKey());
+        map.put(request.getKey(), request);
     }
 
     public synchronized boolean isKnown(TranscodeRequest request) {
-        return map.containsKey(createKey(request));
+        return map.containsKey(request.getKey());
     }
 
     public synchronized TranscodeRequest get(TranscodeRequest basicRequest) {
-        return map.get(createKey(basicRequest));
+        return map.get(basicRequest.getKey());
     }
 
     public synchronized void remove(TranscodeRequest request) {
-        log.info("Deregestering request " + createKey(request));
-        map.remove(createKey(request));
+        log.info("Deregestering request " + request.getKey());
+        map.remove(request.getKey());
     }
-
-    private String createKey(TranscodeRequest request) {
-        if (request.getServiceType() == null) {
-            log.error("Attempting to create key for a request without specifying the service type");
-        }
-        return request.getPid() + "#" + request.getServiceType();
-    }
-
 }

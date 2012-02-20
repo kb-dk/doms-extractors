@@ -31,45 +31,27 @@ import javax.servlet.ServletConfig;
 import java.util.List;
 import java.io.File;
 
-public class WavTranscoderProcessor extends ProcessorChainElement {
+public class DigitvTranscoderWavProcessor extends ProcessorChainElement {
 
-    private static Logger log = Logger.getLogger(WavTranscoderProcessor.class);
+    private static Logger log = Logger.getLogger(DigitvTranscoderWavProcessor.class);
 
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        String command;
-        command = getMultiClipCommand(request, config);
-        //MuxFlashClipper.symlinkToRootDir(config, OutputFileUtil.getMP3AudioOutputFile(request, config));                
+    	File outputFile = OutputFileUtil.getDigitvWorkOutputFile(request, config);
+        String clipCommand = getClipCommand(request, config);
+		String transcodeCommand = "ffmpeg -f s16le -i - -ab 256k " + outputFile.getAbsolutePath();
+        String command = clipCommand + " | " + transcodeCommand;
         try {
             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
             log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
             ExternalJobRunner.runClipperCommand(timeout, command);
         } catch (ExternalProcessTimedOutException e) {
-            log.warn("Deleting '" + getOutputFile(request, config).getAbsolutePath() + "'");
-            getOutputFile(request, config).delete();
+            log.warn("Deleting '" + outputFile + "'");
+            outputFile.delete();
         }
     }
 
-    public static String getLameCommand(TranscodeRequest request, ServletConfig config) {
-        String outputFileName = getOutputFile(request, config).getAbsolutePath();
-        return "lame -b "  + Util.getAudioBitrate(config) + " - " + outputFileName;
-    }
-
-    public static File getOutputFile(TranscodeRequest request, ServletConfig config) {
-       switch (request.getServiceType()) {
-            case BROADCAST_EXTRACTION:
-                return  OutputFileUtil.getMP3AudioOutputFile(request, config);
-            case PREVIEW_GENERATION:
-                return OutputFileUtil.getMP3AudioPreviewOutputFile(request, config);
-            case THUMBNAIL_GENERATION:
-                return null;
-            case PREVIEW_THUMBNAIL_GENERATION:
-                return null;
-        }
-        return null;
-    }
-
-    private String getMultiClipCommand(TranscodeRequest request, ServletConfig config) {
+    private String getClipCommand(TranscodeRequest request, ServletConfig config) {
         String command = "cat ";
         List<TranscodeRequest.FileClip> clips = request.getClips();
         long bitrate = request.getClipType().getBitrate();
@@ -106,12 +88,6 @@ public class WavTranscoderProcessor extends ProcessorChainElement {
             }
             command += " ) ";
         }
-        command += "| ffmpeg -f s16le -i - "
-                + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000 "
-                + getOutputFile(request, config).getAbsolutePath();
         return command;
     }
-
-
-
 }

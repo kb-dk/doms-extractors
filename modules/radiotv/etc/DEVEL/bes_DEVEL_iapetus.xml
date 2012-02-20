@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context  docBase="/home/larm/war/bes_DEVEL.war">
 
-     <Parameter name="log4jConfigLocation" value="../../../etc/log4j.DEVEL_EXTRACTION.xml"
+     <Parameter name="log4jConfigLocation" value="../../../etc/log4j.DEVEL.xml"
              override="false"/>
-
     <Parameter name="log4jExposeWebAppRoot" value="false" override="false" />
     
     <!--
@@ -11,11 +10,6 @@
     doms and domslive plugin
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.finaldir" value="/home/larm/streamingContent"/>
-
-    <!--
-    Directory where the video files are to be deployed. This directory should be mountable to other machines.
-    -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitvFinaldir" value="/home/larm/digitvContent"/>
 
     <!--
     Directory where thumbnails are placed. This directory should be available as static webcontent from some
@@ -32,7 +26,7 @@
     <!-- A small temporary directory where lock files can be stored. This should be distinct for each instance of bes if
     there are multiple instances on the same machine/container.
     -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.tempdir" value="/home/larm/temp/besDEVEL_EXTRACTION" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.tempdir" value="/home/larm/temp/besDEVEL" />
 
     <!--
         URL where streamable files are streamed from
@@ -55,15 +49,13 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="4" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint" value="http://alhena:7880/centralWebservice-service/central/" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraAdmin" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraAdminPass" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraReadOnlyAdmin" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraReadOnlyPass" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate"  value="400"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate" value="96"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight" value="288"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.x264PresetVlc" value="profile=High,preset=superfast,level=3.0" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.soxWavParam" value="-t raw -s -b 16 -c2" />
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewLength"  value="30"/>
 
@@ -83,27 +75,16 @@
     <!-- Snapshot timeout expressed as multiple of snapshot length -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/> 
     <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->
-        <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.threadWait" value="300000"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.threadWait" value="300000"/>
 
-    <!--  These are a guess at good parameter values
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv" value="-10" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv" value="10" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart" value="-40" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="40" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="-20" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
-     -->
 
-    <!-- Zero values are useful for testing purposes -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetDigitv" value="0" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetDigitv" value="0" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetBart" value="0" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetBart" value="0" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.startOffsetRadio" value="0" />
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="0" />
 
-     <!-- The maximum allowable hole in a program such that we still transcode it -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
-    
-    
+
+
 </Context>

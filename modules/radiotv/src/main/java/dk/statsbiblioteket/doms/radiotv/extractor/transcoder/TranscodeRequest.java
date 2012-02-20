@@ -43,12 +43,16 @@ public class TranscodeRequest {
     private Object lockObject;
     private GenericObjectPool thePool;
 
-    /**
-     * The pid (uuid) of the program object in DOMS to which this request refers. Must be
+    /** A key identifiying this request */
+    private String requestKey;
+    
+	/**
+     * The pid (uuid) of the program or shard object in DOMS to which this request refers. Must be
      * non-null.
      */
-    private String pid;
-
+    private String domsShardPid;
+    private String domsProgramPid;
+    
     private ClipTypeEnum clipType;
 
     private ServiceTypeEnum serviceType;
@@ -64,7 +68,19 @@ public class TranscodeRequest {
      private Long programStartTime;
         private Long programEndTime;
 
-        public Long getProgramStartTime() {
+		public TranscodeRequest(String pid) {
+		    this.domsShardPid = pid;
+		}
+
+		public TranscodeRequest(String domsProgramPid, long userStartOffset, long userEndOffset, String filenamePrefix) {
+			this.serviceType = ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION;
+			this.domsProgramPid = domsProgramPid;
+			this.userAdditionalStartOffset = userStartOffset;
+			this.userAdditionalEndOffset = userEndOffset;
+			this.filenamePrefix = filenamePrefix;
+		}
+
+		public Long getProgramStartTime() {
             return programStartTime;
         }
 
@@ -227,27 +243,31 @@ public class TranscodeRequest {
         this.shard = shard;
     }
 
-    public String getPid() {
-        return pid;
+    public String getDomsProgramPid() {
+		return domsProgramPid;
+	}
+
+	public void setDomsProgramPid(String domsProgramPid) {
+		this.domsProgramPid = domsProgramPid;
+	}
+
+	public String getPid() {
+        return domsShardPid;
     }
 
     public String getUuid() {
-        if (pid.startsWith("uuid:")) {
-            return pid;
+        if (domsShardPid.startsWith("uuid:")) {
+            return domsShardPid;
         } else {
-            return "uuid:" + pid;
+            return "uuid:" + domsShardPid;
         }
     }
 
     public void setPid(String pid) {
-        this.pid = pid;
+        this.domsShardPid = pid;
     }
 
     private List<FileClip> clips;
-
-    public TranscodeRequest(String pid) {
-        this.pid = pid;
-    }
 
     public void setClips(List<FileClip> clips) {
         this.clips = clips;
@@ -258,6 +278,7 @@ public class TranscodeRequest {
     }
 
     private List<SnapshotPosition> snapshotPositions;
+	private String filenamePrefix;
 
     public List<SnapshotPosition> getSnapshotPositions() {
         return snapshotPositions;
@@ -269,7 +290,7 @@ public class TranscodeRequest {
 
     @Override
     public String toString() {
-        return pid + "#" + clipType;
+        return domsShardPid + "#" + clipType;
     }
 
     public static class SnapshotPosition {
@@ -382,5 +403,66 @@ public class TranscodeRequest {
                     '}';
         }
     }
+
+	public String getFilenamePrefix() {
+		return this.filenamePrefix;
+	}
     
+	public void setFilenamePrefix(String filenamePrefix) {
+		this.filenamePrefix = filenamePrefix;
+	}
+	
+	private long userAdditionalStartOffset;
+	private long userAdditionalEndOffset;
+	
+	public long getUserAdditionalStartOffset() {
+		return userAdditionalStartOffset;
+	}
+    
+	public void setUserAdditionalStartOffset(long userAdditionalStartOffset) {
+		this.userAdditionalStartOffset = userAdditionalStartOffset;
+	}
+
+	public long getUserAdditionalEndOffset() {
+		return userAdditionalEndOffset;
+	}
+
+	public void setUserAdditionalEndOffset(long userAdditionalEndOffset) {
+		this.userAdditionalEndOffset = userAdditionalEndOffset;
+	}
+
+	public String getKey() {
+		if (requestKey == null && serviceType != null) {
+			switch (serviceType) {
+			case BROADCAST_EXTRACTION:
+				requestKey = domsShardPid + "#" + serviceType;
+				break;
+			case PREVIEW_GENERATION:
+				requestKey = domsShardPid + "#" + serviceType;
+				break;
+			case THUMBNAIL_GENERATION:
+				requestKey = domsShardPid + "#" + serviceType;
+				break;
+			case PREVIEW_THUMBNAIL_GENERATION:
+				requestKey = domsShardPid + "#" + serviceType;
+				break;
+			case SHARD_ANALYSIS:
+				requestKey = domsShardPid + "#" + serviceType;
+				break;
+			case SHARD_ANALYSIS_WRITE:
+				requestKey = domsShardPid + "#" + serviceType;
+				break;
+			case DIGITV_BROADCAST_EXTRACTION:
+				requestKey = domsProgramPid + "_" + userAdditionalStartOffset + "_" + userAdditionalEndOffset + "_" + getFilenamePrefix() + "#" + serviceType;
+				break;
+			default:
+				break;
+			}
+		}
+		return requestKey;
+	}
+    
+	public String getKeyForLockFilename() {
+		return getKey().replace('#', '.');
+	}
 }

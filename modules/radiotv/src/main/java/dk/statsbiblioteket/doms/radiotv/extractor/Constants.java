@@ -24,7 +24,6 @@ package dk.statsbiblioteket.doms.radiotv.extractor;
 public class Constants {
     private Constants(){}
 
-
     public static final String TEMP_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.tempdir";
     public static final String FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.finaldir";
     public static final String ERROR_DIR = "dk.statsbiblioteket.doms.radiotv.extractor.errordir";
@@ -98,5 +97,11 @@ public class Constants {
     public static final String ANALYSIS_DIRECTORY = "dk.statsbiblioteket.doms.radiotv.extractor.analysisDirectory";
     public static final String MAXIMUM_HOLE_SIZE_SECONDS = "dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize";
 
+    /**
+     * Constants relating to DigiTV transcoding
+     */
+    public static final String DIGITV_FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.digitvFinaldir";
+	public static final String DIGITV_WORK_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.digitvWorkdir";
+	public static final String DIGITV_USER_EMAIL = "dk.statsbiblioteket.doms.radiotv.extractor.digitvEmail";
 
 }
