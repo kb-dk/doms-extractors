@@ -37,7 +37,7 @@ public class DigitvEstimatorProcessor extends ProcessorChainElement {
 
 	@Override
 	protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-		Long additionalStartOffset = -request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_DIGITV));
+		Long additionalStartOffset = request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_DIGITV));
 		Long additionalEndOffset =  request.getUserAdditionalEndOffset() + Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_DIGITV));
 		ClipTypeEnum clipType = request.getClipType();
 		Long finalFileSizeBytes;
@@ -46,20 +46,20 @@ public class DigitvEstimatorProcessor extends ProcessorChainElement {
 			Integer videoBitrate = new Integer(3000);
 			Integer overhead = new Integer(100);
 			//The above rates are kilobit/second
-			finalFileSizeBytes = (request.getTotalLengthSeconds() + additionalStartOffset + additionalEndOffset)
+			finalFileSizeBytes = (request.getTotalLengthSeconds() - additionalStartOffset + additionalEndOffset)
 					*(audioBitrate + videoBitrate + overhead)*1000L/8L;
 		} else if (clipType.equals(ClipTypeEnum.MPEG1) || clipType.equals(ClipTypeEnum.MPEG2)) {
 			Integer audioBitrate = new Integer(448);
 			Integer videoBitrate = new Integer(5700);
 			Integer overhead = new Integer(100);
 			//The above rates are kilobit/second
-			finalFileSizeBytes = (request.getTotalLengthSeconds() + additionalStartOffset + additionalEndOffset)*(audioBitrate + videoBitrate + overhead)*1000L/8L;
+			finalFileSizeBytes = (request.getTotalLengthSeconds() - additionalStartOffset + additionalEndOffset)*(audioBitrate + videoBitrate + overhead)*1000L/8L;
 		} else {
 			Integer audioBitrate = 256;
 			Integer videoBitrate = 0;
 			Integer overhead = 10;
 			//The above rates are kilobit/second
-			finalFileSizeBytes = (request.getTotalLengthSeconds() + additionalStartOffset + additionalEndOffset)*(audioBitrate + videoBitrate + overhead)*1000L/8L;
+			finalFileSizeBytes = (request.getTotalLengthSeconds() - additionalStartOffset + additionalEndOffset)*(audioBitrate + videoBitrate + overhead)*1000L/8L;
 		}
 		request.setFinalFileLengthBytes(finalFileSizeBytes);
 		log.debug("Estimated filesize for '" + request.getPid() + "' :" + finalFileSizeBytes);

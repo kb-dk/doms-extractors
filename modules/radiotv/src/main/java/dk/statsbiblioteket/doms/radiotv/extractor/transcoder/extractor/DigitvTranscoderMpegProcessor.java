@@ -43,7 +43,7 @@ public class DigitvTranscoderMpegProcessor extends ProcessorChainElement {
 
 
     private void mpegClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        Long additionalStartOffset = (-request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_BART)))*request.getClipType().getBitrate();
+        Long additionalStartOffset = (request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_BART)))*request.getClipType().getBitrate();
         Long additionalEndOffset =  (request.getUserAdditionalEndOffset() + Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_BART)))*request.getClipType().getBitrate();
         log.debug("Additonal Start Offset for '" + request.getPid() + "' :" + additionalStartOffset + "bytes");
         log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffset + "bytes");

@@ -40,7 +40,7 @@ public class DigitvTranscoderMuxClipper extends ProcessorChainElement {
      }
 
     private void seamlessClip(TranscodeRequest request, ServletConfig config) throws ProcessorException {
-        Long additionalStartOffset = (-request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_DIGITV)))*ClipTypeEnum.MUX.getBitrate();
+        Long additionalStartOffset = (request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_DIGITV)))*ClipTypeEnum.MUX.getBitrate();
         Long additionalEndOffset =  (request.getUserAdditionalEndOffset() + Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_DIGITV)))*ClipTypeEnum.MUX.getBitrate();
         log.debug("Additonal Start Offset for '" + request.getPid() + "' :" + additionalStartOffset + "bytes");
         log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffset + "bytes");        

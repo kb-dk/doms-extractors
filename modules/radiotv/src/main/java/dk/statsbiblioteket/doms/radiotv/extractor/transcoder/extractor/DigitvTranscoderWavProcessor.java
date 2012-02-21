@@ -55,7 +55,7 @@ public class DigitvTranscoderWavProcessor extends ProcessorChainElement {
         String command = "cat ";
         List<TranscodeRequest.FileClip> clips = request.getClips();
         long bitrate = request.getClipType().getBitrate();
-        Long additionalStartOffsetSeconds = (-request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_RADIO)));
+        Long additionalStartOffsetSeconds = (request.getUserAdditionalStartOffset() + Long.parseLong(Util.getInitParameter(config, Constants.START_OFFSET_RADIO)));
         Long additionalEndOffsetSeconds =  (request.getUserAdditionalEndOffset() + Long.parseLong(Util.getInitParameter(config, Constants.END_OFFSET_RADIO)));
         log.debug("Additonal Start Offset for '" + request.getPid() + "' :" + additionalStartOffsetSeconds + "seconds");
         log.debug("Additonal End Offset for '" + request.getPid() + "' :" + additionalEndOffsetSeconds + "seconds");

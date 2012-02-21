@@ -56,6 +56,7 @@ import java.util.List;
 public class BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
+    public static final String besVersion = "1.7.03";
 
     public final boolean dummyService=false;
 
@@ -63,6 +64,7 @@ public class BroadcastExtractionService {
     ServletConfig config;
     @Context 
     UriInfo uriInfo;
+
 
     @GET @Path("/getobjectstatus")
     @Produces(MediaType.APPLICATION_XML)
@@ -240,6 +242,7 @@ public class BroadcastExtractionService {
     	logIncomingRequest("digitv_transcode", programPid, title, channel, startTime);
     	String domsProgramPid = Util.getUuid(programPid);
     	String filenamePrefixURLDecoded = URLDecoder.decode(filenamePrefix, "UTF-8");
+    	log.info("BES version: " + besVersion);
     	log.info("Transcode request set filename: " + filenamePrefixURLDecoded);
     	log.info("Transcode request set user defined additional start offset: " + additionalStartOffset);
     	log.info("Transcode request set user defined additional end offset: " + additionalEndOffset);

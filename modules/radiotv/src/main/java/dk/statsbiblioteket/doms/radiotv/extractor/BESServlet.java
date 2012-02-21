@@ -41,7 +41,7 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
         } catch (Exception e) {
             log.error(e);
         }
-        log.info("initialized BES service");        
+        log.info("initialized BES service version " + BroadcastExtractionService.besVersion);        
     }
 
 	private void initializeDomsClient() {
