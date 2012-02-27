@@ -87,7 +87,7 @@ public class DigitvTranscoderMpegProcessor extends ProcessorChainElement {
 		    start = "skip=" + Math.max((additionalStartOffset + clip.getStartOffsetBytes())/blocksize, 0L);
 		}
 		String length = "";
-		if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + (additionalEndOffset + clip.getClipLength())/blocksize;
+		if (clip.getClipLength() != null && clip.getClipLength() != 0L) length = "count=" + (-additionalStartOffset + additionalEndOffset + clip.getClipLength())/blocksize;
 		cutterCommand = "dd if=" + clip.getFilepath() + " bs=" + blocksize + " " + start + " " + length;
 		return cutterCommand;
 	}
