@@ -95,9 +95,14 @@
        but will be transcoded anyway. -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
 
-    <!-- Parameters ordinarily defined in web.xml   These need to be commented out here if one is using this file as
+    <!-- Parameters ordinarily defined in web.xml   These need to be commented in here if one is using this file as
     configuration for a command-line-based run
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" value="dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl" value="http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?"/>
     -->
+
+    <!--Bitrates for digitv transcoding for burning to DVD (in kilobits/second) -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate" value="3000"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate" value="256"/>
+
 </Context>

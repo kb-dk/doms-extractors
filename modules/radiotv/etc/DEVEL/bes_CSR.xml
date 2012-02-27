@@ -100,4 +100,9 @@
     <!-- Parameters ordinarily defined in web.xml -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass" value="k.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl" value="http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?"/>
+
+    <!--Bitrates for digitv transcoding for burning to DVD (in kilobits/second) -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate" value="3000"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate" value="256"/>
+
 </Context>

@@ -85,6 +85,8 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.endOffsetRadio" value="20" />
 
 
-
+     <!--Bitrates for digitv transcoding for burning to DVD (in kilobits/second) -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate" value="3000"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate" value="256"/>
 
 </Context>

@@ -94,4 +94,8 @@
        but will be transcoded anyway. -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxHoleSize" value="120" />
 
+    <!--Bitrates for digitv transcoding for burning to DVD (in kilobits/second) -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate" value="3000"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate" value="256"/>
+
 </Context>
