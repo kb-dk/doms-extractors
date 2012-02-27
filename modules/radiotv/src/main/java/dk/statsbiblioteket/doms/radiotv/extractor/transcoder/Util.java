@@ -64,23 +64,6 @@ public class Util {
         } else return null;
     }
 
-    /**
-     * Converts a shard url to a doms url
-     * e.g. http://www.statsbiblioteket.dk/doms/shard/uuid:ef8ea1b2-aaa8-412a-a247-af682bb57d25
-     * to <DOMS_SERVER>/fedora/objects/uuid%3Aef8ea1b2-aaa8-412a-a247-af682bb57d25/datastreams/SHARD_METADATA/conteny
-     *
-     * @param pid
-     * @return
-     */
-    public static URL getDomsUrl(String pid, ServletConfig config) throws ProcessorException {
-        String urlS = Util.getInitParameter(config, Constants.DOMS_LOCATION) + "/objects/uuid:"+pid+"/datastreams/SHARD_METADATA/content";
-        try {
-            return new URL(urlS);
-        } catch (MalformedURLException e) {
-            throw new ProcessorException(e);
-        }
-    }
-
     public static String getFinalFilename(TranscodeRequest request) {
         return request.getPid() + ".mp4";
     }

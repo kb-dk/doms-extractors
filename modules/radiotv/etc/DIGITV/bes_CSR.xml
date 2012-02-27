@@ -59,7 +59,6 @@
         -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="4" />
 
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint" value="http://alhena:7880/centralWebservice-service/central/" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsUsername" value="fedoraAdmin" />
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsPassword" value="fedoraAdminPass" />

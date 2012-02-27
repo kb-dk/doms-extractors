@@ -48,8 +48,6 @@
         -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.maxActive" value="4" />
 
-    <!-- DOMS fedora url -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsLocation" value="http://alhena:7880/fedora" />
     <!-- DOMS webservice endpoint -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.domsEndpoint" value="http://alhena:7880/centralWebservice-service/central/" />
     <!-- Read/write password to DOMS, required from BES v1.6.0 onwards -->

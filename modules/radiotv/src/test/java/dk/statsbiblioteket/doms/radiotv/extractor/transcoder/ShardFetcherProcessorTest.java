@@ -44,7 +44,6 @@ public class ShardFetcherProcessorTest extends TestCase {
         public String getInitParameter(String s) {
             if (s.equals(Constants.DOMS_USERNAME)) return "fedoraAdmin";
             if (s.equals(Constants.DOMS_PASSWORD)) return "fedoraAdminPass";
-            if (s.equals(Constants.DOMS_LOCATION)) return "http://alhena:7880/fedora";
             throw new RuntimeException("Key not defined:'" + s + "'");
         }
         public Enumeration<String> getInitParameterNames() {
