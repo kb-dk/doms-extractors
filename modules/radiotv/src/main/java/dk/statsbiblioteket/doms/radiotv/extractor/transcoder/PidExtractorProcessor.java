@@ -107,9 +107,9 @@ public class PidExtractorProcessor extends ProcessorChainElement {
         }
         Pattern thisProgramPattern = Pattern.compile(".*program number="+request.getClips().get(0).getProgramId()+".*");
         Pattern programPattern = Pattern.compile(".*program number=.*");
-        Pattern dvbsubPattern = Pattern.compile(".*pid=([0-9]{4}).*fcc=dvbs.*");
-        Pattern videoPattern = Pattern.compile(".*pid=([0-9]{4}).*((fcc=mpgv)|(fcc=h264)).*");
-        Pattern audioPattern1 = Pattern.compile(".*pid=([0-9]{4}).*((fcc=mp4a)|(fcc=mpga)).*");
+        Pattern dvbsubPattern = Pattern.compile(".*pid=([0-9]*).*fcc=dvbs.*");
+        Pattern videoPattern = Pattern.compile(".*pid=([0-9]*).*((fcc=mpgv)|(fcc=h264)).*");
+        Pattern audioPattern1 = Pattern.compile(".*pid=([0-9]*).*((fcc=mp4a)|(fcc=mpga)).*");
         String[] commandOutput = runner.getError().split("\\n");
         boolean foundProgram = false;
         for (String line:commandOutput) {
@@ -132,11 +132,23 @@ public class PidExtractorProcessor extends ProcessorChainElement {
                 if (videoMatcher.matches()) {
                     request.setVideoPid(videoMatcher.group(1));
                     log.info("Setting pid for video '" + videoMatcher.group(1) + "'");
+                    if (line.contains("mpgv")) {
+                        request.setVideoFcc("mpgv");
+                    } else if (line.contains("h264")) {
+                        request.setVideoFcc("h264");
+                    }
+                    log.debug("Identified video fourcc for " + request.getPid() + ": " + request.getVideoFcc());
                 }
                 Matcher audioMatcher = audioPattern1.matcher(line);
                 if (audioMatcher.matches()) {
                     request.addAudioPid(audioMatcher.group(1));
                     log.info("Setting pid for audio '" + audioMatcher.group(1) + "'");
+                    if (line.contains("mp4a")) {
+                        request.setAudioFcc("mp4a");
+                    } else if (line.contains("mpga")) {
+                        request.setAudioFcc("mpga");
+                    }
+                    log.debug("Identified audio fourcc for " + request.getPid() + ": " + request.getAudioFcc());
                 }
             }
         }
@@ -158,7 +170,7 @@ public class PidExtractorProcessor extends ProcessorChainElement {
         Pattern thisProgramPattern = Pattern.compile(".*Program\\s"+request.getClips().get(0).getProgramId()+".*");
         Pattern programPattern = Pattern.compile(".*Program.*");
         Pattern dvbsubPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*dvbsub.*");
-        Pattern videoPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Video.*");
+        Pattern videoPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Video.*DAR\\s(([0-9]*):([0-9]*)).*");
         Pattern audioPattern1 = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Audio.*");
         Pattern audioPattern2 = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*0x0011.*");
         String[] commandOutput = runner.getError().split("\\n");
@@ -183,16 +195,32 @@ public class PidExtractorProcessor extends ProcessorChainElement {
                 if (videoMatcher.matches()) {
                     request.setVideoPid(videoMatcher.group(1));
                     log.info("Setting pid for video '" + videoMatcher.group(1) + "'");
+                     if (line.contains("mpeg2video")) {
+                        request.setVideoFcc("mpgv");
+                    } else if (line.contains("h264")) {
+                        request.setVideoFcc("h264");
+                    }
+                    log.debug("Identified video fourcc for " + request.getPid() + ": " + request.getVideoFcc());
+                    request.setDisplayAspectRatioString(videoMatcher.group(2));
+                    log.debug("Identified aspect ratio '" + request.getDisplayAspectRatioString() + "'");
                 }
                 Matcher audioMatcher = audioPattern1.matcher(line);
                 if (audioMatcher.matches()) {
                     request.addAudioPid(audioMatcher.group(1));
                     log.info("Setting pid for audio '" + audioMatcher.group(1) + "'");
+                     if (line.contains("aac_latm")) {
+                        request.setAudioFcc("mp4a");
+                    } else if (line.contains("mp2")) {
+                        request.setAudioFcc("mpga");
+                    }
+                    log.debug("Identified audio fourcc for " + request.getPid() + ": " + request.getAudioFcc());
                 }
                 audioMatcher = audioPattern2.matcher(line);
                 if (audioMatcher.matches()) {
                     request.addAudioPid(audioMatcher.group(1));
                     log.info("Setting pid for audio '" + audioMatcher.group(1) + "'");
+                    request.setAudioFcc("mp4a");
+                    log.debug("Identified audio fourcc for " + request.getPid() + ": " + request.getAudioFcc());
                 }
             }
         }

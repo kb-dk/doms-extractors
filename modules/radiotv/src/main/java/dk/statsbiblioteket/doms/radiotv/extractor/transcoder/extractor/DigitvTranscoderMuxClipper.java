@@ -93,42 +93,26 @@ public class DigitvTranscoderMuxClipper extends ProcessorChainElement {
                 processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString + ") ";
             }
         }
-        boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
 
-
-        String clipperCommand;
-        if (!pidSubtitles) {
-        	if (programNumber == 101) { // DR1
-            	clipperCommand = "cat " + processSubstitutionFileList + " | "
-        				+ "vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout-all --sout '#duplicate{dst=std{access=file, mux=ts, dst=-},select=\"es=0x6f,es=0x79\" }' | " 
-        				+ "ffmpeg -i - -f mpeg -vcodec mpeg2video -b 3000k -deinterlace -acodec mp2 -async 1 -ar 48000 -ab 256k "  + OutputFileUtil.getDigitvWorkOutputFile(request, config);
-        	} else {
-        		clipperCommand = "cat " + processSubstitutionFileList + " | "
-        				+ "vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout '#std{access=file, mux=ts, dst=-}' | "
-        				+ "ffmpeg -i - -f mpeg -vcodec mpeg2video -b 3000k -deinterlace -acodec mp2 -async 1 -ar 48000 -ab 256k " + OutputFileUtil.getDigitvWorkOutputFile(request, config);
-        	}
-        	/*
-        	clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                    + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
-                    + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
-                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                    + ":std{access=file,mux=ts,dst=-}\""
-                    + ",select=\"program=" + programNumber + "\"' | "
-                    + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getDigitvOutputFile(request, config);
-			*/
-        } else {
-    		clipperCommand = "cat " + processSubstitutionFileList + " | "
-    				+ "vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout '#std{access=file, mux=ts, dst=-}' | "
-    				+ "ffmpeg -i - -f mpeg -vcodec mpeg2video -b 3000k -deinterlace -acodec mp2 -async 1 -ar 48000 -ab 256k " + OutputFileUtil.getDigitvWorkOutputFile(request, config);
-    		//clipperCommand = "cat " + processSubstitutionFileList + " | "
-    		//		+ "vlc - --program=" + programNumber + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout '#duplicate{dst=\"transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,,width=" + FlashTranscoderProcessor.getWidth(request, config) + ",height=" +  FlashTranscoderProcessor.getHeight(request, config) +",threads=0}:std{access=file, mux=ts, dst=-}\",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' | "
-    		//		+ "ffmpeg -i - -f mpeg -vcodec mpeg2video -b 3000k -deinterlace -acodec mp2 -async 1 -ar 48000 -ab 256k pipe:1 " + OutputFileUtil.getDigitvOutputFile(request, config);
-        	//clipperCommand = "cat " + processSubstitutionFileList + " |  "
-        	//		+ "vlc - --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout-all --sout '#duplicate{dst=\"transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,,width=" + FlashTranscoderProcessor.getWidth(request, config) + ",height=" +  FlashTranscoderProcessor.getHeight(request, config) +",threads=0}:std{access=file,mux=ts,dst=-}\",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |"
-        	//		+ "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config) + "000 -f flv " + OutputFileUtil.getDigitvOutputFile(request, config);
+        //If we have pids for video and audio and correspondig fourcc's then specify a custom pmt here. Otherwise fall back to using --program
+        // e.g. (from poorly documented vlc options) --ts-extra-pmt=1010:1010=111:video=h264,121:audio=mp4a,135:spu=dvbs
+        String programSelector = " --program=" + programNumber + " ";
+        if (request.getVideoFcc() != null && request.getAudioFcc() != null) {
+            programSelector = " --program=1010 --sout-all --ts-extra-pmt=1010:1010=" + request.getVideoPid() + ":video=" + request.getVideoFcc()
+                    + "," + request.getMinimumAudioPid() + ":audio=" + request.getAudioFcc();
+           if (request.getDvbsubPid() != null) {
+               programSelector += "," + request.getDvbsubPid() + ":spu=dvbs";
+           }
         }
-        //symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
+        log.debug("Program selector for " + request.getPid() + ": '" + programSelector + "'");
+        String vb = Util.getInitParameter(config, Constants.DIGITV_VIDEO_BITRATE);
+        String ab = Util.getInitParameter(config, Constants.DIGITV_AUDIO_BITRATE);
+        String clipperCommand = "cat " + processSubstitutionFileList + " | "
+                + " vlc - " + programSelector + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout " +
+                "'#transcode{vcodec=mp2v,vb=" + vb + ",soverlay,deinterlace,keyint=16,strict-rc,vfilter=canvas{width=720,height=576,aspect=" + request.getDisplayAspectRatioString() + "}," +
+                "fps=25,audio-sync,acodec=mp2a,ab=" + ab + ",channels=2,samplerate=48000,threads=0}" +
+                ":std{access=file,mux=ps,dst=" + OutputFileUtil.getDigitvWorkOutputFile(request, config) + "}' ";
+
         log.debug("clipperCommand: " + clipperCommand);
         try {
             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);

@@ -125,6 +125,7 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
                 final double displayAspectRatio = Double.parseDouble(top) / Double.parseDouble(bottom);
                 log.info("Detected aspect ratio '" + displayAspectRatio + "' for '" + request.getPid() + "'");
                 request.setDisplayAspectRatio(displayAspectRatio);
+                request.setDisplayAspectRatioString(top + ":" + bottom);
             }
         } catch (IOException e) {
             throw new ProcessorException(e);

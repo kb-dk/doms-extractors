@@ -56,8 +56,8 @@ public class DigitvTranscoderMpegProcessor extends ProcessorChainElement {
             cutterCommand = getSingleCipCutterCommand(request, config, additionalStartOffset, additionalEndOffset, blocksize);
         }
         String outputFile = OutputFileUtil.getDigitvWorkOutputFile(request, config).getAbsolutePath();
-        String ffmpegTranscodeCommand = getFfmpegTranscodeCommand(config, outputFile);
-        String command = cutterCommand + " | "  + ffmpegTranscodeCommand;
+        //String ffmpegTranscodeCommand = getFfmpegTranscodeCommand(config, outputFile);
+        String command = cutterCommand + " | "  + getVlcRemuxCommand(config, outputFile);
         try {
             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
             log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
@@ -69,6 +69,9 @@ public class DigitvTranscoderMpegProcessor extends ProcessorChainElement {
         }
     }
 
+    private String getVlcRemuxCommand(ServletConfig config, String outputFile) {
+        return  "vlc - --intf dummy --play-and-exit --noaudio --novideo --sout '#std{access=file,mux=ps,dst=" + outputFile + "}'";
+    }
 
 	private String getFfmpegTranscodeCommand(ServletConfig config, String outputFile) {
 		String ffmpegTranscodeCommand = "ffmpeg -i - -target pal-dvd " + outputFile;

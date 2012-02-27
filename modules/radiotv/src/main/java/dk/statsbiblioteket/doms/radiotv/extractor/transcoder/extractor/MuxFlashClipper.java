@@ -92,12 +92,24 @@ public class MuxFlashClipper extends ProcessorChainElement {
                 processSubstitutionFileList += " <(dd if=" + clip.getFilepath() + " bs=" + blocksize + skipString + ") ";
             }
         }
-        boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
+
+        //
+        // There are two transcoding possibilities
+        // i) We have identified pids and fourcc's for video and audio (and possibly subtitles). In this case we use
+        //    a custom PMT
+        // ii) Otherwise we select all streams for the given program number and hope for the best
+        //
+        // A potential weakness here is that if we find pids/fourcc for audio and video, but not for dvbs, then we
+        // might be throwing away subtitles which ii) would actually find. So for now at least we add an arbitrary
+        // requirement that we only use i) if we are either in program 101 or have all three pids.
+
+        boolean useCustomPMT = (request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null && request.getVideoFcc() != null && request.getAudioFcc() != null );
+        useCustomPMT = useCustomPMT |  (!request.getAudioPids().isEmpty() && request.getVideoPid() != null && request.getVideoFcc() != null && request.getAudioFcc() != null && programNumber==101);
 
 
         String clipperCommand;
-            if (!pidSubtitles) {
-                clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+        if (!useCustomPMT) {
+            clipperCommand = "cat " + processSubstitutionFileList + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
                     + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
                     + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
                     + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
@@ -105,19 +117,23 @@ public class MuxFlashClipper extends ProcessorChainElement {
                     + ":std{access=file,mux=ts,dst=-}\""
                     + ",select=\"program=" + programNumber + "\"' | "
                     + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config) ;
-
-            } else {
-                 clipperCommand = "cat " + processSubstitutionFileList + " |  vlc - --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                        + "--sout-all --sout '#duplicate{dst=\""
-                        + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
-                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                        + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                        + ":std{access=file,mux=ts,dst=-}\""
-                        + ",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |" +
-                        "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
-                        + "000 -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config);
+        } else {
+            String programSelector = " --program=1010 --sout-all --ts-extra-pmt=1010:1010=" + request.getVideoPid() + ":video=" + request.getVideoFcc()
+                    + "," + request.getMinimumAudioPid() + ":audio=" + request.getAudioFcc();
+            if (request.getDvbsubPid() != null) {
+                programSelector += "," + request.getDvbsubPid() + ":spu=dvbs";
             }
-        //symlinkToRootDir(config, OutputFileUtil.getFlashVideoOutputFile(request, config));
+            log.debug("Using Custom PMT for '" + request.getPid() + "': " + programSelector);
+            clipperCommand = "cat " + processSubstitutionFileList + " |  vlc - " + programSelector + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                    + "--sout-all --sout '#transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "}" +
+                    ",soverlay,deinterlace,audio-sync,"
+                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
+                    + ":std{access=file,mux=ts,dst=-}' |" +
+                    "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
+                    + "000 -f flv " + OutputFileUtil.getFlashVideoOutputFile(request, config);
+        }
+
         try {
             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
             log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );

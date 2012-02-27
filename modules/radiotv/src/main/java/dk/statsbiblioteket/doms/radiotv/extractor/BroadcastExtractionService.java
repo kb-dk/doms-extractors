@@ -257,9 +257,9 @@ public class BroadcastExtractionService {
     		RequestRegistry.getInstance().register(request);
     		ProcessorChainElement sendJobEmail = new DigitvJobLinkEmailProcessor(uriInfo.getRequestUri().toString());
     		ProcessorChainElement programPidExtracter = new ShardPidFromProgramPidFetcherProcessor();
-    		log.info("Found shardPid: " + request.getPid() + " from " + request.getDomsProgramPid()); 	
     		ProcessorChainElement fetcher = new ShardFetcherProcessor();
     		ProcessorChainElement parser = new ShardParserProcessor();
+            ProcessorChainElement aspecter = new AspectRatioDetectorProcessor();
     		ProcessorChainElement pider = new PidExtractorProcessor();
     		ProcessorChainElement estimator = new DigitvEstimatorProcessor();
     		ProcessorChainElement transcoder = new DigitvTranscoderDispatcherProcessor();
@@ -267,7 +267,8 @@ public class BroadcastExtractionService {
     		sendJobEmail.setChildElement(programPidExtracter);
     		programPidExtracter.setChildElement(fetcher);
     		fetcher.setChildElement(parser);
-    		parser.setChildElement(pider);
+    		parser.setChildElement(aspecter);
+            aspecter.setChildElement(pider);
     		pider.setChildElement(estimator);
     		estimator.setChildElement(transcoder);
     		transcoder.setChildElement(mover);

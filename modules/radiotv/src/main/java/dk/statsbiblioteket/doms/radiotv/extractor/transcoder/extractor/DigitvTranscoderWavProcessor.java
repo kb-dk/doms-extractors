@@ -39,7 +39,8 @@ public class DigitvTranscoderWavProcessor extends ProcessorChainElement {
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
     	File outputFile = OutputFileUtil.getDigitvWorkOutputFile(request, config);
         String clipCommand = getClipCommand(request, config);
-		String transcodeCommand = "ffmpeg -f s16le -i - -ab 256k " + outputFile.getAbsolutePath();
+        String ab = Util.getInitParameter(config, Constants.DIGITV_AUDIO_BITRATE);
+		String transcodeCommand = "ffmpeg -f s16le -i - -ab " + ab + "k " + outputFile.getAbsolutePath();
         String command = clipCommand + " | " + transcodeCommand;
         try {
             long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);

@@ -61,6 +61,24 @@ public class TranscodeRequest {
     private String videoPid;
     private String audioPid;
     private String dvbsubPid;
+    private String videoFcc;
+    private String audioFcc;
+
+    public String getAudioFcc() {
+        return audioFcc;
+    }
+
+    public void setAudioFcc(String audioFcc) {
+        this.audioFcc = audioFcc;
+    }
+
+    public String getVideoFcc() {
+        return videoFcc;
+    }
+
+    public void setVideoFcc(String videoFcc) {
+        this.videoFcc = videoFcc;
+    }
 
     private FileClip longestClip;
     private ShardStructure structure;
@@ -202,7 +220,16 @@ public class TranscodeRequest {
         this.thePool = thePool;
     }
 
+    public String getDisplayAspectRatioString() {
+        return displayAspectRatioString;
+    }
+
+    public void setDisplayAspectRatioString(String displayAspectRatioString) {
+        this.displayAspectRatioString = displayAspectRatioString;
+    }
+
     private Double displayAspectRatio;
+    private String displayAspectRatioString;
 
     private String shard;
     private Long totalLengthSeconds;

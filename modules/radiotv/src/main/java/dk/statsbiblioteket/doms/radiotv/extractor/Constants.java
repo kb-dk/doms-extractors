@@ -103,5 +103,8 @@ public class Constants {
     public static final String DIGITV_FINAL_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.digitvFinaldir";
 	public static final String DIGITV_WORK_DIR_INIT_PARAM = "dk.statsbiblioteket.doms.radiotv.extractor.digitvWorkdir";
 	public static final String DIGITV_USER_EMAIL = "dk.statsbiblioteket.doms.radiotv.extractor.digitvEmail";
+    public static final String DIGITV_VIDEO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate";
+    public static final String DIGITV_AUDIO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate";
+
 
 }
