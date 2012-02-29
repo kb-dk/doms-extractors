@@ -62,41 +62,47 @@ public class DigitvPreviewProcessor extends ProcessorChainElement {
         MuxSnapshotGeneratorProcessor snapshotter = new MuxSnapshotGeneratorProcessor();
         snapshotter.setLabel(MuxSnapshotGeneratorProcessor.PREVIEW_LABEL);
         this.setChildElement(snapshotter);
-
-        String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes, previewSnapshot);
-
-        boolean pidSubtitles = request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null;
-        String clipperCommand;
         if (longestClip == null) {
             String message = "Failed to identify longest clip in '" + request.getPid() + "'\n from shard data \n " + request.getShard();
             throw new ProcessorException(message);
         }
+        String processSubstituionDDCommand = getDDCommand(blocksize, longestClip, previewLengthBytes, previewSnapshot);
         int programNumber = longestClip.getProgramId();
-        if (pidSubtitles) {
-             clipperCommand = "cat " + processSubstituionDDCommand + " |  vlc - --demux=ts --quiet --intf dummy --play-and-exit --noaudio --novideo "
-                        + "--sout-all --sout '#duplicate{dst=\""
-                        + "transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
-                        + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                        + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                        + ":std{access=file,mux=ts,dst=-}\""
-                        + ",select=\"es=" + request.getVideoPid() + ",es=" + request.getMinimumAudioPid() + ",es="+request.getDvbsubPid() + "\"}' |" +
-                        "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
-                        + "000 -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);
-        } else {
-            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
-                               + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
-                               + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
-                               + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
-                               + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
-                               + ":std{access=file,mux=ts,dst=-}\""
-                               + ",select=\"program=" + programNumber + "\"' | "
-                               + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab " + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config) ;
+        boolean useCustomPMT = (request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null && request.getVideoFcc() != null && request.getAudioFcc() != null );
+        useCustomPMT = useCustomPMT |  (!request.getAudioPids().isEmpty() && request.getVideoPid() != null && request.getVideoFcc() != null && request.getAudioFcc() != null && programNumber==101);
 
+
+        String clipperCommand;
+        if (!useCustomPMT) {
+            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - --program=" + programNumber + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                    + "--sout-all --sout '#duplicate{dst=\"transcode{senc=dvbsub}"
+                    + ":transcode{vcodec=h264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "},soverlay,deinterlace,audio-sync,"
+                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
+                    + ":std{access=file,mux=ts,dst=-}\""
+                    + ",select=\"program=" + programNumber + "\"' | "
+                    + "ffmpeg -i -  -async 2 -vcodec copy -ac 2 -acodec libmp3lame -ar 44100 -ab "
+                    + Util.getAudioBitrate(config) + " -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config) ;
+        }  else {
+            String programSelector = " --program=1010 --sout-all --ts-extra-pmt=1010:1010=" + request.getVideoPid() + ":video=" + request.getVideoFcc()
+                    + "," + request.getMinimumAudioPid() + ":audio=" + request.getAudioFcc();
+            if (request.getDvbsubPid() != null) {
+                programSelector += "," + request.getDvbsubPid() + ":spu=dvbs";
+            }
+            log.debug("Using Custom PMT for '" + request.getPid() + "': " + programSelector);
+            clipperCommand = "cat " + processSubstituionDDCommand + " | vlc - " + programSelector + programSelector + " --quiet --demux=ts --intf dummy --play-and-exit --noaudio --novideo "
+                    + "--sout-all --sout '#transcode{vcodec=x264,vb=" + Util.getVideoBitrate(config) + ",venc=x264{" + Util.getInitParameter(config, Constants.X264_PRESET_VLC) + "}" +
+                    ",soverlay,deinterlace,audio-sync,"
+                    + ",width=" + FlashTranscoderProcessor.getWidth(request, config)
+                    + ",height=" + FlashTranscoderProcessor.getHeight(request, config) +",threads=0}"
+                    + ":std{access=file,mux=ts,dst=-}' |" +
+                    "ffmpeg -i -  -async 2 -vcodec copy -acodec libmp3lame -ac 2 -ar 44100 -ab " + Util.getAudioBitrate(config)
+                    + "000 -f flv " + OutputFileUtil.getFlashVideoPreviewOutputFile(request, config) ;
         }
         int clipLengthSeconds = Integer.parseInt(Util.getInitParameter(config, Constants.PREVIEW_LENGTH));
         try {
             final long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.PREVIEW_TIMEOUT_FACTOR))*clipLengthSeconds * 1000L);
-            log.debug("Setting timeout to '" + timeout + "' ms.");            
+            log.debug("Setting timeout to '" + timeout + "' ms.");
             ExternalJobRunner.runClipperCommand(timeout, clipperCommand);
         } catch (ExternalProcessTimedOutException e) {
             final File previewOutputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config);

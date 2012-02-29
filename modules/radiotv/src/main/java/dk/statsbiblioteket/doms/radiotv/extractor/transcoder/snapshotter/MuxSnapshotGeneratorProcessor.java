@@ -59,13 +59,29 @@ public class MuxSnapshotGeneratorProcessor extends ProcessorChainElement {
             int programId = snapshot.getProgramId();
             String filepath = snapshot.getFilepath();
             Long location = snapshot.getBytePosition();
-            String command = "cat <(dd if=" + filepath + " bs=" + blocksize +
-                    " skip=" + location/blocksize + " count=" + seconds*bitrate/blocksize + " )|"
-                    + " vlc - --program=" + programId
-                    + " --quiet --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
-                    "linear --noaudio  " +
-                    " --scene-ratio=1000 --scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
-                    + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
+            boolean useCustomPMT = (request.getDvbsubPid() != null && !request.getAudioPids().isEmpty() && request.getVideoPid() != null && request.getVideoFcc() != null && request.getAudioFcc() != null );
+            useCustomPMT = useCustomPMT |  (!request.getAudioPids().isEmpty() && request.getVideoPid() != null && request.getVideoFcc() != null && request.getAudioFcc() != null && programId==101);
+            String command;
+            if (!useCustomPMT) {
+                command = "cat <(dd if=" + filepath + " bs=" + blocksize +
+                        " skip=" + location/blocksize + " count=" + seconds*bitrate/blocksize + " )|"
+                        + " vlc - --program=" + programId
+                        + " --quiet --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
+                        "linear --noaudio  " +
+                        " --scene-ratio=1000 --scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
+                        + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
+            } else {
+                String programSelector = " --program=1010 --sout-all --ts-extra-pmt=1010:1010=" + request.getVideoPid() + ":video=" + request.getVideoFcc()
+                    + "," + request.getMinimumAudioPid() + ":audio=" + request.getAudioFcc();
+                log.debug("Using custom PMT '" + programSelector + "'");
+                command = "cat <(dd if=" + filepath + " bs=" + blocksize +
+                        " skip=" + location/blocksize + " count=" + seconds*bitrate/blocksize + " )|"
+                        + " vlc - " + programSelector
+                        + " --quiet --video-filter scene -V dummy --demux=ts --intf dummy --play-and-exit --vout-filter deinterlace --deinterlace-mode " +
+                        "linear --noaudio  " +
+                        " --scene-ratio=1000 --scene-format=" + Util.getPrimarySnapshotSuffix(config) + " --scene-replace --scene-prefix=" + OutputFileUtil.getSnapshotBasename(config, request, label, ""+count)
+                        + " --scene-path=" + OutputFileUtil.getAndCreateOutputDir(request, config).getAbsolutePath();
+            }
             try {
                 long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.SNAPSHOT_TIMEOUT_FACTOR))*seconds*1000L);
                 log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );

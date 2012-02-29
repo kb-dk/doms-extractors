@@ -21,6 +21,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.PidExtractorProcessor;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorChainElement;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.ProcessorException;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.TranscodeRequest;
@@ -39,8 +40,11 @@ public class SnapshotGeneratorDispatcherProcessor extends ProcessorChainElement 
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         switch(request.getClipType()) {
             case MUX:
+                log.debug("Next processor is pider");
+                PidExtractorProcessor pider = new PidExtractorProcessor();
                 ProcessorChainElement snapshotter = new MuxSnapshotGeneratorProcessor();
-                this.setChildElement(snapshotter);
+                this.setChildElement(pider);
+                pider.setChildElement(snapshotter);
                 break;
             case MPEG1:
                 snapshotter = new MpegSnapshotGeneratorProcessor();

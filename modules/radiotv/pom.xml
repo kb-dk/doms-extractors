@@ -8,7 +8,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>DOMS_project</groupId>
 	<artifactId>BroadcastExtractionService</artifactId>
-	<version>1.6.0</version>
+	<version>1.7.0</version>
 	<packaging>war</packaging>
 	<name>BroadcastExtractionService</name>
 	<description>Extract a broadcasted program from the underlying
