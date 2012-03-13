@@ -67,6 +67,7 @@ public abstract class ProcessorChainElement {
 
     public void processIteratively(TranscodeRequest request, ServletConfig config) throws ProcessorException {
         log.info("Processing Iteratively'" + request.getPid() + "' with " + this.getClass());
+        request.setActiveProcess(this.getClass().getSimpleName());
         processThis(request, config);
         if (childElement != null) childElement.processIteratively(request, config);
     }

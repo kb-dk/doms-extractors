@@ -23,13 +23,19 @@ public class DigitvJobLinkEmailProcessor extends ProcessorChainElement {
 
 	private static Logger log = Logger.getLogger(DigitvJobLinkEmailProcessor.class);
 	private String url;
+	private boolean sendEmail;
 
-	public DigitvJobLinkEmailProcessor(String url) {
+	public DigitvJobLinkEmailProcessor(String url, boolean sendEmail) {
 		this.url = url;
+		this.sendEmail = sendEmail;
 	}
 
 	@Override
 	protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+		if (!sendEmail) {
+			log.info("Not sending email for request: " + url);
+			return;
+		}
 		String emailAddress = Util.getInitParameter(config, Constants.DIGITV_USER_EMAIL);
 		String to = emailAddress;
 		String from = "digitv@statsbiblioteket.dk";

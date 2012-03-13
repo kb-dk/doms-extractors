@@ -441,7 +441,6 @@ public class TranscodeRequest {
 	
 	private long userAdditionalStartOffset;
 	private long userAdditionalEndOffset;
-	
 	public long getUserAdditionalStartOffset() {
 		return userAdditionalStartOffset;
 	}
@@ -491,5 +490,21 @@ public class TranscodeRequest {
     
 	public String getKeyForLockFilename() {
 		return getKey().replace('#', '.');
+	}
+
+	private String activeProcess = null;
+
+	public String getActiveProcess() {
+		String activeProcess;
+		if (this.activeProcess != null) {
+			activeProcess = this.activeProcess;
+		} else {
+			activeProcess = "None";
+		}
+		return activeProcess;
+	}
+	
+	public void setActiveProcess(String activeProcess) {
+		this.activeProcess = activeProcess;
 	}
 }

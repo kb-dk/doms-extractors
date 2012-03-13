@@ -35,6 +35,8 @@ import java.util.Enumeration;
 
 public class IdentifyLongestClipProcessorTest extends TestCase {
 
+	private static final String SERVICE_BASE_URL_STRING = "http://plufire/~bart/stage_files.cgi";
+
     private String xml1 = "<shard_metadata>\n" +
             "  <file>\n" +
             "    <file_url>http://bitfinder.statsbiblioteket.dk/bart/mux1.1295359200-2011-01-18-15.00.00_1295362800-2011-01-18-16.00.00_dvb1-1.ts</file_url>\n" +
@@ -66,9 +68,7 @@ public class IdentifyLongestClipProcessorTest extends TestCase {
             }
             public String getInitParameter(String s) {
                  if (s.equals(Constants.FILE_LOCATOR_URL)) {
-                     return "http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?";
-                 } else if (s.equals(Constants.FILE_LOCATOR_CLASS)) {
-                     return "dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder";
+                     return SERVICE_BASE_URL_STRING;
                  } else return null;
             }
             public Enumeration<String> getInitParameterNames() {

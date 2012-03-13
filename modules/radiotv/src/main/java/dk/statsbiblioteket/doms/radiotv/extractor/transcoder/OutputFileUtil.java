@@ -115,7 +115,7 @@ public class OutputFileUtil {
 		case BROADCAST_EXTRACTION:
 			return hasExtractedBroadcast(request, config);
 		case DIGITV_BROADCAST_EXTRACTION:
-			return hasExtractedDigitvBroadcast(request, config);
+			return isWorkingOnDigitvBroadcastExtraction(request, config) || hasFinsishedDigitvBroadcastExtraction(request, config);
 		case PREVIEW_GENERATION:
 			return hasPreview(request, config);
 		case THUMBNAIL_GENERATION:
@@ -155,36 +155,43 @@ public class OutputFileUtil {
 		return new File(getOutputDir(request, config), request.getPid() + ".preview.mp3");
 	}
 
-	private static boolean hasExtractedDigitvBroadcast(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+	public static boolean hasFinsishedDigitvBroadcastExtraction(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+		File rootDirFinal = new File(Util.getInitParameter(config, Constants.DIGITV_FINAL_DIR_INIT_PARAM));
 		final String filenameWithoutExt = getDigitvProgramFilenameWithoutExtension(request);
+		return lookForFileInFolder(rootDirFinal, filenameWithoutExt);
+	}
+
+	public static boolean isWorkingOnDigitvBroadcastExtraction(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+		File workDir = new File(Util.getInitParameter(config, Constants.DIGITV_WORK_DIR_INIT_PARAM));
+		final String filenameWithoutExt = getDigitvProgramFilenameWithoutExtension(request);
+		return lookForFileInFolder(workDir, filenameWithoutExt);
+	}
+
+	public static boolean lookForFileInFolder(File fileLocation, final String filenameWithoutExt) throws ProcessorException {
 		final FileFilter filter = new FileFilter(){
 			@Override
 			public boolean accept(File pathname) {
 				return pathname.getName().startsWith(filenameWithoutExt);
 			}
 		};
-		File rootDirWork = getBaseOutputDir(request, config);
-		File rootDirFinal = new File(Util.getInitParameter(config, Constants.DIGITV_FINAL_DIR_INIT_PARAM));
-		log.debug("RootDirWork: " + rootDirWork.getAbsolutePath());
-		log.debug("RootDirFinal: " + rootDirFinal.getAbsolutePath());
+		log.debug("Looking for file " + filenameWithoutExt + " in: " + fileLocation.getAbsolutePath());
 		int i = 0;
-		while (!((rootDirWork.listFiles(filter) != null) && (rootDirFinal.listFiles(filter) != null)) && (i < 5)) {
+		while ((fileLocation.listFiles(filter) == null) && (i < 5)) {
 			try {
-				log.warn("Unable to access : " + rootDirWork.getAbsolutePath() + ". Retrying " + i + ". " + new Date(System.currentTimeMillis()));
-				log.warn("Unable to access : " + rootDirFinal.getAbsolutePath() + ". Retrying " + i + ". " + new Date(System.currentTimeMillis()));
+				log.warn("Unable to access : " + fileLocation.getAbsolutePath() + ". Retrying " + i + ". " + new Date(System.currentTimeMillis()));
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
+				log.info("Got interrupted. Ignoring interruption. Cause: " + e.getMessage());
 				// Do nothing...
 			}
 			i++;
 		}
-		if (!((rootDirWork.listFiles(filter) != null) && (rootDirFinal.listFiles(filter) != null))) {
-			log.error("Unable to access directories. Workdir: " + rootDirWork + ", finaldir: " + rootDirFinal);
+		if (fileLocation.listFiles(filter) == null) {
+			log.error("Unable to access directory: " + fileLocation);
 			throw new ProcessorException("Unable to access directories at storage.");
 		}
-		boolean hasFileInWorkDir = rootDirWork.listFiles(filter).length > 0;
-		boolean hasFileInFinishedDir = rootDirFinal.listFiles(filter).length > 0;
-		return (hasFileInWorkDir || hasFileInFinishedDir);
+		boolean hasFileInFinishedDir = fileLocation.listFiles(filter).length > 0;
+		return hasFileInFinishedDir;
 	}
 
 	public static File getDigitvWorkOutputFile(TranscodeRequest request, ServletConfig config) {
@@ -240,7 +247,7 @@ public class OutputFileUtil {
 		};
 		File outputDir = getBaseOutputDir(request, config);
 		log.trace("Looking for output in directory '" + outputDir + "'");
-				return outputDir.listFiles(filter)[0];
+		return outputDir.listFiles(filter)[0];
 	}
 
 	private static File getPreviewFile(TranscodeRequest request, ServletConfig config) {

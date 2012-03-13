@@ -136,19 +136,11 @@
         -->
 
         <!--
-        Class to use to find path to mediafiles from their name
-        -->
-        <init-param>
-            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.mediafilefinderclass</param-name>
-            <param-value>dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder</param-value>
-        </init-param>
-
-        <!--
         Address of webservice from which full-paths to mediafiles can be found.
         -->
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl</param-name>
-            <param-value>http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?</param-value>
+            <param-value>http://plufire/~bart/stage_files.cgi</param-value>
         </init-param>
 
         <!--

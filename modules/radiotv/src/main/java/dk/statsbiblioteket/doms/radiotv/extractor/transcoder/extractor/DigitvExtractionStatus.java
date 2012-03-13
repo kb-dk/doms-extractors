@@ -37,6 +37,7 @@ public class DigitvExtractionStatus {
     protected Long offsetStart;
     protected Long offsetEnd;
     protected int positionInQueue;
+	protected String activeProcess;
 
     public ObjectStatusEnum getStatus() {
 		return status;
@@ -79,5 +80,13 @@ public class DigitvExtractionStatus {
 	}
 	public void setPositionInQueue(int positionInQueue) {
 		this.positionInQueue = positionInQueue;
+	}
+	
+	public String getActiveProcess() {
+		return this.activeProcess;
+	}
+
+	public void setActiveProcess(String activeProcess) {
+		this.activeProcess = activeProcess;
 	}
 }

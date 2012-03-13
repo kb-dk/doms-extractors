@@ -22,6 +22,14 @@
     -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewDirectory" value="/home/larm/previewDirectory"/>
 
+	<!-- Folder where finished digiTV content is placed. Must be a shared drive accessible from client computer  -->
+	<Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitvFinaldir" value="/home/larm/digitvContent"/>
+	
+	<!-- Folder where intermediate work i placed, before it is finished -->
+	<Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitvWorkdir" value="/home/larm/digitvContent/work"/>
+	
+	<!-- Email address of user that is notified when a new job is issued with link to status page. -->
+	<Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitvEmail" value="heb@statsbiblioteket.dk"/>
 
     <!-- A small temporary directory where lock files can be stored. This should be distinct for each instance of bes if
     there are multiple instances on the same machine/container.
@@ -74,7 +82,7 @@
     <!-- Preview timeout expressed as multiple of previewLength -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor" value="4.0" />
     <!-- extraction timeout expresses as multiple of program length -->
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value="1.5" />
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value="3.0" />
     <!-- Snapshot timeout expressed as multiple of snapshot length -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/> 
     <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->

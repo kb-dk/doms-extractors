@@ -38,22 +38,23 @@ public class DigitvExtractionStatusExtractor {
 
 
     public static DigitvExtractionStatus getStatus(TranscodeRequest request, ServletConfig config) throws UnsupportedEncodingException, ProcessorException {
-        boolean isDone = (OutputFileUtil.hasOutputFile(request, config)) && !RequestRegistry.getInstance().isKnown(request);
+        boolean isDone = (OutputFileUtil.hasFinsishedDigitvBroadcastExtraction(request, config)) && !RequestRegistry.getInstance().isKnown(request);
         Double percentage = 0.0;
         if (isDone) {
             log.debug("Found already fully ready result for program pid: '" + request.getDomsProgramPid() + "'");
             String filename = OutputFileUtil.getDigitvDoneFile(request, config).getName();
             DigitvExtractionStatus status = new DigitvExtractionStatus();
             status.setStatus(ObjectStatusEnum.DONE);
-            status.setCompletionPercentage(100.0);
+           	status.setCompletionPercentage(100.0);
             status.setFilename(filename);
+            status.setActiveProcess("None");
             return status;
         } else if (RequestRegistry.getInstance().isKnown(request)) {
             log.debug("Already started transcoding program pid: '" + request.getDomsProgramPid() + "'");
             request = RequestRegistry.getInstance().get(request);
             DigitvExtractionStatus status = new DigitvExtractionStatus();
-            if (OutputFileUtil.hasOutputFile(request, config)) {
-                final long outputFileLength = OutputFileUtil.getExistingMediaOutputFile(request, config).length();
+            if (OutputFileUtil.isWorkingOnDigitvBroadcastExtraction(request, config)) {
+                final long outputFileLength = OutputFileUtil.getDigitvWorkOutputFile(request, config).length();
                 if (request != null && request.getFinalFileLengthBytes() != null && request.getFinalFileLengthBytes() != 0) {
                     double completionPercentage = 100.0 * outputFileLength/request.getFinalFileLengthBytes();
                     completionPercentage = Math.round(completionPercentage);
@@ -67,6 +68,7 @@ public class DigitvExtractionStatusExtractor {
             status.setOffsetStart(request.getUserAdditionalStartOffset());
             status.setOffsetEnd(request.getUserAdditionalEndOffset());
             status.setStatus(ObjectStatusEnum.STARTED);
+            status.setActiveProcess(request.getActiveProcess());
             if (percentage != null && percentage < 0.00001) {
                 status.setPositionInQueue(Util.getQueuePosition(request, config));
             }

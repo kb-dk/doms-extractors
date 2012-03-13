@@ -25,6 +25,7 @@ import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.snapshotter.Snapsho
 import org.apache.log4j.Logger;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -56,7 +57,7 @@ import java.util.List;
 public class BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
-    public static final String besVersion = "1.7.03";
+    public static final String besVersion = "1.8.0";
 
     public final boolean dummyService=false;
 
@@ -238,16 +239,19 @@ public class BroadcastExtractionService {
     		@QueryParam("date") long startTime, 
     		@QueryParam("additional_start_offset") long additionalStartOffset, 
     		@QueryParam("additional_end_offset") long additionalEndOffset, 
-    		@QueryParam("filename_prefix") String filenamePrefix) throws ProcessorException, UnsupportedEncodingException { 
+    		@QueryParam("filename_prefix") String filenamePrefix,
+    		@DefaultValue("true") @QueryParam("send_email") String sendEmailParam) throws ProcessorException, UnsupportedEncodingException { 
     	logIncomingRequest("digitv_transcode", programPid, title, channel, startTime);
     	String domsProgramPid = Util.getUuid(programPid);
     	String filenamePrefixURLDecoded = URLDecoder.decode(filenamePrefix, "UTF-8");
+    	boolean sendEmail = ((sendEmailParam == null) || (sendEmailParam.equalsIgnoreCase("true"))); 
     	log.info("BES version: " + besVersion);
     	log.info("Transcode request set filename: " + filenamePrefixURLDecoded);
     	log.info("Transcode request set user defined additional start offset: " + additionalStartOffset);
     	log.info("Transcode request set user defined additional end offset: " + additionalEndOffset);
     	log.info("Transcode request set service type: " + ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION);
     	log.info("Transcode request set doms program pid: " + domsProgramPid);
+    	log.info("Transcode request set send email: " + sendEmail);
     	TranscodeRequest request = new TranscodeRequest(domsProgramPid, additionalStartOffset, additionalEndOffset, filenamePrefixURLDecoded);
     	DigitvExtractionStatus status = DigitvExtractionStatusExtractor.getStatus(request, config);
     	if (status != null) {
@@ -255,7 +259,7 @@ public class BroadcastExtractionService {
     	} else {
     		log.info("Starting transcoding of program: " + programPid);
     		RequestRegistry.getInstance().register(request);
-    		ProcessorChainElement sendJobEmail = new DigitvJobLinkEmailProcessor(uriInfo.getRequestUri().toString());
+    		ProcessorChainElement sendJobEmail = new DigitvJobLinkEmailProcessor(uriInfo.getRequestUri().toString(), sendEmail);
     		ProcessorChainElement programPidExtracter = new ShardPidFromProgramPidFetcherProcessor();
     		ProcessorChainElement fetcher = new ShardFetcherProcessor();
     		ProcessorChainElement parser = new ShardParserProcessor();

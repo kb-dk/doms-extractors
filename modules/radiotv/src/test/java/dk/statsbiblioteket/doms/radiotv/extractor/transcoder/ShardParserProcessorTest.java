@@ -30,6 +30,8 @@ import java.util.Enumeration;
 
 public class ShardParserProcessorTest extends TestCase {
 
+	private static final String SERVICE_BASE_URL_STRING = "http://plufire/~bart/stage_files.cgi";
+
     public static String xml1 = "<shard_metadata><file>\n" +
             "\n" +
             "     <file_url>http://bitfinder.statsbiblioteket.dk/bart/mux1.1258135200-2009-11-13-19.00.00_1258138800-2009-11-13-20.00.00_dvb1-2.ts</file_url>\n" +
@@ -80,9 +82,7 @@ public class ShardParserProcessorTest extends TestCase {
             }
             public String getInitParameter(String s) {
                  if (s.equals(Constants.FILE_LOCATOR_URL)) {
-                     return "http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?";
-                 } else if (s.equals(Constants.FILE_LOCATOR_CLASS)) {
-                     return "dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder";
+                     return SERVICE_BASE_URL_STRING;
                  } else return null;
             }
             public Enumeration<String> getInitParameterNames() {
@@ -110,9 +110,7 @@ public class ShardParserProcessorTest extends TestCase {
             }
             public String getInitParameter(String s) {
                  if (s.equals(Constants.FILE_LOCATOR_URL)) {
-                     return "http://pluto.statsbiblioteket.dk/~bart/get_url.cgi?";
-                 } else if (s.equals(Constants.FILE_LOCATOR_CLASS)) {
-                     return "dk.statsbiblioteket.doms.radiotv.extractor.transcoder.WebserviceMediafileFinder";
+                     return SERVICE_BASE_URL_STRING;
                  } else return null;
             }
             public Enumeration<String> getInitParameterNames() {

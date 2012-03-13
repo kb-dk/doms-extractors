@@ -21,7 +21,6 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
-import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -39,6 +38,7 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class parses a shard element in the TranscodeRequest into a
@@ -79,6 +79,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
      *
      * @param request
      * @param config
+     * @throws MediaFileNotFoundException 
      */
     @Override
     protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
@@ -102,14 +103,13 @@ public class ShardParserProcessor extends ProcessorChainElement {
             throw new ProcessorException(e);
         } catch (InvocationTargetException e) {
             throw new ProcessorException(e);
-        }
+        } catch (MediaFileNotFoundException e) {
+            throw new ProcessorException(e);
+		}
     }
 
-    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, ProcessorException {
+    private void doParse(TranscodeRequest request, ServletConfig config) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException, ProcessorException, MediaFileNotFoundException {
         Long totalLengthSeconds = 0L;
-        String locatorClassName = config.getInitParameter(Constants.FILE_LOCATOR_CLASS);
-        Class locatorClass = Class.forName(locatorClassName);
-        MediafileFinder finder = (MediafileFinder) locatorClass.getConstructor().newInstance();
         List<TranscodeRequest.FileClip> clips = new ArrayList<TranscodeRequest.FileClip>();
         request.setClips(clips);
         DocumentBuilder builder = null;
@@ -120,6 +120,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
         ByteArrayInputStream is = new ByteArrayInputStream(request.getShard().getBytes());
         shardMetadataDocument = builder.parse(is);
         files = (NodeList) xpathFactory.newXPath().evaluate("//file", shardMetadataDocument, XPathConstants.NODESET);
+        Map<String, String> filenameToFilenameWithPathMap = requestFilesOnlineAndGetFileLocationMap(config, xpathFactory, files);
         for (int i=0; i<files.getLength(); i++) {
             Node fileNode = files.item(i);
             String url = (String) xpathFactory.newXPath().evaluate("file_url", fileNode, XPathConstants.STRING);
@@ -127,7 +128,7 @@ public class ShardParserProcessor extends ProcessorChainElement {
             String startOffset = (String) xpathFactory.newXPath().evaluate("program_start_offset", fileNode, XPathConstants.STRING);
             String length = (String) xpathFactory.newXPath().evaluate("program_clip_length", fileNode, XPathConstants.STRING);
             String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
-            String filePath = finder.getFilePath(fileName, config);
+            String filePath = filenameToFilenameWithPathMap.get(fileName);
             TranscodeRequest.FileClip clip = new TranscodeRequest.FileClip(filePath);
             clips.add(clip);
             request.setClipType(ClipTypeEnum.getType(request));
@@ -168,6 +169,18 @@ public class ShardParserProcessor extends ProcessorChainElement {
 
         log.debug("Total length set to '" + request.getTotalLengthSeconds() + "'");
     }
+
+	public Map<String, String> requestFilesOnlineAndGetFileLocationMap(ServletConfig config, XPathFactory xpathFactory, NodeList files) throws XPathExpressionException, IOException, MediaFileNotFoundException {
+		List<String> filenames = new ArrayList<String>();
+        for (int i=0; i<files.getLength(); i++) {
+            Node fileNode = files.item(i);
+            String filename = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
+            filenames.add(filename);
+        }
+        MediaFileFinder finder = MediaFileFinderFactory.createMediaFileFinder(config);
+        Map<String, String> filenameToFilenameWithPathMap = finder.getFilePath(filenames);
+		return filenameToFilenameWithPathMap;
+	}
 
 
 }
