@@ -66,10 +66,10 @@ public class FlashTranscoderProcessor extends ProcessorChainElement {
                 break;
         }
         String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
-                + " -b " + Util.getInitParameter(config, Constants.VIDEO_BITRATE) + "000"
-                + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
+                + " -b:v " + Util.getInitParameter(config, Constants.VIDEO_BITRATE) + "000"
+                + " -b:a " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
                 + " " + getFfmpegAspectRatio(request, config)           
-                + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
+                + " " + " -preset "  + config.getInitParameter(Constants.X264_PRESET)
                 + " -threads 0 " + outputFile;
         return line;
     }

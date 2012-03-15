@@ -73,7 +73,7 @@
 
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotNumber"   value="5"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotLength"  value="10"/>
-    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotPrimaryFormat"  value="bmp"/>
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotPrimaryFormat"  value="png"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotFinalFormat"   value="jpeg"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotScaleSize"  value="26"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotQuality"   value="75"/>

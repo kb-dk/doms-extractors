@@ -102,7 +102,7 @@
 
         <init-param>
             <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Preset</param-name>
-            <param-value>libx264-superfast</param-value>
+            <param-value>superfast</param-value>
         </init-param>
 
         <!--
