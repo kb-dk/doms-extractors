@@ -1,0 +1,174 @@
+<web-app xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+    
+    <display-name>Broadcast Extraction Service</display-name>
+
+    <servlet>
+        <servlet-name>Broadcast Extraction Service</servlet-name>
+
+        <servlet-class>
+            dk.statsbiblioteket.doms.radiotv.extractor.BESServlet
+            <!-- com.sun.jersey.spi.container.servlet.ServletContainer-->
+        </servlet-class>
+
+
+
+        <!--
+        Broadcast Extraction Service configuration parameters. First we list those
+        which are likely to require tweaking in production.
+        -->
+
+        <!--
+        Directory for temporary files. Will be created if it does not exist. In later
+        versions it will be cleaned-up on reload.
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.tempdir</param-name>
+            <param-value>/home/larm/temp</param-value>
+        </init-param>
+        -->
+
+        <!--
+        Directory where the streamable files are to be deployed
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.finaldir</param-name>
+            <param-value>/home/larm/streamingContent</param-value>
+        </init-param>
+        -->
+
+        <!--
+        URL where streamable files are streamed from
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.wowzaUrl</param-name>
+            <param-value>rtmp://130.225.24.62/doms</param-value>
+        </init-param>
+        -->
+
+        <!-- Control multithreading: How many simultaneous processes to allow
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.maxActive</param-name>
+            <param-value>8</param-value>
+        </init-param>
+        -->
+
+
+        <!--
+        Location and basic authentication for DOMS
+        -->
+        <!--
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsLocation</param-name>
+            <param-value>http://alhena:7980/fedora</param-value>
+        </init-param>
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsUsername</param-name>
+            <param-value>fedoraAdmin</param-value>
+        </init-param>
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.domsPassword</param-name>
+            <param-value>fedoraAdminPass</param-value>
+        </init-param>
+        -->
+
+        <!--
+           Encoding parameters passed to ffmpeg
+        -->
+
+        <!--
+        Video bitrate (kbps)
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.videoBitrate</param-name>
+            <param-value>200</param-value>
+        </init-param>
+        -->
+
+        <!--
+        Audio bitrate (kbps)
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.audioBitrate</param-name>
+            <param-value>96</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.pictureHeight</param-name>
+            <param-value>240</param-value>
+        </init-param>
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.ffmpegParameters</param-name>
+            <param-value> -async 2 -vcodec libx264 -deinterlace -ar 44100 </param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Preset</param-name>
+            <param-value>superfast</param-value>
+        </init-param>
+
+        <!--
+           Lines below here are parameters used in the two-stage demuxing-transcoding chain
+        -->
+         <!--
+         Basic Handbrake parameters. Changing the framerate and/or audio and video codecs will
+         probably break everything
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.handbrakeParameters</param-name>
+            <param-value>-r 24 -e x264 -E faac --crop 0:0:0:0 -d </param-value>
+        </init-param>
+
+        <!--
+          x264 parameters.
+          The values -x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000
+          are optimised for speed over quality
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.x264Parameters</param-name>
+            <param-value>-x subq=1:nob_adapt:bframes=1:threads=auto:keyint=1000 </param-value>
+        </init-param>
+         <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.releaseAfterDemux</param-name>
+            <param-value>true</param-value>
+        </init-param>
+
+        <!--
+        Lines below here are unlikley to require tweaking.
+        -->
+
+        <!--
+        Address of webservice from which full-paths to mediafiles can be found.
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.fileLocatorUrl</param-name>
+            <param-value>http://plufire/~bart/stage_files.cgi</param-value>
+        </init-param>
+
+        <!--
+        Algorithm to use for demuxing. Allowable values are "seamless" and "naive". "naive" is deprecated.
+        -->
+        <init-param>
+            <param-name>dk.statsbiblioteket.doms.radiotv.extractor.demuxerAlgorithm</param-name>
+            <param-value>seamless</param-value>
+        </init-param>
+
+        <!--
+        Jersey configuration. Tells Jersey in which package to look for webservice classes.
+          -->
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>dk.statsbiblioteket.doms.radiotv.extractor</param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Broadcast Extraction Service</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping>
+
+     <listener>
+    <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+  </listener>
+
+</web-app>
