@@ -155,6 +155,7 @@ public class BroadcastExtractor {
                  String additionalUrlComponent = "/forcetranscode?programpid=";
                  for (File pidFile: pidFiles) {
                      try {
+                         logger.debug("Processing objects in " + pidFile.getAbsolutePath());
                          BufferedReader reader;
                          reader = new BufferedReader(new FileReader(pidFile));
                          String pid;
@@ -180,12 +181,14 @@ public class BroadcastExtractor {
                                  }
                                  currentEndpoint = (currentEndpoint + 1) % nEndpoints;
                              }
-                             pidFile.renameTo(new File(coldDir, pidFile.getName()));
                          }
                      } catch (IOException e) {
+                         logger.debug("Moving " + pidFile.getName() + " to " + warmDir.getAbsolutePath());
                          pidFile.renameTo(new File(warmDir, pidFile.getName()));
                          throw new BroadcastExtractorException(e);
                      }
+                     logger.debug("Moving " + pidFile.getName() + " to " + coldDir.getAbsolutePath());
+                     pidFile.renameTo(new File(coldDir, pidFile.getName()));
                  }
              }
          },

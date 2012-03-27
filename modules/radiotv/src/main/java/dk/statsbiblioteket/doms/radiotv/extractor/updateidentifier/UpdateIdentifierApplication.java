@@ -238,6 +238,9 @@ public class UpdateIdentifierApplication {
         WRITE_RESULTS {
             @Override
             public void doThisOperation() throws UpdateIdentifierException {
+                if (domsRecords.isEmpty()) {
+                    return;
+                }
                 File outputDir = new File(props.getProperty(OUTPUT_DIR));
                 if (outputDir.exists() && !outputDir.isDirectory()) {
                     throw new UpdateIdentifierException("File '" + outputDir.getAbsolutePath() + "' is not a directory");
