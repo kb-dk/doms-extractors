@@ -23,6 +23,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor.transcoder;
 
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
@@ -111,7 +112,9 @@ public class AspectRatioDetectorProcessor extends ProcessorChainElement {
         try {
             ExternalJobRunner runner = null;
             try {
-                runner = new ExternalJobRunner(10000L, new String[]{"bash", "-c", command});
+                Long timeout = Integer.parseInt(Util.getInitParameter(config, Constants.ASPECT_RATIO_TIMEOUT))*1000L;
+                log.debug("Using timeout " + timeout + "ms for aspect ratio detection.");
+                runner = new ExternalJobRunner(timeout, new String[]{"bash", "-c", command});
             } catch (ExternalProcessTimedOutException e) {
                 throw new ProcessorException(e);
             }

@@ -147,5 +147,8 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate" value="3000"/>
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate" value="256"/>
 
+    <!--The timeout (in seconds) for the external process which finds the aspect ratio of a TV broadcast -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.aspectRatioTimeoutSeconds" value="30" />
+
 </Context>
 <!-- vim: set sw=4 sts=4 expandtab: -->

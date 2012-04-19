@@ -40,7 +40,7 @@ public class ExternalJobRunner {
     private final StringBuffer standard_err = new StringBuffer();
     private int exit_code;
     private static final Logger log = Logger.getLogger(ExternalJobRunner.class);
-    private String logString = null;
+    private String logString = "";
 
     private long timeout = 0L;
 
@@ -70,7 +70,7 @@ public class ExternalJobRunner {
      */
     public ExternalJobRunner(long timeout, final String... command) throws IOException, InterruptedException, ExternalProcessTimedOutException {
         for (String commandS:command) {
-            if (commandS!= null) logString += commandS + " ";
+            if (commandS!= null && !commandS.equals("null")) logString += commandS + " ";
         }
 
         if (timeout != 0L) {
