@@ -1,0 +1,111 @@
+/* $Id: FlashTranscoderProcessor.java 1822 2011-03-18 11:25:37Z csrster $
+ * $Revision: 1822 $
+ * $Date: 2011-03-18 12:25:37 +0100 (Fri, 18 Mar 2011) $
+ * $Author: csrster $
+ *
+ * The Netarchive Suite - Software to harvest and preserve websites
+ * Copyright 2004-2009 Det Kongelige Bibliotek and Statsbiblioteket, Denmark
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ *   USA
+ */
+package dk.statsbiblioteket.doms.radiotv.extractor.transcoder.extractor;
+
+import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
+import org.apache.log4j.Logger;
+
+import javax.servlet.ServletConfig;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
+import dk.statsbiblioteket.doms.radiotv.extractor.ExternalJobRunner;
+import dk.statsbiblioteket.doms.radiotv.extractor.Constants;
+
+public class DigitvTranscoderDispatcherProcessor extends ProcessorChainElement {
+
+    private static Logger log = Logger.getLogger(DigitvTranscoderDispatcherProcessor.class);
+
+
+    @Override
+    protected void processThis(TranscodeRequest request, ServletConfig config) throws ProcessorException {
+        switch (request.getClipType()) {
+            case MUX:
+                (new DigitvTranscoderMuxClipper()).processThis(request, config);
+                break;
+            case MPEG1:
+                (new DigitvTranscoderMpegProcessor()).processThis(request, config);
+                break;
+            case MPEG2:
+                (new DigitvTranscoderMpegProcessor()).processThis(request, config);
+                break;
+            case WAV:
+                (new DigitvTranscoderWavProcessor()).processThis(request, config);
+                break;
+        }
+        Util.unlockRequest(request);
+    }
+
+    public static String getFfmpegCommandLine(TranscodeRequest request, ServletConfig config) {
+        String outputFile = null;
+        switch (request.getServiceType()) {
+            case PREVIEW_GENERATION:
+                outputFile = OutputFileUtil.getFlashVideoPreviewOutputFile(request, config).getAbsolutePath();
+                break;
+            case BROADCAST_EXTRACTION:
+                outputFile = OutputFileUtil.getFlashVideoOutputFile(request, config).getAbsolutePath();
+                break;
+        }
+        String line = "ffmpeg -i - " + config.getInitParameter(Constants.FFMPEG_PARAMS)
+                + " -b " + Util.getInitParameter(config, Constants.VIDEO_BITRATE) + "000"
+                + " -ab " + Util.getInitParameter(config, Constants.AUDIO_BITRATE) + "000"
+                + " " + getFfmpegAspectRatio(request, config)           
+                + " " + " -vpre "  + config.getInitParameter(Constants.X264_PRESET)
+                + " -threads 0 " + outputFile;
+        return line;
+    }
+
+
+    protected static String getFfmpegAspectRatio(TranscodeRequest request, ServletConfig config) {
+        Double aspectRatio = request.getDisplayAspectRatio();
+        String ffmpegResolution;
+        Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
+        if (aspectRatio != null) {
+            long width = Math.round(aspectRatio*height);
+            if (width%2 == 1) width += 1;
+            ffmpegResolution = " -s " + width + "x" + height;
+        } else {
+            ffmpegResolution = " -s 320x240";
+        }
+        return ffmpegResolution;
+    }
+
+    public static int getHeight(TranscodeRequest request, ServletConfig config) {
+        Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
+        return height.intValue();
+   }
+
+     public static int getWidth(TranscodeRequest request, ServletConfig config) {
+       Double aspectRatio = request.getDisplayAspectRatio();
+        Long height = Long.parseLong(Util.getInitParameter(config, Constants.PICTURE_HEIGHT));
+        if (aspectRatio != null) {
+            long width = Math.round(aspectRatio*height);
+            if (width%2 == 1) width += 1;
+            return (int) width;
+        } else {
+            return 320;
+        }
+   }
+
+}
