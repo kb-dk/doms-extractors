@@ -9,14 +9,15 @@
 	<groupId>DOMS_project</groupId>
 	<artifactId>BroadcastExtractionService</artifactId>
 	<version>2.0.1</version>
+
 	<packaging>war</packaging>
 	<name>BroadcastExtractionService</name>
 	<description>Extract a broadcasted program from the underlying
         datastorage
     </description>
 	<repositories>
-		<!-- repository> <id>sbforge-nexus</id> <url>https://sbforge.org/nexus/content/groups/public</url> 
-			<releases><enabled>true</enabled></releases> <snapshots><enabled>true</enabled></snapshots> 
+		<!-- repository> <id>sbforge-nexus</id> <url>https://sbforge.org/nexus/content/groups/public</url>
+			<releases><enabled>true</enabled></releases> <snapshots><enabled>true</enabled></snapshots>
 			</repository -->
 		<repository>
 			<id>sbprojects-nexus</id>
@@ -67,7 +68,7 @@
 			<version>1.0</version>
 			<scope>compile</scope>
 		</dependency>
-		<!--<dependency> <groupId>org.glassfish</groupId> <artifactId>javax.servlet</artifactId> 
+		<!--<dependency> <groupId>org.glassfish</groupId> <artifactId>javax.servlet</artifactId>
 			<version>3.0-b66</version> <scope>provided</scope> </dependency> -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -115,10 +116,16 @@
 			<version>1.4</version>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
+    <build>
+        <resources>
+            <resource>
+                <directory>etc/DEVEL</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.1</version>
 				<configuration>

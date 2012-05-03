@@ -105,5 +105,6 @@ public class Constants {
     public static final String DIGITV_VIDEO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.digitv.videoBitrate";
     public static final String DIGITV_AUDIO_BITRATE = "dk.statsbiblioteket.doms.radiotv.extractor.digitv.audioBitrate";
 
+    public static final String BES_VERSION = "dk.statsbiblioteket.doms.radiotv.extractor.versionNumber";
 
 }

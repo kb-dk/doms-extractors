@@ -150,5 +150,8 @@
     <!--The timeout (in seconds) for the external process which finds the aspect ratio of a TV broadcast -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.aspectRatioTimeoutSeconds" value="30" />
 
+
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.versionNumber" value="${project.version}" />
+
 </Context>
 <!-- vim: set sw=4 sts=4 expandtab: -->
