@@ -39,7 +39,7 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
         try {
             cleanup();
         } catch (Exception e) {
-            log.error(e);
+            log.error("Error during initial cleanup.", e);
         }
         log.info("initialized BES service version " + BroadcastExtractionService.besVersion);
     }
