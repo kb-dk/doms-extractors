@@ -111,7 +111,9 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
     }
 
     private void cleanupDigitvExtractionWorkDir() {
-        File workDir = new File(OutputFileUtil.getBaseOutputDir(ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION, this.getServletConfig()));
+        final String baseOutputDir = OutputFileUtil.getBaseOutputDir(ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION, this.getServletConfig());
+        log.debug("Cleaning up '" + baseOutputDir + "'");
+        File workDir = new File(baseOutputDir);
         if (workDir.exists() && workDir.isDirectory()) {
             for (File workFile : workDir.listFiles()) {
                 boolean deleted = workFile.delete();
