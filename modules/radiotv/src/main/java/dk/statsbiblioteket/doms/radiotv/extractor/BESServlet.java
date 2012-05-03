@@ -111,16 +111,18 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
     }
 
     private void cleanupDigitvExtractionWorkDir() {
-    	File workDir = new File(OutputFileUtil.getBaseOutputDir(ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION, this.getServletConfig()));
-    	for (File workFile : workDir.listFiles()) {
-			boolean deleted = workFile.delete();
-			if (deleted) {
-				log.info("Deleted work file: " + workFile.getAbsolutePath());
-			} else {
-	            log.error("Could not delete work file: '" + workFile.getAbsolutePath() + "'");
-			}
-		} 
-	}
+        File workDir = new File(OutputFileUtil.getBaseOutputDir(ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION, this.getServletConfig()));
+        if (workDir.exists() && workDir.isDirectory()) {
+            for (File workFile : workDir.listFiles()) {
+                boolean deleted = workFile.delete();
+                if (deleted) {
+                    log.info("Deleted work file: " + workFile.getAbsolutePath());
+                } else {
+                    log.error("Could not delete work file: '" + workFile.getAbsolutePath() + "'");
+                }
+            }
+        }
+    }
 
     private void cleanupDigitvExtractionDelete(File lockFile) {
         if (!lockFile.delete()) {
