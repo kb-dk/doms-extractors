@@ -18,7 +18,6 @@ cp target/BroadcastExtractionService-*.war bes_release/webapps/bes.war
 cp -r target/BroadcastExtractionService-*/WEB-INF/lib/* bes_release/lib
 
 cp etc/DEVEL/*DEVEL* bes_release/conf
-cp target/classes/bes_DEVEL.xml  bes_release/conf
 cp src/main/resources/log4j* bes_release/conf
 cp src/main/resources/update_identifier.properties bes_release/conf
 

@@ -57,7 +57,7 @@ import java.util.List;
 public class BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
-    //public static final String besVersion = "1.8.0";
+    public static final String besVersion = "2.0.2";
 
     public final boolean dummyService=false;
 
@@ -245,7 +245,6 @@ public class BroadcastExtractionService {
     	String domsProgramPid = Util.getUuid(programPid);
     	String filenamePrefixURLDecoded = URLDecoder.decode(filenamePrefix, "UTF-8");
     	boolean sendEmail = ((sendEmailParam == null) || (sendEmailParam.equalsIgnoreCase("true")));
-        String besVersion = Util.getInitParameter(config, Constants.BES_VERSION);
     	log.info("BES version: " + besVersion);
     	log.info("Transcode request set filename: " + filenamePrefixURLDecoded);
     	log.info("Transcode request set user defined additional start offset: " + additionalStartOffset);
