@@ -21,7 +21,6 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
-//import com.sun.xml.internal.bind.v2.util.CollisionCheckStack;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
 
