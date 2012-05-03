@@ -21,6 +21,7 @@
  */
 package dk.statsbiblioteket.doms.radiotv.extractor;
 
+import com.sun.xml.internal.bind.v2.util.CollisionCheckStack;
 import dk.statsbiblioteket.doms.radiotv.extractor.transcoder.*;
 import org.apache.log4j.Logger;
 
@@ -41,7 +42,7 @@ public class BESServlet extends com.sun.jersey.spi.container.servlet.ServletCont
         } catch (Exception e) {
             log.error(e);
         }
-        log.info("initialized BES service version " + BroadcastExtractionService.besVersion);        
+        log.info("initialized BES service version " + Util.getInitParameter(getServletConfig(), Constants.BES_VERSION));
     }
 
 	private void initializeDomsClient() {
