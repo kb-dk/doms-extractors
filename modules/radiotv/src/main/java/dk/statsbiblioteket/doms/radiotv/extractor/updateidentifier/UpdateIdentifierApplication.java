@@ -1,21 +1,33 @@
 package dk.statsbiblioteket.doms.radiotv.extractor.updateidentifier;
 
 import dk.statsbiblioteket.doms.central.CentralWebservice;
-import dk.statsbiblioteket.doms.central.InvalidCredentialsException;
-import dk.statsbiblioteket.doms.central.MethodFailedException;
 import dk.statsbiblioteket.doms.central.RecordDescription;
 import dk.statsbiblioteket.doms.radiotv.extractor.DomsClient;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
  *
  */
 public class UpdateIdentifierApplication {
+
+
+    private static final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
     private static Logger logger = Logger.getLogger(UpdateIdentifierApplication.class);
 
@@ -34,11 +46,13 @@ public class UpdateIdentifierApplication {
      * Immediately below here is the list of parameters which must be defined in update_identfier.properties
      */
     static final String LOCKFILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.lockfiledir";
+    static final String OFFLINE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.offlinedir";
     private static final String TIMESTAMP_FILE_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.timestampfiledir";
     static final String OUTPUT_DIR = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.hotdir";
     private static final String DOMS_ENDPOINT = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domsendpoint";
     private static final String DOMS_USERNAME = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domsusername";
     private static final String DOMS_PASSWORD = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.domspassword";
+    public static final String ONLINE_CHECKER_CLASS = "dk.statsbiblioteket.radiotv.extractor.updateidentifier.online_status_checker_class";
 
 
 
@@ -51,7 +65,9 @@ public class UpdateIdentifierApplication {
     private static long since;
     private static String now;
     private static List<RecordDescription> domsRecords;
-
+    private static List<RecordDescription> domsRecordsOnline;
+    private static List<RecordDescription> domsRecordsOffline;
+    private static Map<String, List<String>> offlineFiles;
 
     public static class UpdateIdentifierException extends Exception {
         public UpdateIdentifierException(Throwable cause) {
@@ -109,6 +125,8 @@ public class UpdateIdentifierApplication {
                 checkKey(DOMS_USERNAME);
                 checkKey(DOMS_PASSWORD);
                 checkKey(OUTPUT_DIR);
+                checkKey(OFFLINE_DIR);
+                checkKey(ONLINE_CHECKER_CLASS);
             }
         },
 
@@ -235,10 +253,62 @@ public class UpdateIdentifierApplication {
             }
         },
 
-        WRITE_RESULTS {
+        FIND_OFFLINE {
             @Override
             public void doThisOperation() throws UpdateIdentifierException {
-                if (domsRecords.isEmpty()) {
+                /*String checkerClass = props.getProperty(ONLINE_CHECKER_CLASS);
+                OnlineStatusChecker checker = null;
+                try {
+                    Class onlineChecker = Class.forName(checkerClass);
+                    Constructor ctor = onlineChecker.getConstructor();
+                    checker = (OnlineStatusChecker) ctor.newInstance();
+                } catch (Exception e) {
+                    throw new UpdateIdentifierException(e);
+                }*/
+                OnlineStatusChecker checker = new DummyOnlineStatusChecker();
+                domsRecordsOffline = new ArrayList<RecordDescription>();
+                domsRecordsOnline = new ArrayList<RecordDescription>();
+                DocumentBuilder builder = null;
+                Document shardMetadataDocument = null;
+                XPathFactory xpathFactory = XPathFactory.newInstance();
+                NodeList files = null;
+                List<String> filenames = null;
+                try {
+                    builder = dbf.newDocumentBuilder();
+                } catch (ParserConfigurationException e) {
+                    throw new UpdateIdentifierException(e);
+                }
+                for (RecordDescription domsRecord: domsRecords) {
+                    boolean online = true;
+                    filenames = new ArrayList<String>();
+                    String shardResult = DomsClient.getSingletonDomsClient().getShard(domsRecord.getPid());
+                    ByteArrayInputStream is = new ByteArrayInputStream(shardResult.getBytes());
+                    try {
+                        shardMetadataDocument = builder.parse(is);
+                        files = (NodeList) xpathFactory.newXPath().evaluate("//file", shardMetadataDocument, XPathConstants.NODESET);
+                        for (int i = 0; i<files.getLength(); i++) {
+                                Node fileNode = files.item(i);
+                                String fileName = (String) xpathFactory.newXPath().evaluate("file_name", fileNode, XPathConstants.STRING);
+                                online = online && checker.isOnline(fileName);
+                                filenames.add(fileName);
+                        }
+                    } catch (Exception e) {
+                        throw new UpdateIdentifierException(e);
+                    }
+                    if (online) {
+                        domsRecordsOnline.add(domsRecord);
+                    } else {
+                        domsRecordsOffline.add(domsRecord);
+                        offlineFiles.put(domsRecord.getPid(), filenames);
+                    }
+                }
+            }
+        },
+
+        WRITE_RESULTS_ONLINE {
+            @Override
+            public void doThisOperation() throws UpdateIdentifierException {
+                if (domsRecordsOnline.isEmpty()) {
                     return;
                 }
                 File outputDir = new File(props.getProperty(OUTPUT_DIR));
@@ -256,7 +326,7 @@ public class UpdateIdentifierApplication {
                     throw new UpdateIdentifierException(e);
                 }
                 try {
-                    for (RecordDescription record: domsRecords) {
+                    for (RecordDescription record: domsRecordsOnline) {
                         String recordS = "Found updated pid = '" + record.getPid()
                                 + "' Entry CM = '" + record.getEntryContentModelPid()
                                 + "' Date = " + (new Date(record.getDate()));
@@ -274,6 +344,67 @@ public class UpdateIdentifierApplication {
                     }
                 }
 
+            }
+        },
+
+        WRITE_RESULTS_OFFLINE {
+            @Override
+            public void doThisOperation() throws UpdateIdentifierException {
+                if (domsRecordsOffline.isEmpty()) {
+                    return;
+                }
+                File outputDir = new File(props.getProperty(OFFLINE_DIR));
+                if (outputDir.exists() && !outputDir.isDirectory()) {
+                    throw new UpdateIdentifierException("File '" + outputDir.getAbsolutePath() + "' is not a directory");
+                }
+                if (!outputDir.exists() && !outputDir.mkdirs()) {
+                    throw new UpdateIdentifierException("Could not create directory '" + outputDir.getAbsolutePath() + "'");
+                }
+                File outputFile = new File(outputDir, "update_identifier_" + since + "_" + now + ".txt");
+                File outputFileFilenames = new File(outputDir, "update_identifier_" + since + "_" + now + ".filenames.txt");
+                BufferedWriter writer;
+                BufferedWriter writerFilenames;
+                try {
+                    writer = new BufferedWriter(new FileWriter(outputFile));
+                    writerFilenames = new BufferedWriter(new FileWriter(outputFileFilenames));
+                } catch (IOException e) {
+                    throw new UpdateIdentifierException(e);
+                }
+                try {
+                    for (RecordDescription record: domsRecordsOffline) {
+                        String recordS = "Found updated pid for offline content = '" + record.getPid()
+                                + "' Entry CM = '" + record.getEntryContentModelPid()
+                                + "' Date = " + (new Date(record.getDate()));
+                        logger.debug(recordS);
+                        writer.append(record.getPid());
+                        writer.append("\n");
+                    }
+                } catch (IOException e) {
+                    throw new UpdateIdentifierException(e);
+                } finally {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        logger.error(e);
+                    }
+                }
+                for (Map.Entry<String, List<String>> entry: offlineFiles.entrySet()) {
+                    try {
+                        writerFilenames.append(entry.getKey());
+                        for (String filename: entry.getValue()) {
+                            writerFilenames.append(" " + filename);
+                        }
+                        writerFilenames.append("\n");
+                    } catch (IOException e) {
+                        throw new UpdateIdentifierException(e);
+                    } finally {
+                        try {
+                            writerFilenames.close();
+                        } catch (IOException e) {
+                            logger.error(e);
+                        }
+                    }
+                }
             }
         },
 
@@ -334,14 +465,16 @@ public class UpdateIdentifierApplication {
         processingStep read = processingStep.READ_STARTTIME;
         processingStep write = processingStep.WRITE_NEW_STARTTIME;
         processingStep call = processingStep.CALL_DOMS;
-        processingStep writeResults = processingStep.WRITE_RESULTS;
+        processingStep findOffline = processingStep.FIND_OFFLINE;
+        processingStep writeResults = processingStep.WRITE_RESULTS_ONLINE;
         processingStep cleanup = processingStep.CLEANUP;
         start.setNextStep(load);
         load.setNextStep(verify);
         verify.setNextStep(lock);
         lock.setNextStep(read);
         read.setNextStep(call);
-        call.setNextStep(write);
+        call.setNextStep(findOffline);
+        findOffline.setNextStep(write);
         write.setNextStep(writeResults);
         try {
             start.doOperation();
