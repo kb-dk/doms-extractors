@@ -135,7 +135,7 @@ public class MuxFlashClipper extends ProcessorChainElement {
         }
 
         try {
-            long timeout = Math.round(Double.parseDouble(Util.getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L);
+            long timeout = Util.getTranscodingTimeout(config, request);
             log.debug("Setting transcoding timeout for '" + request.getPid() + "' to " + timeout + "ms" );
             ExternalJobRunner.runClipperCommand(timeout, clipperCommand);
         } catch (ExternalProcessTimedOutException e) {

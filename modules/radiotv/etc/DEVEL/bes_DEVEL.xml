@@ -126,6 +126,8 @@
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.previewTimeoutFactor" value="4.0" />
     <!-- extraction timeout expresses as multiple of program length -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutFactor" value="3.0" />
+    <!--Additional constant to be added to transcoding timeout -->
+    <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutConstant" value="60" />
     <!-- Snapshot timeout expressed as multiple of snapshot length -->
     <Parameter name="dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor" value="4.0"/>
     <!-- Timeout parameter for stdout/stderr harvester threads (milliseconds) -->

@@ -251,5 +251,9 @@ public class Util {
         return getInitParameter(config, Constants.SNAPSHOT_PRIMARY_FORMAT);
     }
 
+    public static long getTranscodingTimeout(ServletConfig config, TranscodeRequest request) {
+        return Math.round(Double.parseDouble(getInitParameter(config, Constants.TRANSCODING_TIMEOUT_FACTOR))*request.getTotalLengthSeconds()*1000L)
+                + Long.parseLong(getInitParameter(config, Constants.TRANSCODING_TIMEOUT_CONSTANT));
+    }
 
 }

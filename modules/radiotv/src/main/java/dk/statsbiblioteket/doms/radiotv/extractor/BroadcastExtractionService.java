@@ -57,7 +57,7 @@ import java.util.List;
 public class BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
-    public static final String besVersion = "2.0.2";
+    public static final String besVersion = "2.1";
 
     public final boolean dummyService=false;
 

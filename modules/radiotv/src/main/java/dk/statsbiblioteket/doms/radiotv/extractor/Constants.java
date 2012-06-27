@@ -70,6 +70,7 @@ public class Constants {
     public static final String SNAPSHOT_TIMEOUT_FACTOR = "dk.statsbiblioteket.doms.radiotv.extractor.snapshotTimeoutFactor";
     public static final String OUTPUT_BUFFER_THREADWAIT_TIMEOUT = "dk.statsbiblioteket.doms.radiotv.extractor.threadWait";
     public static final String ASPECT_RATIO_TIMEOUT = "dk.statsbiblioteket.doms.radiotv.extractor.aspectRatioTimeoutSeconds";
+    public static final String TRANSCODING_TIMEOUT_CONSTANT = "dk.statsbiblioteket.doms.radiotv.extractor.transcodingTimeoutConstant";
 
     /**
      * Constants relating to offsets
