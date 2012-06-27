@@ -74,12 +74,11 @@ public class OutputFileUtil {
 
 	/**
 	 * Get the root output directory for this service type.
-	 * @param request
 	 * @param config
 	 * @return
 	 */
 	public static String getBaseOutputDir(ServiceTypeEnum serviceType, ServletConfig config) {
-		String rootDir = "";
+		String rootDir = null;
 		switch (serviceType) {
 		case BROADCAST_EXTRACTION:
 			rootDir = Util.getInitParameter(config, Constants.FINAL_DIR_INIT_PARAM);
@@ -98,9 +97,13 @@ public class OutputFileUtil {
 			break;
 		case SHARD_ANALYSIS:
 			rootDir = Util.getInitParameter(config, Constants.ANALYSIS_DIRECTORY);
-			break;
-		}
-		return rootDir;
+            break;
+        }
+        if (rootDir == null) {
+            throw new RuntimeException("RootDir parameter is null for " + serviceType);
+        } else {
+            return rootDir;
+        }
 	}
 
 	/**

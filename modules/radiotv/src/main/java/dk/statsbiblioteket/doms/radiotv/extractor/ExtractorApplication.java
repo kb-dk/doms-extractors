@@ -219,7 +219,7 @@ public class ExtractorApplication {
             File file = new File(arg);
             request.setShard(Files.loadString(file));
             request.setPid(file.getName().replace(".xml",""));
-            request.setServiceType(ServiceTypeEnum.BROADCAST_EXTRACTION);
+            request.setServiceType(ServiceTypeEnum.SHARD_ANALYSIS);
             OutputFileUtil.getAndCreateOutputDir(request, config);
             log.debug("Set content: '" + request.getShard() + "'");
             thread = ProcessorChainThread.getIterativeProcessorChainThread(parser, request, config);
