@@ -112,7 +112,17 @@ public class DigitvTranscoderMuxClipper extends ProcessorChainElement {
                 "'#transcode{vcodec=mp2v,vb=" + vb + ",soverlay,deinterlace,keyint=16,strict-rc,vfilter=canvas{width=720,height=576,aspect=" + request.getDisplayAspectRatioString() + "}," +
                 "fps=25,audio-sync,acodec=mp2a,ab=" + ab + ",channels=2,samplerate=48000,threads=0}" +
                 ":std{access=file,mux=ps,dst=" + OutputFileUtil.getDigitvWorkOutputFile(request, config) + "}' ";
-
+        //This alternative clipper command is a workaround to  https://sbprojects.statsbiblioteket.dk/jira/browse/BES-74
+        String clipperCommandAlternative = "cat " + processSubstitutionFileList + " | "
+                        + " vlc - " + programSelector + " --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout " +
+                        "'#std{access=file,mux=ts,dst=-}'|vlc - --demux=ts --intf dummy --play-and-exit --noaudio --novideo --sout " +
+                "'#transcode{vcodec=mp2v,vb=" + vb + ",soverlay,deinterlace,keyint=16,strict-rc,vfilter=canvas{width=720,height=576,aspect=" + request.getDisplayAspectRatioString() + "}," +
+                "fps=25,audio-sync,acodec=mp2a,ab=" + ab + ",channels=2,samplerate=48000,threads=0}" +
+                ":std{access=file,mux=ps,dst=" + OutputFileUtil.getDigitvWorkOutputFile(request, config) + "}' ";
+        if (request.isAlternative()) {
+            log.debug("Using alternative clipper command");
+            clipperCommand = clipperCommandAlternative;
+        }
         log.debug("clipperCommand: " + clipperCommand);
         try {
             long timeout = Util.getTranscodingTimeout(config, request);

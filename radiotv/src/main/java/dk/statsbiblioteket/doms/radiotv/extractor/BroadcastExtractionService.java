@@ -57,7 +57,7 @@ import java.util.List;
 public class BroadcastExtractionService {
 
     private static final Logger log = Logger.getLogger(BroadcastExtractionService.class);
-    public static final String besVersion = "2.1";
+    public static final String besVersion = "2.1.1";
 
     public final boolean dummyService=false;
 
@@ -240,7 +240,8 @@ public class BroadcastExtractionService {
     		@QueryParam("additional_start_offset") long additionalStartOffset, 
     		@QueryParam("additional_end_offset") long additionalEndOffset, 
     		@QueryParam("filename_prefix") String filenamePrefix,
-    		@DefaultValue("true") @QueryParam("send_email") String sendEmailParam) throws ProcessorException, UnsupportedEncodingException { 
+    		@DefaultValue("true") @QueryParam("send_email") String sendEmailParam,
+            @DefaultValue("false") @QueryParam("alternative") String alternative ) throws ProcessorException, UnsupportedEncodingException {
     	logIncomingRequest("digitv_transcode", programPid, title, channel, startTime);
     	String domsProgramPid = Util.getUuid(programPid);
     	String filenamePrefixURLDecoded = URLDecoder.decode(filenamePrefix, "UTF-8");
@@ -252,7 +253,13 @@ public class BroadcastExtractionService {
     	log.info("Transcode request set service type: " + ServiceTypeEnum.DIGITV_BROADCAST_EXTRACTION);
     	log.info("Transcode request set doms program pid: " + domsProgramPid);
     	log.info("Transcode request set send email: " + sendEmail);
+        log.info("Transcode request isAlternative: " + alternative);
     	TranscodeRequest request = new TranscodeRequest(domsProgramPid, additionalStartOffset, additionalEndOffset, filenamePrefixURLDecoded);
+        if ("false".equals(alternative)) {
+            request.setAlternative(false);
+        } else {
+            request.setAlternative(true);
+        }
     	DigitvExtractionStatus status = DigitvExtractionStatusExtractor.getStatus(request, config);
     	if (status != null) {
     		return status;

@@ -169,7 +169,7 @@ public class PidExtractorProcessor extends ProcessorChainElement {
         }
         Pattern thisProgramPattern = Pattern.compile(".*Program\\s"+request.getClips().get(0).getProgramId()+".*");
         Pattern programPattern = Pattern.compile(".*Program.*");
-        Pattern dvbsubPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*dvbsub.*");
+        Pattern dvbsubPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*dvb.*sub.*");
         Pattern videoPattern = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Video.*DAR\\s(([0-9]*):([0-9]*)).*");
         Pattern audioPattern1 = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*Audio.*");
         Pattern audioPattern2 = Pattern.compile(".*Stream.*\\[(0x[0-9a-f]*)\\].*0x0011.*");

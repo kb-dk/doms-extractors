@@ -266,6 +266,16 @@ public class TranscodeRequest {
         return shard;
     }
 
+    private boolean alternative;
+
+    public boolean isAlternative() {
+        return alternative;
+    }
+
+    public void setAlternative(boolean alternative) {
+        this.alternative = alternative;
+    }
+
     public void setShard(String shard) {
         this.shard = shard;
     }
@@ -354,10 +364,12 @@ public class TranscodeRequest {
          return bytePosition;
      }
 
-     public void setBytePosition(Long bytePosition) {
-         this.bytePosition = bytePosition;
-     }
- }
+        public void setBytePosition(Long bytePosition) {
+            this.bytePosition = bytePosition;
+        }
+
+
+    }
 
     /**
      * Class representing the absolute minimum information needed to clip data from a file
